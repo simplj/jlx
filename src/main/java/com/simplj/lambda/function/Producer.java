@@ -1,0 +1,17 @@
+package com.simplj.lambda.function;
+
+import java.util.Objects;
+
+@FunctionalInterface
+public interface Producer<R> {
+    R produce();
+
+    default <A> Producer<A> andThen(Function<R, A> after) {
+        Objects.requireNonNull(after);
+        return () -> after.apply(produce());
+    }
+
+    default Function<Void, R> toExecutable() {
+        return x -> produce();
+    }
+}
