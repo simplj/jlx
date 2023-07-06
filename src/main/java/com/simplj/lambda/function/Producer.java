@@ -11,7 +11,7 @@ public interface Producer<R> {
         return () -> after.apply(produce());
     }
 
-    default Function<Void, R> toExecutable() {
+    default Function<Void, R> toFunction() {
         return x -> produce();
     }
 }
