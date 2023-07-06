@@ -23,13 +23,13 @@ public interface BiConsumer<A, B> {
         return a -> b -> consume(a, b);
     }
 
-    default BiFunction<A, B, A> chainFirst() {
+    default BiFunction<A, B, A> yieldFirst() {
         return (a, b) -> {
             consume(a, b);
             return a;
         };
     }
-    default BiFunction<A, B, B> chainSecond() {
+    default BiFunction<A, B, B> yieldSecond() {
         return (a, b) -> {
             consume(a, b);
             return b;
