@@ -11,7 +11,7 @@ public interface Consumer<A> {
         return t -> consume(before.apply(t));
     }
 
-    default Function<A, A> chain() {
+    default Function<A, A> yield() {
         return a -> {
             consume(a);
             return a;

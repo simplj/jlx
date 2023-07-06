@@ -30,19 +30,19 @@ public interface TriConsumer<A, B, C> {
         return a -> b -> c -> consume(a, b, c);
     }
 
-    default TriFunction<A, B, C, A> chainFirst() {
+    default TriFunction<A, B, C, A> yieldFirst() {
         return (a, b, c) -> {
             consume(a, b, c);
             return a;
         };
     }
-    default TriFunction<A, B, C, B> chainSecond() {
+    default TriFunction<A, B, C, B> yieldSecond() {
         return (a, b, c) -> {
             consume(a, b, c);
             return b;
         };
     }
-    default TriFunction<A, B, C, C> chainThird() {
+    default TriFunction<A, B, C, C> yieldThird() {
         return (a, b, c) -> {
             consume(a, b, c);
             return c;
