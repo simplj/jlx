@@ -38,11 +38,12 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /* ------------------- START: Lazy methods ------------------- */
+    /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type <i>(T -> R)</i> to all the elements in the list and returns the resultant list. Function application is <b>lazy</b><br />
-     * Detailed Description: <b>map</b>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a <b>lazy</b> implementation.
-     * The function `f` is not applied to the elements until a <b>eager</b> api is called. Therefore, calling <code>map</code> has no effect until a <b>eager</b> api is called.
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
+     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
@@ -52,10 +53,10 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * Applies the function `f` of type <i>(T -> List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened list. Function application is <b>lazy</b><br />
-     * Detailed Description: <b>flatmap</b>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a <b>lazy</b> implementation.
-     * The function `f` is not applied to the elements until a <b>eager</b> api is called. Therefore, calling <code>flatmap</code> has no effect until a <b>eager</b> api is called.
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
+     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
@@ -71,8 +72,8 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br />
-     * Function application is <b>lazy</b> which means calling this api has no effect until a <b>eager</b> api is called.
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
+     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which satisfies the condition `c`
      */
@@ -82,8 +83,8 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. <br />
-     * Function application is <b>lazy</b> which means calling this api has no effect until a <b>eager</b> api is called.
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
+     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which does not satisfy the condition `c`
      */
@@ -94,8 +95,8 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is <b>eager</b> i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying <code>list</code> with all the lazy functions (if any) applied
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
      * @throws IllegalStateException if not {@link #applied() applied}
      */
     @Override
@@ -105,7 +106,7 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
+     * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
     public boolean isApplied() {
@@ -113,8 +114,8 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * Function application is <b>eager</b> i.e. it applies all the lazy functions (if any) to list elements
-     * @return <code>current instance</code> if already <code>applied</code> otherwise a <code>new instance</code> with all the lazy functions applied
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return &lt;code&gt;current instance&lt;/code&gt; if already &lt;code&gt;applied&lt;/code&gt; otherwise a &lt;code&gt;new instance&lt;/code&gt; with all the lazy functions applied
      */
     @Override
     public ImmutableList<T> applied() {
@@ -128,9 +129,9 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} list and returns a <code>Couple</code> of <code>ImmutableList</code>s with satisfying elements in {@link Couple#first() first} and <b>not</b> satisfying elements in {@link Couple#second() second}
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} list and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return <code>Couple</code> of <code>ImmutableList</code>s with satisfying elements in {@link Couple#first() first} and <b>not</b> satisfying elements in {@link Couple#second() second}
+     * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @throws IllegalStateException if not {@link #applied() applied}
      */
     @Override
