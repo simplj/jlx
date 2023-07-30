@@ -1,11 +1,18 @@
 package com.simplj.lambda.function;
 
+import java.util.Objects;
+
 @FunctionalInterface
 public interface Condition<A> {
     boolean evaluate(A input);
 
     default Condition<A> negate() {
         return a -> !evaluate(a);
+    }
+
+    default <R> Condition<R> compose(Function<R, A> f) {
+        Objects.requireNonNull(f);
+        return r -> evaluate(f.apply(r));
     }
 
     static <T> Condition<T> negate(Condition<T> c) {
