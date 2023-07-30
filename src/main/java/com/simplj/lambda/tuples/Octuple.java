@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Octuple<A, B, C, D, E, F, G, H> {
+public final class Octuple<A, B, C, D, E, F, G, H> implements Tuple8<A, B, C, D, E, F, G, H> {
     private final A first;
     private final B second;
     private final C third;

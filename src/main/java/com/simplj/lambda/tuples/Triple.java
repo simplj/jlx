@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Triple<A, B, C> {
+public final class Triple<A, B, C> implements Tuple3<A, B, C> {
     private final A first;
     private final B second;
     private final C third;

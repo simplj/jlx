@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Pentuple<A, B, C, D, E> {
+public final class Pentuple<A, B, C, D, E> implements Tuple5<A, B, C, D, E> {
     private final A first;
     private final B second;
     private final C third;

@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Hextuple<A, B, C, D, E, F> {
+public final class Hextuple<A, B, C, D, E, F> implements Tuple6<A, B, C, D, E, F> {
     private final A first;
     private final B second;
     private final C third;

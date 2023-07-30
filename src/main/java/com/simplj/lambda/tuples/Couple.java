@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Couple<A, B> {
+public final class Couple<A, B> implements Tuple2<A, B> {
     private final A first;
     private final B second;
 

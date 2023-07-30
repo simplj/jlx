@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Septuple<A, B, C, D, E, F, G> {
+public final class Septuple<A, B, C, D, E, F, G> implements Tuple7<A, B, C, D, E, F, G> {
     private final A first;
     private final B second;
     private final C third;

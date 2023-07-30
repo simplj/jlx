@@ -1,6 +1,6 @@
 package com.simplj.lambda.tuples;
 
-public final class Quadruple<A, B, C, D> {
+public final class Quadruple<A, B, C, D> implements Tuple4<A, B, C, D> {
     private final A first;
     private final B second;
     private final C third;
