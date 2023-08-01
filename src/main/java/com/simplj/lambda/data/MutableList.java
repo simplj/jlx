@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
+public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements List<T> {
     private List<?> src;
     private List<T> list;
     private final Producer<List<?>> constructor;
@@ -123,7 +123,7 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
      * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
      */
     @Override
-    public List<T> list() {
+    List<T> list() {
         apply();
         return list;
     }
@@ -440,6 +440,7 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
         return list.equals(obj);
     }
 
+    @Override
     public MutableList<T> copy() {
         apply();
         MutableList<T> r = new MutableList<>(src, constructor, func);

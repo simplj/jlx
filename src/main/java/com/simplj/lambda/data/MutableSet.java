@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
+public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
     private Set<?> src;
     private Set<T> set;
     private final Producer<Set<?>> constructor;
@@ -120,7 +120,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
      * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
      */
     @Override
-    public Set<T> set() {
+    Set<T> set() {
         apply();
         return set;
     }
@@ -326,6 +326,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
         return set.equals(obj);
     }
 
+    @Override
     public MutableSet<T> copy() {
         apply();
         MutableSet<T> r = new MutableSet<>(src, constructor, func);

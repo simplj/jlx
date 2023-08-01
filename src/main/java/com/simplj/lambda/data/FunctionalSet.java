@@ -5,21 +5,35 @@ import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.tuples.Couple;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Set<T> {
+abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> {
 
     public abstract S filter(Condition<T> c);
 
     public abstract S filterOut(Condition<T> c);
 
-    public abstract Set<T> set();
+    abstract Set<T> set();
 
     public abstract boolean isApplied();
 
     public abstract S applied();
 
     public abstract Couple<S, S> split(Condition<T> c);
+
+    public abstract int size();
+    public abstract boolean isEmpty();
+    public abstract boolean contains(Object o);
+    public abstract boolean containsAll(Collection<?> c);
+    public abstract Iterator<T> iterator();
+    public abstract Spliterator<T> spliterator();
+    public abstract Object[] toArray();
+    public abstract <T1> T1[] toArray(T1[] a);
 
     public abstract S include(T val);
 
@@ -30,6 +44,12 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Set<T>
     public abstract S delete(Collection<? extends T> c);
 
     public abstract S preserve(Collection<? extends T> c);
+
+    public abstract S deleteIf(Predicate<? super T> filter);
+
+    public abstract Stream<T> stream();
+    public abstract Stream<T> parallelStream();
+    public abstract void forEach(Consumer<? super T> action);
 
     public T find(Condition<T> c) {
         return Util.find(set(), c);
@@ -71,4 +91,6 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Set<T>
         }
         return res;
     }
+
+    public abstract S copy();
 }

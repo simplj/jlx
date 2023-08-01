@@ -124,7 +124,7 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
      * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
      */
     @Override
-    public Map<K, V> map() {
+    Map<K, V> map() {
         alertIfNotApplied();
         return map;
     }
@@ -157,15 +157,16 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
      * @param c condition based on which the elements will be segregated
      * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableMap&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      */
+    @Override
     public Couple<ImmutableMap<K, V>, ImmutableMap<K, V>> split(BiFunction<K, V, Boolean> c) {
         ImmutableMap<K, V> match = ImmutableMap.wrap(constructor);
         ImmutableMap<K, V> rest = ImmutableMap.wrap(constructor);
         alertIfNotApplied();
-        for (Entry<K, V> t : map.entrySet()) {
+        for (Map.Entry<K, V> t : map.entrySet()) {
             if (c.apply(t.getKey(), t.getValue())) {
-                match.put(t.getKey(), t.getValue());
+                match.map.put(t.getKey(), t.getValue());
             } else {
-                rest.put(t.getKey(), t.getValue());
+                rest.map.put(t.getKey(), t.getValue());
             }
         }
         return Tuple.of(match, rest);
@@ -195,10 +196,12 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
         return map.containsValue(value);
     }
 
+    @Override
     public boolean containsKeys(Set<K> keys) {
         return keySet().containsAll(keys);
     }
 
+    @Override
     public boolean containsValues(Set<V> values) {
         return values().containsAll(values);
     }
@@ -216,93 +219,57 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
     }
 
     @Override
-    public V put(K key, V value) {
-        alertIfNotApplied("include");
-        return map.put(key, value);
-    }
-
     public ImmutableMap<K, V> include(K key, V val) {
         ImmutableMap<K, V> res = applied();
-        res.put(key, val);
+        res.map.put(key, val);
         return res;
     }
 
     @Override
-    public V putIfAbsent(K key, V value) {
-        alertIfNotApplied("includeIfAbsent");
-        return map.putIfAbsent(key, value);
-    }
-
     public ImmutableMap<K, V> includeIfAbsent(K key, V val) {
         ImmutableMap<K, V> res = applied();
-        res.putIfAbsent(key, val);
+        res.map.putIfAbsent(key, val);
         return res;
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> m) {
-        alertIfNotApplied("include");
-        map.putAll(m);
-    }
-
     public ImmutableMap<K, V> include(Map<K, V> that) {
         ImmutableMap<K, V> res = applied();
-        res.putAll(that);
+        res.map.putAll(that);
         return res;
     }
 
     @Override
-    public V remove(Object key) {
-        alertIfNotApplied("delete");
-        return map.remove(key);
-    }
-
     public ImmutableMap<K, V> delete(K key) {
         ImmutableMap<K, V> res = applied();
-        res.remove(key);
+        res.map.remove(key);
         return res;
     }
 
     @Override
-    public boolean remove(Object key, Object value) {
-        alertIfNotApplied("delete");
-        return map.remove(key, value);
-    }
-
     public ImmutableMap<K, V> delete(K key, V value) {
         ImmutableMap<K, V> res = applied();
-        res.remove(key, value);
+        res.map.remove(key, value);
         return res;
     }
 
     @Override
-    public V replace(K key, V value) {
-        alertIfNotApplied("replacing");
-        return map.replace(key, value);
-    }
-
     public ImmutableMap<K, V> replacing(K key, V value) {
         ImmutableMap<K, V> res = applied();
-        res.replace(key, value);
+        res.map.replace(key, value);
         return res;
     }
 
     @Override
-    public boolean replace(K key, V oldValue, V newValue) {
-        alertIfNotApplied("replacing");
-        return map.replace(key, oldValue, newValue);
-    }
-
     public ImmutableMap<K, V> replacing(K key, V oldValue, V newValue) {
         ImmutableMap<K, V> res = applied();
-        res.replace(key, oldValue, newValue);
+        res.map.replace(key, oldValue, newValue);
         return res;
     }
 
-    @Override
-    public void clear() {
+    public ImmutableMap<K, V> empty() {
         alertIfNotApplied();
-        map.clear();
+        return new ImmutableMap<>(src, constructor, func);
     }
 
     @Override
@@ -318,7 +285,7 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
     }
 
     @Override
-    public Set<Entry<K, V>> entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         alertIfNotApplied();
         return map.entrySet();
     }
@@ -330,14 +297,9 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
     }
 
     @Override
-    public void replaceAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
-        alertIfNotApplied("replacingAll");
-        map.replaceAll(function);
-    }
-
     public ImmutableMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
         ImmutableMap<K, V> res = applied();
-        res.replaceAll(function);
+        res.map.replaceAll(function);
         return res;
     }
 
@@ -386,10 +348,11 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
         return map.equals(obj);
     }
 
+    @Override
     public ImmutableMap<K, V> copy() {
         alertIfNotApplied();
         ImmutableMap<K, V> r = new ImmutableMap<>(src, constructor, func);
-        r.putAll(map);
+        r.map.putAll(map);
         return r;
     }
 
@@ -406,7 +369,7 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
 
     private <A, B> Map<A, B> apply(Map<?, ?> m, BiFunction<Object, Object, ? extends Map<A, B>> f) {
         Map<A, B> r = Util.cast(constructor.produce());
-        for (Entry<?, ?> e : m.entrySet()) {
+        for (Map.Entry<?, ?> e : m.entrySet()) {
             r.putAll(f.apply(e.getKey(), e.getValue()));
         }
         return r;
@@ -414,6 +377,6 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
 
     @SuppressWarnings("unchecked")
     public static <A, B> ImmutableMap<A, B> wrap(Producer<Map<?, ?>> constructor) {
-        return of((ImmutableMap<A, B>) constructor.produce(), constructor);
+        return of((Map<A, B>) constructor.produce(), constructor);
     }
 }

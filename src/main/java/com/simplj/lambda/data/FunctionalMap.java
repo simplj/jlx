@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements Map<K, V> {
+abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
 
     public abstract M filter(BiFunction<K, V, Boolean> c);
     public abstract M filterOut(BiFunction<K, V, Boolean> c);
@@ -17,14 +17,42 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
     public abstract M filterByValue(Condition<V> c);
     public abstract M filterOutByValue(Condition<V> c);
 
-    public abstract Map<K, V> map();
+    abstract Map<K, V> map();
     public abstract boolean isApplied();
     public abstract M applied();
+
+    public abstract Couple<M, M> split(BiFunction<K, V, Boolean> c);
+    public abstract int size();
+    public abstract boolean isEmpty();
+    public abstract boolean containsKey(Object key);
+    public abstract boolean containsValue(Object value);
+    public abstract boolean containsKeys(Set<K> keys);
+    public abstract boolean containsValues(Set<V> values);
+    public abstract V get(Object key);
+    public abstract V getOrDefault(Object key, V defaultValue);
+    public abstract M include(K key, V val);
+    public abstract M includeIfAbsent(K key, V val);
+    public abstract M include(Map<K, V> that);
+    public abstract M delete(K key);
+    public abstract M delete(K key, V value);
+    public abstract M replacing(K key, V value);
+    public abstract M replacing(K key, V oldValue, V newValue);
+    public abstract Set<K> keySet();
+    public abstract Collection<V> values();
+    public abstract Set<Map.Entry<K, V>> entrySet();
+
+    public abstract void forEach(java.util.function.BiConsumer<? super K, ? super V> action);
+
+    public abstract M replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function);
+    public abstract V computeIfAbsent(K key, java.util.function.Function<? super K, ? extends V> mappingFunction);
+    public abstract V computeIfPresent(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+    public abstract V compute(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+    public abstract V merge(K key, V value, java.util.function.BiFunction<? super V, ? super V, ? extends V> remappingFunction);
 
     public Couple<K, V> find(BiFunction<K, V, Boolean> c) {
         Couple<K, V> res = null;
         Map<K, V> map = map();
-        for (Entry<K, V> e : map.entrySet()) {
+        for (Map.Entry<K, V> e : map.entrySet()) {
             if (c.apply(e.getKey(), e.getValue())) {
                 res = Tuple.of(e.getKey(), e.getValue());
             }
@@ -68,7 +96,7 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
 
     public <R> R fold(R origin, TriFunction<R, K, V, R> accumulator) {
         Map<K, V> map = map();
-        for (Entry<K, V> e : map.entrySet()) {
+        for (Map.Entry<K, V> e : map.entrySet()) {
             origin = accumulator.apply(origin, e.getKey(), e.getValue());
         }
         return origin;
@@ -79,7 +107,7 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
         Map<K, V> map = map();
         boolean flag = false;
         if (!map.isEmpty()) {
-            for (Entry<K, V> t : map.entrySet()) {
+            for (Map.Entry<K, V> t : map.entrySet()) {
                 if (flag) {
                     res = accumulator.apply(res, t.getKey(), t.getValue());
                 } else {
@@ -90,4 +118,6 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
         }
         return res;
     }
+
+    public abstract M copy();
 }
