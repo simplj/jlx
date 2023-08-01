@@ -42,6 +42,12 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements
         return new MutableList<>(list, constructor);
     }
 
+    @Override
+    final List<T> list() {
+        apply();
+        return list;
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -123,16 +129,6 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    List<T> list() {
-        apply();
-        return list;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -148,6 +144,16 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements
     public MutableList<T> applied() {
         apply();
         return this;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public List<T> toList() {
+        apply();
+        return list;
     }
 
     /**

@@ -41,6 +41,12 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         return new ImmutableList<>(list, constructor);
     }
 
+    @Override
+    final List<T> list() {
+        alertIfNotApplied();
+        return list;
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /* ------------------- START: Lazy methods ------------------- */
     /**
@@ -99,17 +105,6 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
-     * @throws IllegalStateException if not {@link #applied() applied}
-     */
-    @Override
-    List<T> list() {
-        alertIfNotApplied();
-        return list;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -130,6 +125,16 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
             res = new ImmutableList<>(apply(src, func), constructor);
         }
         return res;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     * @throws IllegalStateException if not {@link #applied() applied}
+     */
+    @Override
+    public List<T> toList() {
+        return applied().list;
     }
 
     /**

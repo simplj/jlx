@@ -14,15 +14,17 @@ import java.util.stream.Stream;
 
 abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
 
+    abstract List<T> list();
+
     public abstract L filter(Condition<T> c);
 
     public abstract L filterOut(Condition<T> c);
 
-    abstract List<T> list();
-
     public abstract boolean isApplied();
 
     public abstract L applied();
+
+    public abstract List<T> toList();
 
     public abstract Couple<L, L> split(Condition<T> c);
 

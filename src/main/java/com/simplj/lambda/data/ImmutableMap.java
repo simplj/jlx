@@ -43,6 +43,12 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
         return new ImmutableMap<>(set, constructor);
     }
 
+    @Override
+    final Map<K, V> map() {
+        alertIfNotApplied();
+        return map;
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the map and returns the resultant map. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -124,16 +130,6 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    Map<K, V> map() {
-        alertIfNotApplied();
-        return map;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -154,6 +150,15 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
             res = new ImmutableMap<>(apply(src, func), constructor);
         }
         return res;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Map<K, V> toMap() {
+        return applied().map;
     }
 
     /**

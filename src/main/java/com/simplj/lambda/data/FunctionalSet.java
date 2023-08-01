@@ -14,15 +14,17 @@ import java.util.stream.Stream;
 
 abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterable<T> {
 
+    abstract Set<T> set();
+
     public abstract S filter(Condition<T> c);
 
     public abstract S filterOut(Condition<T> c);
 
-    abstract Set<T> set();
-
     public abstract boolean isApplied();
 
     public abstract S applied();
+
+    public abstract Set<T> toSet();
 
     public abstract Couple<S, S> split(Condition<T> c);
 

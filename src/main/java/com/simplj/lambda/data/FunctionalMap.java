@@ -10,6 +10,8 @@ import java.util.Set;
 
 abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
 
+    abstract Map<K, V> map();
+
     public abstract M filter(BiFunction<K, V, Boolean> c);
     public abstract M filterOut(BiFunction<K, V, Boolean> c);
     public abstract M filterByKey(Condition<K> c);
@@ -17,9 +19,9 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
     public abstract M filterByValue(Condition<V> c);
     public abstract M filterOutByValue(Condition<V> c);
 
-    abstract Map<K, V> map();
     public abstract boolean isApplied();
     public abstract M applied();
+    public abstract Map<K, V> toMap();
 
     public abstract Couple<M, M> split(BiFunction<K, V, Boolean> c);
     public abstract int size();

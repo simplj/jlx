@@ -43,6 +43,12 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
         return new MutableMap<>(set, constructor);
     }
 
+    @Override
+    final Map<K, V> map() {
+        apply();
+        return map;
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the map and returns the resultant map. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -149,16 +155,6 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    Map<K, V> map() {
-        apply();
-        return map;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -174,6 +170,16 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     public MutableMap<K, V> applied() {
         apply();
         return this;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Map<K, V> toMap() {
+        apply();
+        return map;
     }
 
     /**

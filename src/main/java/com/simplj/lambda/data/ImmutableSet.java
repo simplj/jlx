@@ -41,6 +41,12 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         return new ImmutableSet<>(set, constructor);
     }
 
+    @Override
+    final Set<T> set() {
+        alertIfNotApplied();
+        return set;
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the set and returns the resultant set. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -96,16 +102,6 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    Set<T> set() {
-        alertIfNotApplied();
-        return set;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -126,6 +122,15 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
             res = new ImmutableSet<>(apply(src, func), constructor);
         }
         return res;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Set<T> toSet() {
+        return applied().set;
     }
 
     /**
