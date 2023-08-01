@@ -4,13 +4,15 @@ import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.tuples.Couple;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-abstract class FunctionalList<T, L extends FunctionalList<T, L>> {
+abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
 
     public abstract L filter(Condition<T> c);
 
@@ -28,7 +30,6 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> {
     public abstract boolean isEmpty();
     public abstract boolean contains(Object o);
     public abstract boolean containsAll(Collection<?> c);
-    public abstract Iterator<T> iterator();
     public abstract Object[] toArray();
     public abstract <T1> T1[] toArray(T1[] a);
 
@@ -50,12 +51,13 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> {
 
     public abstract L preserve(Collection<? extends T> c);
 
+    public abstract L empty();
+
     public abstract T get(int index);
     public abstract int indexOf(Object o);
     public abstract int lastIndexOf(Object o);
     public abstract ListIterator<T> listIterator();
     public abstract ListIterator<T> listIterator(int index);
-    public abstract Spliterator<T> spliterator();
     public abstract List<T> subList(int fromIndex, int toIndex);
     public abstract L sorted(Comparator<? super T> c);
     public abstract L replacingAll(UnaryOperator<T> operator);
@@ -63,7 +65,6 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> {
 
     public abstract Stream<T> stream();
     public abstract Stream<T> parallelStream();
-    public abstract void forEach(Consumer<? super T> action);
 
     public T find(Condition<T> c) {
         return Util.find(list(), c);

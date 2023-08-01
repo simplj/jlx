@@ -33,6 +33,10 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
         this.applied = flag;
     }
 
+    public static <A> MutableSet<A> unit(Producer<Set<?>> constructor) {
+        return new MutableSet<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> MutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
         return new MutableSet<>(set, constructor);
     }
@@ -274,6 +278,12 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
     public void clear() {
         apply();
         set.clear();
+    }
+
+    @Override
+    public MutableSet<T> empty() {
+        clear();
+        return this;
     }
 
     @Override

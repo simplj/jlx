@@ -34,6 +34,10 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements
         this.applied = flag;
     }
 
+    public static <A> MutableList<A> unit(Producer<List<?>> constructor) {
+        return new MutableList<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> MutableList<A> of(List<A> list, Producer<List<?>> constructor) {
         return new MutableList<>(list, constructor);
     }
@@ -324,6 +328,12 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements
     public void clear() {
         apply();
         list.clear();
+    }
+
+    @Override
+    public MutableList<T> empty() {
+        clear();
+        return this;
     }
 
     @Override

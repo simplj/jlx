@@ -33,6 +33,10 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         this.applied = flag;
     }
 
+    public static <A> ImmutableList<A> unit(Producer<List<?>> constructor) {
+        return new ImmutableList<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> ImmutableList<A> of(List<A> list, Producer<List<?>> constructor) {
         return new ImmutableList<>(list, constructor);
     }
@@ -258,6 +262,7 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         return res;
     }
 
+    @Override
     public ImmutableList<T> empty() {
         alertIfNotApplied();
         return new ImmutableList<>(src, constructor, func);

@@ -33,6 +33,10 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         this.applied = flag;
     }
 
+    public static <A> ImmutableSet<A> unit(Producer<Set<?>> constructor) {
+        return new ImmutableSet<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> ImmutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
         return new ImmutableSet<>(set, constructor);
     }
@@ -226,6 +230,7 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         return this;
     }
 
+    @Override
     public ImmutableSet<T> empty() {
         alertIfNotApplied();
         return new ImmutableSet<>(src, constructor, func);

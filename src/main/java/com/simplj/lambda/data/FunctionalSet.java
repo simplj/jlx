@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> {
+abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterable<T> {
 
     public abstract S filter(Condition<T> c);
 
@@ -30,8 +30,6 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> {
     public abstract boolean isEmpty();
     public abstract boolean contains(Object o);
     public abstract boolean containsAll(Collection<?> c);
-    public abstract Iterator<T> iterator();
-    public abstract Spliterator<T> spliterator();
     public abstract Object[] toArray();
     public abstract <T1> T1[] toArray(T1[] a);
 
@@ -45,11 +43,12 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> {
 
     public abstract S preserve(Collection<? extends T> c);
 
+    public abstract S empty();
+
     public abstract S deleteIf(Predicate<? super T> filter);
 
     public abstract Stream<T> stream();
     public abstract Stream<T> parallelStream();
-    public abstract void forEach(Consumer<? super T> action);
 
     public T find(Condition<T> c) {
         return Util.find(set(), c);

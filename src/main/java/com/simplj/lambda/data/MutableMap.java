@@ -35,6 +35,10 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
         this.applied = flag;
     }
 
+    public static <A, B> MutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
+        return new MutableMap<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A, B> MutableMap<A, B> of(Map<A, B> set, Producer<Map<?, ?>> constructor) {
         return new MutableMap<>(set, constructor);
     }

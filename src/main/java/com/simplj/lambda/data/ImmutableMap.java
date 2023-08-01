@@ -35,6 +35,10 @@ public class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> 
         this.applied = flag;
     }
 
+    public static <A, B> ImmutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
+        return new ImmutableMap<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A, B> ImmutableMap<A, B> of(Map<A, B> set, Producer<Map<?, ?>> constructor) {
         return new ImmutableMap<>(set, constructor);
     }
