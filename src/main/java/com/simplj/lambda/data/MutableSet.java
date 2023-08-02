@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
+public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
     private Set<?> src;
     private Set<T> set;
     private final Producer<Set<?>> constructor;
@@ -33,8 +33,18 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
         this.applied = flag;
     }
 
+    public static <A> MutableSet<A> unit(Producer<Set<?>> constructor) {
+        return new MutableSet<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> MutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
         return new MutableSet<>(set, constructor);
+    }
+
+    @Override
+    final Set<T> set() {
+        apply();
+        return set;
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -116,16 +126,6 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public Set<T> set() {
-        apply();
-        return set;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -141,6 +141,16 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
     public MutableSet<T> applied() {
         apply();
         return this;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Set<T> toSet() {
+        apply();
+        return set;
     }
 
     /**
@@ -277,6 +287,12 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
     }
 
     @Override
+    public MutableSet<T> empty() {
+        clear();
+        return this;
+    }
+
+    @Override
     public boolean removeIf(Predicate<? super T> filter) {
         apply();
         return set.removeIf(filter);
@@ -326,6 +342,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> {
         return set.equals(obj);
     }
 
+    @Override
     public MutableSet<T> copy() {
         apply();
         MutableSet<T> r = new MutableSet<>(src, constructor, func);

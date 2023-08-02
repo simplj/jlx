@@ -33,8 +33,18 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         this.applied = flag;
     }
 
+    public static <A> ImmutableList<A> unit(Producer<List<?>> constructor) {
+        return new ImmutableList<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> ImmutableList<A> of(List<A> list, Producer<List<?>> constructor) {
         return new ImmutableList<>(list, constructor);
+    }
+
+    @Override
+    final List<T> list() {
+        alertIfNotApplied();
+        return list;
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -95,17 +105,6 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
-     * @throws IllegalStateException if not {@link #applied() applied}
-     */
-    @Override
-    public List<T> list() {
-        alertIfNotApplied();
-        return list;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -129,6 +128,16 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     * @throws IllegalStateException if not {@link #applied() applied}
+     */
+    @Override
+    public List<T> toList() {
+        return applied().list;
+    }
+
+    /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} list and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
      * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
@@ -141,9 +150,9 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         ImmutableList<T> rest = ImmutableList.wrap(constructor);
         for (T t : list) {
             if (c.evaluate(t)) {
-                match.add(t);
+                match.list.add(t);
             } else {
-                rest.add(t);
+                rest.list.add(t);
             }
         }
         return Tuple.of(match, rest);
@@ -196,126 +205,72 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     @Override
-    public boolean add(T t) {
-        alertIfNotApplied("append");
-        return list.add(t);
-    }
-
-    @Override
     public ImmutableList<T> append(T val) {
         ImmutableList<T> res = applied();
-        res.add(val);
+        res.list.add(val);
         return res;
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        alertIfNotApplied("append");
-        return list.addAll(c);
     }
 
     @Override
     public ImmutableList<T> append(Collection<? extends T> c) {
         ImmutableList<T> res = applied();
-        res.addAll(c);
+        res.list.addAll(c);
         return res;
-    }
-
-    @Override
-    public void add(int index, T element) {
-        alertIfNotApplied("insert");
-        list.add(index, element);
     }
 
     @Override
     public ImmutableList<T> insert(int index, T val) {
         ImmutableList<T> res = applied();
-        res.add(index, val);
+        res.list.add(index, val);
         return res;
-    }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
-        alertIfNotApplied("insert");
-        return list.addAll(index, c);
     }
 
     @Override
     public ImmutableList<T> insert(int index, Collection<? extends T> c) {
         ImmutableList<T> res = applied();
-        res.addAll(index, c);
+        res.list.addAll(index, c);
         return res;
-    }
-
-    @Override
-    public T set(int index, T element) {
-        alertIfNotApplied("replace");
-        return list.set(index, element);
     }
 
     @Override
     public ImmutableList<T> replace(int index, T val) {
         ImmutableList<T> res = applied();
-        res.set(index, val);
+        res.list.set(index, val);
         return res;
-    }
-
-    @Override
-    public T remove(int index) {
-        alertIfNotApplied("delete");
-        return list.remove(index);
     }
 
     @Override
     public ImmutableList<T> delete(int index) {
         ImmutableList<T> res = applied();
-        res.remove(index);
+        res.list.remove(index);
         return res;
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        alertIfNotApplied("delete");
-        return list.remove(o);
     }
 
     @Override
     public ImmutableList<T> delete(T val) {
         ImmutableList<T> res = applied();
-        res.remove(val);
+        res.list.remove(val);
         return res;
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        alertIfNotApplied("delete");
-        return list.removeAll(c);
     }
 
     @Override
     public ImmutableList<T> delete(Collection<? extends T> c) {
         ImmutableList<T> res = applied();
-        res.removeAll(c);
+        res.list.removeAll(c);
         return res;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        alertIfNotApplied("preserve");
-        return list.retainAll(c);
     }
 
     @Override
     public ImmutableList<T> preserve(Collection<? extends T> c) {
         ImmutableList<T> res = applied();
-        res.retainAll(c);
+        res.list.retainAll(c);
         return res;
     }
 
     @Override
-    public void clear() {
+    public ImmutableList<T> empty() {
         alertIfNotApplied();
-        list.clear();
+        return new ImmutableList<>(src, constructor, func);
     }
 
     @Override
@@ -361,38 +316,23 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     @Override
-    public void sort(Comparator<? super T> c) {
-        alertIfNotApplied("sorted");
-        list.sort(c);
-    }
-
     public ImmutableList<T> sorted(Comparator<? super T> c) {
         ImmutableList<T> res = applied();
-        res.sort(c);
+        res.list.sort(c);
         return res;
     }
 
     @Override
-    public void replaceAll(UnaryOperator<T> operator) {
-        alertIfNotApplied("replacingAll");
-        list.replaceAll(operator);
-    }
-
     public ImmutableList<T> replacingAll(UnaryOperator<T> operator) {
         ImmutableList<T> res = applied();
-        res.replaceAll(operator);
+        res.list.replaceAll(operator);
         return res;
     }
 
     @Override
-    public boolean removeIf(Predicate<? super T> filter) {
-        alertIfNotApplied("deleteIf");
-        return list.removeIf(filter);
-    }
-
     public ImmutableList<T> deleteIf(Predicate<? super T> filter) {
         ImmutableList<T> res = applied();
-        res.removeIf(filter);
+        res.list.removeIf(filter);
         return res;
     }
 
@@ -435,21 +375,17 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
         return list.equals(obj);
     }
 
+    @Override
     public ImmutableList<T> copy() {
         alertIfNotApplied();
         ImmutableList<T> r = new ImmutableList<>(src, constructor, func);
-        r.addAll(list);
+        r.list.addAll(list);
         return r;
     }
 
     private void alertIfNotApplied() {
         if (!isApplied()) {
             throw new IllegalStateException("Immutable List not yet `applied`! Consider calling `applied()` before this api");
-        }
-    }
-    private void alertIfNotApplied(String alternateApi) {
-        if (!isApplied()) {
-            throw new IllegalStateException("Immutable List not yet `applied`! Consider calling `applied()` before this api or `" + alternateApi + "` can be used here as an alternate.");
         }
     }
 

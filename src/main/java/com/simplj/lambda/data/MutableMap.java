@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
-public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
+public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> implements Map<K, V> {
     private Map<?, ?> src;
     private Map<K, V> map;
     private final Producer<Map<?, ?>> constructor;
@@ -35,8 +35,18 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         this.applied = flag;
     }
 
+    public static <A, B> MutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
+        return new MutableMap<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A, B> MutableMap<A, B> of(Map<A, B> set, Producer<Map<?, ?>> constructor) {
         return new MutableMap<>(set, constructor);
+    }
+
+    @Override
+    final Map<K, V> map() {
+        apply();
+        return map;
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -145,16 +155,6 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public Map<K, V> map() {
-        apply();
-        return map;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -173,10 +173,21 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
     }
 
     /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Map<K, V> toMap() {
+        apply();
+        return map;
+    }
+
+    /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} map and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;MutableMap&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
      * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;MutableMap&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      */
+    @Override
     public Couple<MutableMap<K, V>, MutableMap<K, V>> split(BiFunction<K, V, Boolean> c) {
         MutableMap<K, V> match = MutableMap.wrap(constructor);
         MutableMap<K, V> rest = MutableMap.wrap(constructor);
@@ -215,10 +226,12 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.containsValue(value);
     }
 
+    @Override
     public boolean containsKeys(Set<K> keys) {
         return keySet().containsAll(keys);
     }
 
+    @Override
     public boolean containsValues(Set<V> values) {
         return values().containsAll(values);
     }
@@ -241,6 +254,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.put(key, value);
     }
 
+    @Override
     public MutableMap<K, V> include(K key, V val) {
         put(key, val);
         return this;
@@ -252,6 +266,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.putIfAbsent(key, value);
     }
 
+    @Override
     public MutableMap<K, V> includeIfAbsent(K key, V val) {
         putIfAbsent(key, val);
         return this;
@@ -263,6 +278,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         map.putAll(m);
     }
 
+    @Override
     public MutableMap<K, V> include(Map<K, V> that) {
         putAll(that);
         return this;
@@ -274,6 +290,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.remove(key);
     }
 
+    @Override
     public MutableMap<K, V> delete(K key) {
         remove(key);
         return this;
@@ -285,6 +302,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.remove(key, value);
     }
 
+    @Override
     public MutableMap<K, V> delete(K key, V value) {
         remove(key, value);
         return this;
@@ -296,6 +314,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.replace(key, value);
     }
 
+    @Override
     public MutableMap<K, V> replacing(K key, V value) {
         replace(key, value);
         return this;
@@ -307,6 +326,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.replace(key, oldValue, newValue);
     }
 
+    @Override
     public MutableMap<K, V> replacing(K key, V oldValue, V newValue) {
         replace(key, oldValue, newValue);
         return this;
@@ -348,6 +368,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         map.replaceAll(function);
     }
 
+    @Override
     public MutableMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
         replaceAll(function);
         return this;
@@ -398,6 +419,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> {
         return map.equals(obj);
     }
 
+    @Override
     public MutableMap<K, V> copy() {
         apply();
         MutableMap<K, V> r = new MutableMap<>(src, constructor, func);
