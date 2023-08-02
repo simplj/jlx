@@ -33,8 +33,18 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         this.applied = flag;
     }
 
+    public static <A> ImmutableSet<A> unit(Producer<Set<?>> constructor) {
+        return new ImmutableSet<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> ImmutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
         return new ImmutableSet<>(set, constructor);
+    }
+
+    @Override
+    final Set<T> set() {
+        alertIfNotApplied();
+        return set;
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -92,16 +102,6 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public Set<T> set() {
-        alertIfNotApplied();
-        return set;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -125,6 +125,15 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
     }
 
     /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public Set<T> toSet() {
+        return applied().set;
+    }
+
+    /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} set and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
      * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
@@ -135,9 +144,9 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         ImmutableSet<T> rest = ImmutableSet.wrap(constructor);
         for (T t : set) {
             if (c.evaluate(t)) {
-                match.add(t);
+                match.set.add(t);
             } else {
-                rest.add(t);
+                rest.set.add(t);
             }
         }
         return Tuple.of(match, rest);
@@ -192,85 +201,49 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
     }
 
     @Override
-    public boolean add(T t) {
-        alertIfNotApplied("include");
-        return set.add(t);
-    }
-
-    @Override
     public ImmutableSet<T> include(T val) {
         ImmutableSet<T> res = applied();
-        res.add(val);
+        res.set.add(val);
         return res;
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        alertIfNotApplied("include");
-        return set.addAll(c);
     }
 
     @Override
     public ImmutableSet<T> include(Collection<? extends T> c) {
         ImmutableSet<T> res = applied();
-        res.addAll(c);
+        res.set.addAll(c);
         return this;
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        alertIfNotApplied("delete");
-        return set.remove(o);
     }
 
     @Override
     public ImmutableSet<T> delete(T val) {
         ImmutableSet<T> res = applied();
-        res.remove(val);
+        res.set.remove(val);
         return this;
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        alertIfNotApplied("delete");
-        return set.removeAll(c);
     }
 
     @Override
     public ImmutableSet<T> delete(Collection<? extends T> c) {
         ImmutableSet<T> res = applied();
-        res.removeAll(c);
+        res.set.removeAll(c);
         return this;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        alertIfNotApplied("preserve");
-        return set.retainAll(c);
     }
 
     @Override
     public ImmutableSet<T> preserve(Collection<? extends T> c) {
         ImmutableSet<T> res = applied();
-        res.retainAll(c);
+        res.set.retainAll(c);
         return this;
     }
 
     @Override
-    public void clear() {
+    public ImmutableSet<T> empty() {
         alertIfNotApplied();
-        set.clear();
-    }
-
-    @Override
-    public boolean removeIf(Predicate<? super T> filter) {
-        alertIfNotApplied("deleteIf");
-        return set.removeIf(filter);
+        return new ImmutableSet<>(src, constructor, func);
     }
 
     public ImmutableSet<T> deleteIf(Predicate<? super T> filter) {
         ImmutableSet<T> res = applied();
-        res.removeIf(filter);
+        res.set.removeIf(filter);
         return res;
     }
 
@@ -313,10 +286,11 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
         return set.equals(obj);
     }
 
+    @Override
     public ImmutableSet<T> copy() {
         alertIfNotApplied();
         ImmutableSet<T> r = new ImmutableSet<>(src, constructor, func);
-        r.addAll(set);
+        r.set.addAll(set);
         return r;
     }
 
@@ -341,6 +315,6 @@ public class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
 
     @SuppressWarnings("unchecked")
     public static <A> ImmutableSet<A> wrap(Producer<Set<?>> constructor) {
-        return of((ImmutableSet<A>) constructor.produce(), constructor);
+        return of((Set<A>) constructor.produce(), constructor);
     }
 }

@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
+public class MutableList<T> extends FunctionalList<T, MutableList<T>> implements List<T> {
     private List<?> src;
     private List<T> list;
     private final Producer<List<?>> constructor;
@@ -34,8 +34,18 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
         this.applied = flag;
     }
 
+    public static <A> MutableList<A> unit(Producer<List<?>> constructor) {
+        return new MutableList<>(Util.cast(constructor.produce()), constructor);
+    }
+
     public static <A> MutableList<A> of(List<A> list, Producer<List<?>> constructor) {
         return new MutableList<>(list, constructor);
+    }
+
+    @Override
+    final List<T> list() {
+        apply();
+        return list;
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -119,16 +129,6 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public List<T> list() {
-        apply();
-        return list;
-    }
-
-    /**
      * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
      */
     @Override
@@ -144,6 +144,16 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
     public MutableList<T> applied() {
         apply();
         return this;
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     */
+    @Override
+    public List<T> toList() {
+        apply();
+        return list;
     }
 
     /**
@@ -327,6 +337,12 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
     }
 
     @Override
+    public MutableList<T> empty() {
+        clear();
+        return this;
+    }
+
+    @Override
     public T get(int index) {
         apply();
         return list.get(index);
@@ -440,6 +456,7 @@ public class MutableList<T> extends FunctionalList<T, MutableList<T>> {
         return list.equals(obj);
     }
 
+    @Override
     public MutableList<T> copy() {
         apply();
         MutableList<T> r = new MutableList<>(src, constructor, func);
