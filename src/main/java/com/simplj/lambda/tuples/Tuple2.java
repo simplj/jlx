@@ -5,6 +5,6 @@ public interface Tuple2<A, B> {
     B second();
 
     static <P, Q> Tuple2<P, Q> of(P first, Q second) {
-        return Tuple.of(first, second);
+        return new Couple<>(first, second);
     }
 }

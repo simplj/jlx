@@ -34,19 +34,19 @@ public final class Quadruple<A, B, C, D> implements Tuple4<A, B, C, D> {
     }
 
     public final <V> Quadruple<V, B, C, D> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third, fourth);
+        return new Quadruple<>(newVal, second, third, fourth);
     }
 
     public final <V> Quadruple<A, V, C, D> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third, fourth);
+        return new Quadruple<>(first, newVal, third, fourth);
     }
 
     public final <V> Quadruple<A, B, V, D> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal, fourth);
+        return new Quadruple<>(first, second, newVal, fourth);
     }
 
     public final <V> Quadruple<A, B, C, V> modifyFourth(V newVal) {
-        return Tuple.of(first, second, third, newVal);
+        return new Quadruple<>(first, second, third, newVal);
     }
 
     @Override

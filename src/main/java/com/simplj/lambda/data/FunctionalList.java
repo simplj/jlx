@@ -14,18 +14,40 @@ import java.util.stream.Stream;
 
 abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
 
-    abstract List<T> list();
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     * @throws IllegalStateException if not {@link #applied() applied}
+     */
+    public abstract List<T> list();
 
+    /**
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
+     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * @param c condition to evaluate against each element
+     * @return list containing elements which satisfies the condition `c`
+     */
     public abstract L filter(Condition<T> c);
 
     public abstract L filterOut(Condition<T> c);
 
+    /**
+     * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
+     */
     public abstract boolean isApplied();
 
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * @return &lt;code&gt;current instance&lt;/code&gt; if already &lt;code&gt;applied&lt;/code&gt; otherwise a &lt;code&gt;new instance&lt;/code&gt; with all the lazy functions applied
+     */
     public abstract L applied();
 
-    public abstract List<T> toList();
-
+    /**
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} list and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @param c condition based on which the elements will be segregated
+     * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @throws IllegalStateException if not {@link #applied() applied}
+     */
     public abstract Couple<L, L> split(Condition<T> c);
 
     public abstract int size();

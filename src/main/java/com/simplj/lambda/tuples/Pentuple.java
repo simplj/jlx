@@ -40,23 +40,23 @@ public final class Pentuple<A, B, C, D, E> implements Tuple5<A, B, C, D, E> {
     }
 
     public final <V> Pentuple<V, B, C, D, E> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third, fourth, fifth);
+        return new Pentuple<>(newVal, second, third, fourth, fifth);
     }
 
     public final <V> Pentuple<A, V, C, D, E> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third, fourth, fifth);
+        return new Pentuple<>(first, newVal, third, fourth, fifth);
     }
 
     public final <V> Pentuple<A, B, V, D, E> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal, fourth, fifth);
+        return new Pentuple<>(first, second, newVal, fourth, fifth);
     }
 
     public final <V> Pentuple<A, B, C, V, E> modifyFourth(V newVal) {
-        return Tuple.of(first, second, third, newVal, fifth);
+        return new Pentuple<>(first, second, third, newVal, fifth);
     }
 
     public final <V> Pentuple<A, B, C, D, V> modifyFifth(V newVal) {
-        return Tuple.of(first, second, third, fourth, newVal);
+        return new Pentuple<>(first, second, third, fourth, newVal);
     }
 
     @Override

@@ -22,11 +22,11 @@ public final class Couple<A, B> implements Tuple2<A, B> {
     }
 
     public final <V> Couple<V, B> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second);
+        return new Couple<>(newVal, second);
     }
 
     public final <V> Couple<A, V> modifySecond(V newVal) {
-        return Tuple.of(first, newVal);
+        return new Couple<>(first, newVal);
     }
 
     @Override

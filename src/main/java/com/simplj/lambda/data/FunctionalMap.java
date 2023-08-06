@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
+abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements Iterable<Map.Entry<K, V>> {
 
     abstract Map<K, V> map();
 
@@ -20,8 +20,11 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
     public abstract M filterOutByValue(Condition<V> c);
 
     public abstract boolean isApplied();
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
+     */
     public abstract M applied();
-    public abstract Map<K, V> toMap();
 
     public abstract Couple<M, M> split(BiFunction<K, V, Boolean> c);
     public abstract int size();
@@ -39,6 +42,7 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> {
     public abstract M delete(K key, V value);
     public abstract M replacing(K key, V value);
     public abstract M replacing(K key, V oldValue, V newValue);
+    public abstract M empty();
     public abstract Set<K> keySet();
     public abstract Collection<V> values();
     public abstract Set<Map.Entry<K, V>> entrySet();

@@ -6,45 +6,43 @@ import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
+import com.simplj.lambda.tuples.Tuple2;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> implements Map<K, V> {
-    private Map<?, ?> src;
-    private Map<K, V> map;
-    private final Producer<Map<?, ?>> constructor;
-    private BiFunction<Object, Object, ? extends Map<K, V>> func;
-    private final AtomicBoolean applied;
+public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> implements Map<K, V> {
+    Map<K, V> map;
+    final Producer<Map<?, ?>> constructor;
 
-    private MutableMap(Map<K, V> map, Producer<Map<?, ?>> cons) {
-        this(Collections.emptyMap(), map, cons, null, new AtomicBoolean(true));
-    }
-    private MutableMap(Map<?, ?> src, Producer<Map<?, ?>> cons, BiFunction<Object, Object, ? extends Map<K, V>> func) {
-        this(src, Util.cast(cons.produce()), cons, func, new AtomicBoolean(false));
-    }
-    public MutableMap(Map<?, ?> src, Map<K, V> map, Producer<Map<?, ?>> cons, BiFunction<Object, Object, ? extends Map<K, V>> func, AtomicBoolean flag) {
-        this.src = src;
+    private MutableMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
         this.map = map;
-        this.constructor = cons;
-        this.func = func;
-        this.applied = flag;
+        this.constructor = constructor;
+    }
+
+    public static <A, B> MutableMap<A, B> unit() {
+        return unit(HashMap::new);
     }
 
     public static <A, B> MutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
-        return new MutableMap<>(Util.cast(constructor.produce()), constructor);
+        return of(Util.cast(constructor.produce()), constructor);
     }
 
-    public static <A, B> MutableMap<A, B> of(Map<A, B> set, Producer<Map<?, ?>> constructor) {
-        return new MutableMap<>(set, constructor);
+    public static <A, B> MutableMap<A, B> of(Map<A, B> map) {
+        return of(map, HashMap::new);
     }
 
+    public static <A, B> MutableMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
+        return new MapFunctor<>(map, constructor, Pair::new, map);
+    }
+
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
+     */
     @Override
-    final Map<K, V> map() {
+    public final Map<K, V> map() {
         apply();
         return map;
     }
@@ -58,15 +56,9 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
      * @param f function to apply to each element.
      * @return resultant map after applying `f` to all the map elements
      */
-    public <A, B> MutableMap<A, B> map(BiFunction<K, V, Couple<A, B>> f) {
-        return flatmap(f.andThen(c -> Collections.singletonMap(c.first(), c.second())));
-    }
-    public <R> MutableMap<R, V> mapK(Function<K, R> f) {
-        return flatmapK(f.andThen(Collections::singleton));
-    }
-    public <R> MutableMap<K, R> mapV(Function<V, R> f) {
-        return flatmap((a, b) -> Collections.singletonMap(a, f.apply(b)));
-    }
+    public abstract <A, B> MutableMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
+    public abstract <R> MutableMap<R, V> mapK(Function<K, R> f);
+    public abstract <R> MutableMap<K, R> mapV(Function<V, R> f);
 
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; map&lt;R&gt;)&lt;/i&gt; to all the elements in the map and returns the resultant flattened map. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -76,33 +68,8 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
      * @param f function to apply to each element.
      * @return resultant map after applying `f` to all the map elements
      */
-    public <A, B> MutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f) {
-        MutableMap<A, B> res;
-        if (func == null) {
-            res = new MutableMap<>(map, constructor, f.composeFirst(Util::cast).composeSecond(Util::cast));
-        } else {
-            BiFunction<Object, Object, Map<A, B>> that = func.andThen(m -> {
-                Map<A, B> r = Util.cast(constructor.produce());
-                for (Entry<K, V> e : m.entrySet()) {
-                    r.putAll(f.apply(e.getKey(), e.getValue()));
-                }
-                return r;
-            });
-            res = new MutableMap<>(src, constructor, that);
-        }
-        return res;
-    }
-    public <R> MutableMap<R, V> flatmapK(Function<K, ? extends Set<R>> f) {
-        BiFunction<K, V, Map<R, V>> that = (a, b) -> {
-            Map<R, V> r = Util.cast(constructor.produce());
-            Set<R> keys = f.compose(Util::cast).apply(a);
-            for (R k : keys) {
-                r.put(k, b);
-            }
-            return r;
-        };
-        return flatmap(that);
-    }
+    public abstract <A, B> MutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
+    public abstract <R> MutableMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
 
     /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
@@ -110,27 +77,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
      * @param c condition to evaluate against each element
      * @return map containing elements which satisfies the condition `c`
      */
-    public MutableMap<K, V> filter(BiFunction<K, V, Boolean> c) {
-        if (func == null) {
-            func = (a, b) -> {
-                K k = Util.cast(a);
-                V v = Util.cast(b);
-                return c.apply(k, v) ? Collections.singletonMap(k, v) : Collections.emptyMap();
-            };
-        } else {
-            func = func.andThen(m -> {
-                Map<K, V> r = Util.cast(constructor.produce());
-                for (Entry<K, V> e : m.entrySet()) {
-                    if (c.apply(e.getKey(), e.getValue())) {
-                        r.put(e.getKey(), e.getValue());
-                    }
-                }
-                return r;
-            });
-        }
-        applied.set(false);
-        return this;
-    }
+    public abstract MutableMap<K, V> filter(BiFunction<K, V, Boolean> c);
     /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
@@ -159,27 +106,7 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
      */
     @Override
     public boolean isApplied() {
-        return applied.get();
-    }
-
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public MutableMap<K, V> applied() {
-        apply();
-        return this;
-    }
-
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return the underlying &lt;code&gt;map&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public Map<K, V> toMap() {
-        apply();
-        return map;
+        return map != null;
     }
 
     /**
@@ -189,8 +116,8 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
      */
     @Override
     public Couple<MutableMap<K, V>, MutableMap<K, V>> split(BiFunction<K, V, Boolean> c) {
-        MutableMap<K, V> match = MutableMap.wrap(constructor);
-        MutableMap<K, V> rest = MutableMap.wrap(constructor);
+        MutableMap<K, V> match = MutableMap.newInstance(constructor);
+        MutableMap<K, V> rest = MutableMap.newInstance(constructor);
         apply();
         for (Entry<K, V> t : map.entrySet()) {
             if (c.apply(t.getKey(), t.getValue())) {
@@ -339,6 +266,12 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     }
 
     @Override
+    public MutableMap<K, V> empty() {
+        clear();
+        return this;
+    }
+
+    @Override
     public Set<K> keySet() {
         apply();
         return map.keySet();
@@ -399,6 +332,24 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     }
 
     @Override
+    public Iterator<Entry<K, V>> iterator() {
+        apply();
+        return map.entrySet().iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Entry<K, V>> action) {
+        apply();
+        super.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Entry<K, V>> spliterator() {
+        apply();
+        return map.entrySet().spliterator();
+    }
+
+    @Override
     public String toString() {
         return isApplied() ? map.toString() : "(?=?)";
     }
@@ -413,8 +364,8 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     public boolean equals(Object obj) {
         apply();
         if (obj instanceof FunctionalMap) {
-            FunctionalMap<?, ?, ?> fSet = Util.cast(obj);
-            obj = fSet.map();
+            FunctionalMap<?, ?, ?> fMap = Util.cast(obj);
+            obj = fMap.map();
         }
         return map.equals(obj);
     }
@@ -422,26 +373,68 @@ public class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> impl
     @Override
     public MutableMap<K, V> copy() {
         apply();
-        MutableMap<K, V> r = new MutableMap<>(src, constructor, func);
+        MutableMap<K, V> r = newInstance(constructor);
         r.putAll(map);
         return r;
     }
 
     private void apply() {
         if (!isApplied()) {
-            Map<K, V> r = Util.cast(constructor.produce());
-            for (Entry<?, ?> e : src.entrySet()) {
-                r.putAll(func.apply(e.getKey(), e.getValue()));
-            }
-            map = r;
-            src = Collections.emptyMap();
-            func = null;
-            applied.set(true);
+            map = applied().map;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <A, B> MutableMap<A, B> wrap(Producer<Map<?, ?>> constructor) {
-        return of((MutableMap<A, B>) constructor.produce(), constructor);
+    public static <A, B> MutableMap<A, B> newInstance(Producer<Map<?, ?>> constructor) {
+        Map<A, B> map = Util.cast(constructor.produce());
+        return new MapFunctor<>(map, constructor, Pair::new, map);
+    }
+
+    private static final class MapFunctor<T, R, A, B> extends MutableMap<A, B> implements BiFunctor<T, R, A, B> {
+        private final Map<T, R> src;
+        private final BiFunction<T, R, Pair<A, B>> func;
+
+        MapFunctor(Map<T, R> map, Producer<Map<?, ?>> constructor, BiFunction<T, R, Pair<A, B>> f, Map<A, B> applied) {
+            super(applied, constructor);
+            this.src = map;
+            this.func = f;
+        }
+
+        public <C, D> MutableMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
+            return new MapFunctor<>(src, constructor, map(func, f), null);
+        }
+
+        @Override
+        public <C> MutableMap<C, B> mapK(Function<A, C> f) {
+            return new MapFunctor<>(src, constructor, mapK(func, f), null);
+        }
+
+        @Override
+        public <D> MutableMap<A, D> mapV(Function<B, D> f) {
+            return new MapFunctor<>(src, constructor, mapV(func, f), null);
+        }
+
+        public <C, D> MutableMap<C, D> flatmap(BiFunction<A, B, ? extends Map<C, D>> f) {
+            return new MapFunctor<>(src, constructor, flatmap(func, f), null);
+        }
+
+        public MutableMap<A, B> filter(BiFunction<A, B, Boolean> c) {
+            return new MapFunctor<>(src, constructor, filter(func, c), null);
+        }
+
+        @Override
+        public <C> MutableMap<C, B> flatmapK(Function<A, ? extends Set<C>> f) {
+            return new MapFunctor<>(src, constructor, flatmapK(func, f), null);
+        }
+
+        public final MapFunctor<A, B, A, B> applied() {
+            MapFunctor<A, B, A, B> res;
+            if (map == null) {
+                Map<A, B> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new MapFunctor<>(r, constructor, Pair::new, r);
+            } else {
+                res = new MapFunctor<>(map, constructor, Pair::new, map);
+            }
+            return res;
+        }
     }
 }
