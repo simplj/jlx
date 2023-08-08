@@ -46,27 +46,27 @@ public final class Hextuple<A, B, C, D, E, F> implements Tuple6<A, B, C, D, E, F
     }
 
     public final <V> Hextuple<V, B, C, D, E, F> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third, fourth, fifth, sixth);
+        return new Hextuple<>(newVal, second, third, fourth, fifth, sixth);
     }
 
     public final <V> Hextuple<A, V, C, D, E, F> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third, fourth, fifth, sixth);
+        return new Hextuple<>(first, newVal, third, fourth, fifth, sixth);
     }
 
     public final <V> Hextuple<A, B, V, D, E, F> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal, fourth, fifth, sixth);
+        return new Hextuple<>(first, second, newVal, fourth, fifth, sixth);
     }
 
     public final <V> Hextuple<A, B, C, V, E, F> modifyFourth(V newVal) {
-        return Tuple.of(first, second, third, newVal, fifth, sixth);
+        return new Hextuple<>(first, second, third, newVal, fifth, sixth);
     }
 
     public final <V> Hextuple<A, B, C, D, V, F> modifyFifth(V newVal) {
-        return Tuple.of(first, second, third, fourth, newVal, sixth);
+        return new Hextuple<>(first, second, third, fourth, newVal, sixth);
     }
 
     public final <V> Hextuple<A, B, C, D, E, V> modifySixth(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, newVal);
+        return new Hextuple<>(first, second, third, fourth, fifth, newVal);
     }
 
     @Override

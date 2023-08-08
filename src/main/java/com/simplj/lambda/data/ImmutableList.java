@@ -12,45 +12,34 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
-    private final List<?> src;
-    private final List<T> list;
-    private final Producer<List<?>> constructor;
-    private final Function<Object, ? extends List<T>> func;
-    private final boolean applied;
+public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
+    final List<T> list;
+    final Producer<List<?>> constructor;
 
-    private ImmutableList(List<T> list, Producer<List<?>> cons) {
-        this(Collections.emptyList(), list, cons, null, true);
-    }
-    private ImmutableList(List<?> src, Producer<List<?>> cons, Function<Object, ? extends List<T>> func) {
-        this(src, Util.cast(cons.produce()), cons, func, false);
-    }
-    private ImmutableList(List<?> src, List<T> list, Producer<List<?>> cons, Function<Object, ? extends List<T>> func, boolean flag) {
-        this.src = src;
+    protected ImmutableList(List<T> list, Producer<List<?>> constructor) {
         this.list = list;
-        this.constructor = cons;
-        this.func = func;
-        this.applied = flag;
+        this.constructor = constructor;
     }
 
-    public static <A> ImmutableList<A> unit(Producer<List<?>> constructor) {
-        return new ImmutableList<>(Util.cast(constructor.produce()), constructor);
+    public static <R> ImmutableList<R> unit() {
+        return unit(LinkedList::new);
     }
 
-    public static <A> ImmutableList<A> of(List<A> list, Producer<List<?>> constructor) {
-        return new ImmutableList<>(list, constructor);
+    public static <R> ImmutableList<R> unit(Producer<List<?>> constructor) {
+        return of(Util.cast(constructor.produce()), constructor);
     }
 
-    @Override
-    final List<T> list() {
-        alertIfNotApplied();
-        return list;
+    public static <R> ImmutableList<R> of(List<R> list) {
+        return of(list, LinkedList::new);
     }
 
-    /* ------------------- START: Lazy methods ------------------- */
+    public static <R> ImmutableList<R> of(List<R> list, Producer<List<?>> constructor) {
+        return new ListFunctor<>(list, constructor, Data::new, list);
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
      * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
@@ -58,12 +47,10 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public <R> ImmutableList<R> map(Function<T, R> f) {
-        return flatmap(f.andThen(Collections::singletonList));
-    }
+    public abstract <R> ImmutableList<R> map(Function<T, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
      * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
@@ -71,26 +58,7 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f) {
-        ImmutableList<R> res;
-        if (func == null) {
-            res = new ImmutableList<>(list, constructor, f.compose(Util::cast));
-        } else {
-            res = new ImmutableList<>(src, constructor, func.andThen(l -> apply(l, f.compose(Util::cast))));
-        }
-        return res;
-    }
-
-    /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
-     * @param c condition to evaluate against each element
-     * @return list containing elements which satisfies the condition `c`
-     */
-    @Override
-    public ImmutableList<T> filter(Condition<T> c) {
-        return flatmap(t -> c.evaluate(t) ? Collections.singletonList(t) : Collections.emptyList());
-    }
+    public abstract <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f);
 
     /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
@@ -104,51 +72,22 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
     /* ------------------- END: Lazy methods ------------------- */
 
-    /**
-     * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
-     */
     @Override
-    public boolean isApplied() {
-        return applied;
-    }
-
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; if already &lt;code&gt;applied&lt;/code&gt; otherwise a &lt;code&gt;new instance&lt;/code&gt; with all the lazy functions applied
-     */
-    @Override
-    public ImmutableList<T> applied() {
-        ImmutableList<T> res;
-        if (isApplied()) {
-            res = this;
-        } else {
-            res = new ImmutableList<>(apply(src, func), constructor);
-        }
-        return res;
-    }
-
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
-     * @throws IllegalStateException if not {@link #applied() applied}
-     */
-    @Override
-    public List<T> toList() {
+    public final List<T> list() {
         return applied().list;
     }
 
-    /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} list and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
-     * @param c condition based on which the elements will be segregated
-     * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
-     * @throws IllegalStateException if not {@link #applied() applied}
-     */
+    @Override
+    public boolean isApplied() {
+        return list != null;
+    }
+
     @Override
     public Couple<ImmutableList<T>, ImmutableList<T>> split(Condition<T> c) {
-        alertIfNotApplied();
-        ImmutableList<T> match = ImmutableList.wrap(constructor);
-        ImmutableList<T> rest = ImmutableList.wrap(constructor);
-        for (T t : list) {
+        ImmutableList<T> match = ImmutableList.newInstance(constructor);
+        ImmutableList<T> rest = ImmutableList.newInstance(constructor);
+        ImmutableList<T> l = applied();
+        for (T t : l) {
             if (c.evaluate(t)) {
                 match.list.add(t);
             } else {
@@ -159,49 +98,42 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     }
 
     public ImmutableList<Couple<Integer, T>> indexedList() {
-        return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>wrap(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
+        return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>newInstance(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
     public int size() {
-        alertIfNotApplied();
-        return list.size();
+        return list().size();
     }
 
     @Override
     public boolean isEmpty() {
-        alertIfNotApplied();
-        return list.isEmpty();
+        return list().isEmpty();
     }
 
     @Override
     public boolean contains(Object o) {
-        alertIfNotApplied();
-        return list.contains(o);
+        return list().contains(o);
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        alertIfNotApplied();
-        return list.containsAll(c);
+        return list().containsAll(c);
     }
 
     @Override
     public Iterator<T> iterator() {
-        alertIfNotApplied();
-        return list.iterator();
+        return list().iterator();
     }
 
     @Override
     public Object[] toArray() {
-        alertIfNotApplied();
-        return list.toArray();
+        return list().toArray();
     }
 
     @Override
     public <T1> T1[] toArray(T1[] a) {
-        alertIfNotApplied();
-        return list.toArray(a);
+        return list().toArray(a);
     }
 
     @Override
@@ -269,50 +201,42 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
 
     @Override
     public ImmutableList<T> empty() {
-        alertIfNotApplied();
-        return new ImmutableList<>(src, constructor, func);
+        return newInstance(constructor);
     }
 
     @Override
     public T get(int index) {
-        alertIfNotApplied();
-        return list.get(index);
+        return list().get(index);
     }
 
     @Override
     public int indexOf(Object o) {
-        alertIfNotApplied();
-        return list.indexOf(o);
+        return list().indexOf(o);
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        alertIfNotApplied();
-        return list.lastIndexOf(o);
+        return list().lastIndexOf(o);
     }
 
     @Override
     public ListIterator<T> listIterator() {
-        alertIfNotApplied();
-        return list.listIterator();
+        return list().listIterator();
     }
 
     @Override
     public ListIterator<T> listIterator(int index) {
-        alertIfNotApplied();
-        return list.listIterator(index);
+        return list().listIterator(index);
     }
 
     @Override
     public Spliterator<T> spliterator() {
-        alertIfNotApplied();
-        return list.spliterator();
+        return list().spliterator();
     }
 
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        alertIfNotApplied();
-        return list.subList(fromIndex, toIndex);
+        return list().subList(fromIndex, toIndex);
     }
 
     @Override
@@ -338,67 +262,84 @@ public class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
 
     @Override
     public Stream<T> stream() {
-        alertIfNotApplied();
-        return list.stream();
+        return list().stream();
     }
 
     @Override
     public Stream<T> parallelStream() {
-        alertIfNotApplied();
-        return list.parallelStream();
+        return list().parallelStream();
     }
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        alertIfNotApplied();
-        list.forEach(action);
+        list().forEach(action);
     }
 
     @Override
     public String toString() {
-        return isApplied() ? list.toString() : "[?]";
+        return isApplied() ? list().toString() : "[?]";
     }
 
     @Override
     public int hashCode() {
-        alertIfNotApplied();
-        return list.hashCode();
+        return list().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        alertIfNotApplied();
         if (obj instanceof FunctionalList) {
             FunctionalList<?, ?> fList = Util.cast(obj);
             obj = fList.list();
         }
-        return list.equals(obj);
+        return list().equals(obj);
     }
 
     @Override
     public ImmutableList<T> copy() {
-        alertIfNotApplied();
-        ImmutableList<T> r = new ImmutableList<>(src, constructor, func);
+        ImmutableList<T> r = newInstance(constructor);
         r.list.addAll(list);
         return r;
     }
 
-    private void alertIfNotApplied() {
-        if (!isApplied()) {
-            throw new IllegalStateException("Immutable List not yet `applied`! Consider calling `applied()` before this api");
-        }
+    private static <A> ImmutableList<A> newInstance(Producer<List<?>> constructor) {
+        List<A> list = Util.cast(constructor.produce());
+        return new ListFunctor<>(list, constructor, Data::new, list);
     }
 
-    private <R> List<R> apply(List<?> l, Function<Object, ? extends List<R>> f) {
-        List<R> r = Util.cast(constructor.produce());
-        for (Object o : l) {
-            r.addAll(f.apply(o));
-        }
-        return r;
-    }
+    private static final class ListFunctor<A, T> extends ImmutableList<T> implements Functor<A, T> {
+        private final List<A> src;
+        private final Function<A, Data<T>> func;
 
-    @SuppressWarnings("unchecked")
-    public static <A> ImmutableList<A> wrap(Producer<List<?>> constructor) {
-        return of((List<A>) constructor.produce(), constructor);
+        ListFunctor(List<A> list, Producer<List<?>> constructor, Function<A, Data<T>> f, List<T> applied) {
+            super(applied, constructor);
+            this.src = list;
+            this.func = f;
+        }
+
+        @Override
+        public <R> ImmutableList<R> map(Function<T, R> f) {
+            return new ListFunctor<>(src, constructor, map(func, f), null);
+        }
+
+        @Override
+        public <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f) {
+            return new ListFunctor<>(src, constructor, flatmap(func, f), null);
+        }
+
+        @Override
+        public ImmutableList<T> filter(Condition<T> c) {
+            return new ListFunctor<>(src, constructor, filter(func, c), null);
+        }
+
+        public final ListFunctor<T, T> applied() {
+            ListFunctor<T, T> res;
+            if (list == null) {
+                List<T> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new ListFunctor<>(r, constructor, Data::new, r);
+            } else {
+                res = new ListFunctor<>(list, constructor, Data::new, list);
+            }
+            return res;
+        }
     }
 }

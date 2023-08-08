@@ -7,42 +7,41 @@ import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
-    private Set<?> src;
-    private Set<T> set;
-    private final Producer<Set<?>> constructor;
-    private Function<Object, ? extends Set<T>> func;
-    private final AtomicBoolean applied;
+public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
+    Set<T> set;
+    final Producer<Set<?>> constructor;
 
-    private MutableSet(Set<T> set, Producer<Set<?>> cons) {
-        this(Collections.emptySet(), set, cons, null, new AtomicBoolean(true));
-    }
-    private MutableSet(Set<?> src, Producer<Set<?>> cons, Function<Object, ? extends Set<T>> func) {
-        this(src, Util.cast(cons.produce()), cons, func, new AtomicBoolean(false));
-    }
-    private MutableSet(Set<?> src, Set<T> set, Producer<Set<?>> cons, Function<Object, ? extends Set<T>> func, AtomicBoolean flag) {
-        this.src = src;
+    private MutableSet(Set<T> set, Producer<Set<?>> constructor) {
         this.set = set;
-        this.constructor = cons;
-        this.func = func;
-        this.applied = flag;
+        this.constructor = constructor;
+    }
+
+    public static <A> MutableSet<A> unit() {
+        return unit(HashSet::new);
     }
 
     public static <A> MutableSet<A> unit(Producer<Set<?>> constructor) {
-        return new MutableSet<>(Util.cast(constructor.produce()), constructor);
+        return of(Util.cast(constructor.produce()), constructor);
+    }
+
+    public static <A> MutableSet<A> of(Set<A> set) {
+        return of(set, HashSet::new);
     }
 
     public static <A> MutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
-        return new MutableSet<>(set, constructor);
+        return new SetFunctor<>(set, constructor, Data::new, set);
     }
 
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
+     */
     @Override
-    final Set<T> set() {
+    public final Set<T> set() {
         apply();
         return set;
     }
@@ -57,9 +56,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public <R> MutableSet<R> map(Function<T, R> f) {
-        return flatmap(f.andThen(Collections::singleton));
-    }
+    public abstract <R> MutableSet<R> map(Function<T, R> f);
 
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; set&lt;R&gt;)&lt;/i&gt; to all the elements in the set and returns the resultant flattened set. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
@@ -70,22 +67,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f) {
-        MutableSet<R> res;
-        if (func == null) {
-            res = new MutableSet<>(set, constructor, f.compose(Util::cast));
-        } else {
-            Function<Object, Set<R>> that = func.andThen(s -> {
-                Set<R> r = Util.cast(constructor.produce());
-                for (T t : s) {
-                    r.addAll(f.apply(t));
-                }
-                return r;
-            });
-            res = new MutableSet<>(src, constructor, that);
-        }
-        return res;
-    }
+    public abstract <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
 
     /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
@@ -93,26 +75,7 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
      * @param c condition to evaluate against each element
      * @return set containing elements which satisfies the condition `c`
      */
-    public MutableSet<T> filter(Condition<T> c) {
-        if (func == null) {
-            func = o -> {
-                T t = Util.cast(o);
-                return c.evaluate(t) ? Collections.singleton(t) : Collections.emptySet();
-            };
-        } else {
-            func = func.andThen(l -> {
-                Set<T> r = Util.cast(constructor.produce());
-                for (T t : l) {
-                    if (c.evaluate(t)) {
-                        r.add(t);
-                    }
-                }
-                return r;
-            });
-        }
-        applied.set(false);
-        return this;
-    }
+    public abstract MutableSet<T> filter(Condition<T> c);
 
     /**
      * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
@@ -130,27 +93,13 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
      */
     @Override
     public boolean isApplied() {
-        return applied.get();
+        return set != null;
     }
 
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
-     */
     @Override
     public MutableSet<T> applied() {
         apply();
         return this;
-    }
-
-    /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
-     */
-    @Override
-    public Set<T> toSet() {
-        apply();
-        return set;
     }
 
     /**
@@ -159,8 +108,8 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
      * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;MutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      */
     public Couple<MutableSet<T>, MutableSet<T>> split(Condition<T> c) {
-        MutableSet<T> match = MutableSet.wrap(constructor);
-        MutableSet<T> rest = MutableSet.wrap(constructor);
+        MutableSet<T> match = MutableSet.newInstance(constructor);
+        MutableSet<T> rest = MutableSet.newInstance(constructor);
         apply();
         for (T t : set) {
             if (c.evaluate(t)) {
@@ -345,26 +294,56 @@ public class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Se
     @Override
     public MutableSet<T> copy() {
         apply();
-        MutableSet<T> r = new MutableSet<>(src, constructor, func);
+        MutableSet<T> r = newInstance(constructor);
         r.addAll(set);
         return r;
     }
 
     private void apply() {
         if (!isApplied()) {
-            Set<T> r = Util.cast(constructor.produce());
-            for (Object o : src) {
-                r.addAll(func.apply(o));
-            }
-            set = r;
-            src = Collections.emptySet();
-            func = null;
-            applied.set(true);
+            set = applied().set;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <A> MutableSet<A> wrap(Producer<Set<?>> constructor) {
-        return of((MutableSet<A>) constructor.produce(), constructor);
+    public static <A> MutableSet<A> newInstance(Producer<Set<?>> constructor) {
+        Set<A> set = Util.cast(constructor.produce());
+        return new SetFunctor<>(set, constructor, Data::new, set);
+    }
+
+    private static final class SetFunctor<A, T> extends MutableSet<T> implements Functor<A, T> {
+        private final Set<A> src;
+        private final Function<A, Data<T>> func;
+
+        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, Data<T>> f, Set<T> applied) {
+            super(applied, constructor);
+            this.src = set;
+            this.func = f;
+        }
+
+        @Override
+        public <R> MutableSet<R> map(Function<T, R> f) {
+            return new SetFunctor<>(src, constructor, map(func, f), null);
+        }
+
+        @Override
+        public <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f) {
+            return new SetFunctor<>(src, constructor, flatmap(func, f), null);
+        }
+
+        @Override
+        public MutableSet<T> filter(Condition<T> c) {
+            return new SetFunctor<>(src, constructor, filter(func, c), null);
+        }
+
+        public final SetFunctor<T, T> applied() {
+            SetFunctor<T, T> res;
+            if (set == null) {
+                Set<T> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new SetFunctor<>(r, constructor, Data::new, r);
+            } else {
+                res = new SetFunctor<>(set, constructor, Data::new, set);
+            }
+            return res;
+        }
     }
 }

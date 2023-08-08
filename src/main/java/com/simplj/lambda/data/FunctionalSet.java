@@ -5,16 +5,13 @@ import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.tuples.Couple;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterable<T> {
 
-    abstract Set<T> set();
+    public abstract Set<T> set();
 
     public abstract S filter(Condition<T> c);
 
@@ -22,9 +19,11 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterab
 
     public abstract boolean isApplied();
 
+    /**
+     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
+     */
     public abstract S applied();
-
-    public abstract Set<T> toSet();
 
     public abstract Couple<S, S> split(Condition<T> c);
 

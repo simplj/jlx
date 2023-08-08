@@ -14,4 +14,8 @@ public interface Provider<R> {
     default <X> Executable<X, R> toExecutable() {
         return x -> provide();
     }
+
+    static <T> Provider<T> wrap(T val) {
+        return () -> val;
+    }
 }
