@@ -52,31 +52,31 @@ public final class Septuple<A, B, C, D, E, F, G> implements Tuple7<A, B, C, D, E
     }
 
     public final <V> Septuple<V, B, C, D, E, F, G> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third, fourth, fifth, sixth, seventh);
+        return new Septuple<>(newVal, second, third, fourth, fifth, sixth, seventh);
     }
 
     public final <V> Septuple<A, V, C, D, E, F, G> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third, fourth, fifth, sixth, seventh);
+        return new Septuple<>(first, newVal, third, fourth, fifth, sixth, seventh);
     }
 
     public final <V> Septuple<A, B, V, D, E, F, G> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal, fourth, fifth, sixth, seventh);
+        return new Septuple<>(first, second, newVal, fourth, fifth, sixth, seventh);
     }
 
     public final <V> Septuple<A, B, C, V, E, F, G> modifyFourth(V newVal) {
-        return Tuple.of(first, second, third, newVal, fifth, sixth, seventh);
+        return new Septuple<>(first, second, third, newVal, fifth, sixth, seventh);
     }
 
     public final <V> Septuple<A, B, C, D, V, F, G> modifyFifth(V newVal) {
-        return Tuple.of(first, second, third, fourth, newVal, sixth, seventh);
+        return new Septuple<>(first, second, third, fourth, newVal, sixth, seventh);
     }
 
     public final <V> Septuple<A, B, C, D, E, V, G> modifySixth(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, newVal, seventh);
+        return new Septuple<>(first, second, third, fourth, fifth, newVal, seventh);
     }
 
     public final <V> Septuple<A, B, C, D, E, F, V> modifySeventh(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, sixth, newVal);
+        return new Septuple<>(first, second, third, fourth, fifth, sixth, newVal);
     }
 
     @Override

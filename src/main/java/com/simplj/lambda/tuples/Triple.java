@@ -28,15 +28,15 @@ public final class Triple<A, B, C> implements Tuple3<A, B, C> {
     }
 
     public final <V> Triple<V, B, C> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third);
+        return new Triple<>(newVal, second, third);
     }
 
     public final <V> Triple<A, V, C> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third);
+        return new Triple<>(first, newVal, third);
     }
 
     public final <V> Triple<A, B, V> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal);
+        return new Triple<>(first, second, newVal);
     }
 
     @Override

@@ -54,35 +54,35 @@ public final class Octuple<A, B, C, D, E, F, G, H> implements Tuple8<A, B, C, D,
     }
 
     public final <V> Octuple<V, B, C, D, E, F, G, H> modifyFirst(V newVal) {
-        return Tuple.of(newVal, second, third, fourth, fifth, sixth, seventh, eighth);
+        return new Octuple<>(newVal, second, third, fourth, fifth, sixth, seventh, eighth);
     }
 
     public final <V> Octuple<A, V, C, D, E, F, G, H> modifySecond(V newVal) {
-        return Tuple.of(first, newVal, third, fourth, fifth, sixth, seventh, eighth);
+        return new Octuple<>(first, newVal, third, fourth, fifth, sixth, seventh, eighth);
     }
 
     public final <V> Octuple<A, B, V, D, E, F, G, H> modifyThird(V newVal) {
-        return Tuple.of(first, second, newVal, fourth, fifth, sixth, seventh, eighth);
+        return new Octuple<>(first, second, newVal, fourth, fifth, sixth, seventh, eighth);
     }
 
     public final <V> Octuple<A, B, C, V, E, F, G, H> modifyFourth(V newVal) {
-        return Tuple.of(first, second, third, newVal, fifth, sixth, seventh, eighth);
+        return new Octuple<>(first, second, third, newVal, fifth, sixth, seventh, eighth);
     }
 
     public final <V> Octuple<A, B, C, D, V, F, G, H> modifyFifth(V newVal) {
-        return Tuple.of(first, second, third, fourth, newVal, sixth, seventh, eighth);
+        return new Octuple<>(first, second, third, fourth, newVal, sixth, seventh, eighth);
     }
 
     public final <V> Octuple<A, B, C, D, E, V, G, H> modifySixth(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, newVal, seventh, eighth);
+        return new Octuple<>(first, second, third, fourth, fifth, newVal, seventh, eighth);
     }
 
     public final <V> Octuple<A, B, C, D, E, F, V, H> modifySeventh(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, sixth, newVal, eighth);
+        return new Octuple<>(first, second, third, fourth, fifth, sixth, newVal, eighth);
     }
 
     public final <V> Octuple<A, B, C, D, E, F, G, V> modifyEighth(V newVal) {
-        return Tuple.of(first, second, third, fourth, fifth, sixth, seventh, newVal);
+        return new Octuple<>(first, second, third, fourth, fifth, sixth, seventh, newVal);
     }
 
     @Override
