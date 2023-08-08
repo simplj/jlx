@@ -10,7 +10,7 @@ import java.util.Set;
 
 abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements Iterable<Map.Entry<K, V>> {
 
-    abstract Map<K, V> map();
+    public abstract Map<K, V> map();
 
     public abstract M filter(BiFunction<K, V, Boolean> c);
     public abstract M filterOut(BiFunction<K, V, Boolean> c);

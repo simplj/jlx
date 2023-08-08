@@ -49,7 +49,7 @@ interface BiFunctor<K, V, A, B> {
             Pair.Node<A, B> n = d.head();
             while (n != null) {
                 Map<T, R> l = b.apply(n.key(), n.val());
-                l.forEach((k, v) -> r.add(Tuple2.of(k, v)));
+                l.forEach(r::add);
                 n = n.next();
             }
             return r;
@@ -62,7 +62,7 @@ interface BiFunctor<K, V, A, B> {
             while (n != null) {
                 Set<T> l = b.apply(n.key());
                 for (T t : l) {
-                    r.add(Tuple2.of(t, n.val()));
+                    r.add(t, n.val());
                 }
                 n = n.next();
             }
@@ -89,7 +89,6 @@ interface BiFunctor<K, V, A, B> {
     }
 
     default Map<A, B> apply(Map<K, V> src, BiFunction<K, V, Pair<A, B>> func, Map<A, B> r) {
-        long s = System.currentTimeMillis();
         for (Map.Entry<K, V> e : src.entrySet()) {
             Pair.Node<A, B> fh = func.apply(e.getKey(), e.getValue()).head();
             while (fh != null) {
@@ -97,7 +96,6 @@ interface BiFunctor<K, V, A, B> {
                 fh = fh.next();
             }
         }
-        System.out.println("Application Time: " + (System.currentTimeMillis() - s) + " ms");
         return r;
     }
 }

@@ -53,7 +53,6 @@ interface Functor<A, T> {
     }
 
     default <R extends Collection<T>> R apply(Collection<A> src, Function<A, Data<T>> func, R r) {
-        long s = System.currentTimeMillis();
         for (A a : src) {
             Data.Node<T> fh = func.apply(a).head();
             while (fh != null) {
@@ -61,7 +60,6 @@ interface Functor<A, T> {
                 fh = fh.next();
             }
         }
-        System.out.println("Application Time: " + (System.currentTimeMillis() - s) + " ms");
         return r;
     }
 }

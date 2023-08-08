@@ -14,4 +14,8 @@ public interface Producer<R> {
     default Function<Void, R> toFunction() {
         return x -> produce();
     }
+
+    static <T> Producer<T> wrap(T val) {
+        return () -> val;
+    }
 }
