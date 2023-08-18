@@ -1,10 +1,25 @@
 package com.simplj.lambda.executable;
 
+import com.simplj.lambda.function.TriFunction;
+import com.simplj.lambda.util.Either;
+
 import java.util.Objects;
 
 @FunctionalInterface
 public interface TriExecutable<A, B, C, R> {
     R execute(A inpA, B inpB, C inpC) throws Exception;
+
+    default TriFunction<A, B, C, Either<Exception, R>> pure() {
+        return (A a, B b, C c) -> {
+            Either<Exception, R> res;
+            try {
+                res = Either.right(execute(a, b, c));
+            } catch (Exception ex) {
+                res = Either.left(ex);
+            }
+            return res;
+        };
+    }
 
     default <T> TriExecutable<T, B, C, R> composeFirst(Executable<T, A> f) {
         Objects.requireNonNull(f);

@@ -1,4 +1,4 @@
-package com.simplj.lambda.data.monadic;
+package com.simplj.lambda.monadic;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;

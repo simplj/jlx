@@ -15,7 +15,7 @@ public interface Producer<R> {
         return x -> produce();
     }
 
-    static <T> Producer<T> wrap(T val) {
+    static <T> Producer<T> defer(T val) {
         return () -> val;
     }
 }

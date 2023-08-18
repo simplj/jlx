@@ -28,12 +28,7 @@ class Pair<T, R> {
     }
 
     void add(Tuple2<T, R> t) {
-        if (head == null) {
-            head = new Node<>(t.first(), t.second());
-            last = head;
-        } else {
-            last = linkAfter(last, t.first(), t.second());
-        }
+        add(t.first(), t.second());
     }
 
     Node<T, R> linkAfter(Node<T, R> node, T key, R val) {
