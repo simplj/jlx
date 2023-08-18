@@ -65,7 +65,7 @@ public class Functor<A> {
             } catch (Exception ex) {
                 e = Either.left(ex);
             }
-            return new Functor<>(func, e);
+            return new Functor<>(e.isRight() ? Provider.defer(e) : func, e);
         }
         return this;
     }
