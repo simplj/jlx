@@ -1,8 +1,23 @@
 package com.simplj.lambda.executable;
 
+import com.simplj.lambda.function.BiFunction;
+import com.simplj.lambda.util.Either;
+
 @FunctionalInterface
 public interface BiExecutable<A, B, R> {
     R execute(A inpA, B inpB) throws Exception;
+
+    default BiFunction<A, B, Either<Exception, R>> pure() {
+        return (A a, B b) -> {
+            Either<Exception, R> res;
+            try {
+                res = Either.right(execute(a, b));
+            } catch (Exception ex) {
+                res = Either.left(ex);
+            }
+            return res;
+        };
+    }
 
     default <T> BiExecutable<T, B, R> composeFirst(Executable<T, A> f) {
         return (t, b) -> execute(f.execute(t), b);

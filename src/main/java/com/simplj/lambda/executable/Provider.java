@@ -15,7 +15,7 @@ public interface Provider<R> {
         return x -> provide();
     }
 
-    static <T> Provider<T> wrap(T val) {
+    static <T> Provider<T> defer(T val) {
         return () -> val;
     }
 }
