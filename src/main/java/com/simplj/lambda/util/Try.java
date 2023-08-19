@@ -48,15 +48,6 @@ public class Try<A> {
     }
 
     private static void noOp(Exception ex) {
-        Try.guard(() -> Thread.sleep(1000)).log(e -> System.out.println(e.getMessage())).execute();
-        //or
-        Try.guard(() -> Thread.sleep(1000)).execute();
-        //or
-        Either<Exception, Integer> e = Try.guard(() -> unsafeMethod()).result();
         //No Op
-    }
-
-    private static int unsafeMethod() {
-
     }
 }
