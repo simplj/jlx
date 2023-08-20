@@ -8,7 +8,7 @@ import com.simplj.lambda.function.Function;
 public class State<A> {
     private final Either<Exception, A> value;
 
-    State(Either<Exception, A> v) {
+    private State(Either<Exception, A> v) {
         this.value = v;
     }
 

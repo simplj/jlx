@@ -5,11 +5,11 @@ import com.simplj.lambda.function.Function;
 public class MutableState<A> {
     private volatile A value;
 
-    MutableState(A v) {
+    private MutableState(A v) {
         this.value = v;
     }
 
-    public static <T> MutableState<T> arg(T val) {
+    public static <T> MutableState<T> of(T val) {
         return new MutableState<>(val);
     }
 
@@ -24,6 +24,10 @@ public class MutableState<A> {
 
     public MutableState<A> mutate(Function<A, A> f) {
         return set(f.apply(value));
+    }
+
+    public <R> MutableState<R> change(Function<A, R> f) {
+        return new MutableState<>(f.apply(value));
     }
 
     @Override
