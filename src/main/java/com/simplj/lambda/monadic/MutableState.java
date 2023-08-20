@@ -26,10 +26,6 @@ public class MutableState<A> {
         return set(f.apply(value));
     }
 
-    public MutableState<A> flatMutate(Function<A, MutableState<A>> f) {
-        return set(f.apply(value).value);
-    }
-
     @Override
     public String toString() {
         return String.valueOf(value);
