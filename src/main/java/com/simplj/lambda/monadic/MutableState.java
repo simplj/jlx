@@ -26,7 +26,7 @@ public class MutableState<A> {
         return set(f.apply(value));
     }
 
-    public MutableState<A> flatmap(Function<A, MutableState<A>> f) {
+    public MutableState<A> flatMutate(Function<A, MutableState<A>> f) {
         return set(f.apply(value).value);
     }
 
