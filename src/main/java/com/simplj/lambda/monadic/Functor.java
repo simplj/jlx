@@ -69,4 +69,29 @@ public class Functor<A> {
         }
         return this;
     }
+
+    @Override
+    public String toString() {
+        return result == null ? "Functor[?]" : result.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (result == null) {
+            throw new IllegalStateException("Functor must be `applied` before calling `equals` method!");
+        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Functor<?> that = (Functor<?>) o;
+        return this.result.equals(that.result);
+    }
+
+    @Override
+    public int hashCode() {
+        if (result == null) {
+            throw new IllegalStateException("Functor must be `applied` before calling `hashcode` method!");
+        }
+        return result.hashCode();
+    }
 }
