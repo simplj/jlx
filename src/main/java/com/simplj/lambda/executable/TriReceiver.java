@@ -48,4 +48,10 @@ public interface TriReceiver<A, B, C> {
             return c;
         };
     }
+    default TriExecutable<A, B, C, Void> toExecutable() {
+        return (a, b, c) -> {
+            receive(a, b, c);
+            return null;
+        };
+    }
 }
