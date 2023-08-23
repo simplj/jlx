@@ -4,7 +4,7 @@ import com.simplj.lambda.function.Condition;
 
 import java.util.Collection;
 
-class Util {
+public final class Util {
 
     static <T> T find(Collection<T> source, Condition<T> c) {
         T res = null;
@@ -18,7 +18,7 @@ class Util {
     }
 
     @SuppressWarnings("unchecked")
-    static <R> R cast(Object o) {
+    public static <R> R cast(Object o) {
         return (R) o;
     }
 }

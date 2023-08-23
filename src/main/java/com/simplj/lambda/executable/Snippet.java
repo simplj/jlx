@@ -4,10 +4,16 @@ package com.simplj.lambda.executable;
 public interface Snippet {
     void execute() throws Exception;
 
-    default <X, Y> Executable<X, Y> toExecutable() {
+    default <X> Executable<X, Void> toExecutable() {
         return x -> {
             execute();
             return null;
+        };
+    }
+    default <X> Executable<X, X> yield() {
+        return x -> {
+            execute();
+            return x;
         };
     }
 
