@@ -35,9 +35,6 @@ public interface QuadFunction<A, B, C, D, R> {
     default BiFunction<C, D, R> partial(A a, B b) {
         return (c, d) -> apply(a, b, c, d);
     }
-    /*
-    TODO: Instead of partial(a, b, c), ap(a).ap(b).ap(c)
-     */
     default Function<D, R> partial(A a, B b, C c) {
         return d -> apply(a, b, c, d);
     }
