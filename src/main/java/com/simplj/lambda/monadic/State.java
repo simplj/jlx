@@ -4,6 +4,7 @@ import com.simplj.lambda.util.Either;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Receiver;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.util.Try;
 
 public class State<A> {
     private final Either<Exception, A> value;
@@ -35,11 +36,7 @@ public class State<A> {
     public <R> State<R> flatmap(Executable<A, State<R>> f) {
         State<R> res;
         if (value.isRight()) {
-            try {
-                res = f.execute(value.right());
-            } catch (Exception ex) {
-                res = new State<>(Either.left(ex));
-            }
+            res = Try.execute(() -> f.execute(value.right())).recover(e -> new State<>(Either.left(e))).result().right();
         } else {
             res = new State<>(Either.left(value.left()));
         }

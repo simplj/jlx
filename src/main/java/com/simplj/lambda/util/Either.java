@@ -1,5 +1,7 @@
 package com.simplj.lambda.util;
 
+import com.simplj.lambda.function.Function;
+
 import java.util.Objects;
 
 public class Either<L, R> {
@@ -32,6 +34,19 @@ public class Either<L, R> {
     }
     public R right() {
         return right;
+    }
+
+    public <A> Either<L, A> map(Function<R, A> f) {
+        return flatmap(f.andThen(Either::right));
+    }
+    public <A> Either<L, A> flatmap(Function<R, Either<L, A>> f) {
+        Either<L, A> res;
+        if (isRight()) {
+            res = f.apply(right);
+        } else {
+            res = left(left);
+        }
+        return res;
     }
 
     @Override
