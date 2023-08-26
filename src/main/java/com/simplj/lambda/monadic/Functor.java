@@ -1,29 +1,31 @@
 package com.simplj.lambda.monadic;
 
 import com.simplj.lambda.executable.Provider;
+import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Receiver;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.util.Try;
 
 public class Functor<A> {
-    private final Provider<Either<Exception, A>> func;
+    private final Producer<Either<Exception, A>> func;
     private final Either<Exception, A> result;
 
-    private Functor(Provider<Either<Exception, A>> func, Either<Exception, A> r) {
+    private Functor(Producer<Either<Exception, A>> func, Either<Exception, A> r) {
         this.func = func;
         this.result = r;
     }
 
     public static <T> Functor<T> arg(T val) {
-        return new Functor<>(Provider.defer(Either.right(val)), null);
+        return new Functor<>(Producer.defer(Either.right(val)), null);
     }
 
     public <R> Functor<R> map(Executable<A, R> f) {
-        Provider<Either<Exception, R>> next = func.andThen(e -> {
+        Producer<Either<Exception, R>> next = func.andThen(e -> {
             Either<Exception, R> res;
             if (e.isRight()) {
-                res = Either.right(f.execute(e.right()));
+                res = Try.execute(() -> f.execute(e.right())).result();
             } else {
                 res = Either.left(e.left());
             }
@@ -33,10 +35,10 @@ public class Functor<A> {
     }
 
     public <R> Functor<R> flatmap(Executable<A, Functor<R>> f) {
-        Provider<Either<Exception, R>> next = func.andThen(e -> {
+        Producer<Either<Exception, R>> next = func.andThen(e -> {
             Either<Exception, R> res;
             if (e.isRight()) {
-                res = f.execute(e.right()).result();
+                res = Try.execute(() -> f.execute(e.right())).result().flatmap(Functor::result);
             } else {
                 res = Either.left(e.left());
             }
@@ -50,7 +52,8 @@ public class Functor<A> {
     }
 
     public Functor<A> recover(Function<Exception, A> recovery) {
-        return result.isLeft() ? recovery.andThen(Functor::arg).apply(result.left()) : this;
+        Producer<Either<Exception, A>> recoveryF = func.andThen(e -> e.isLeft() ? Either.right(recovery.apply(e.left())) : e);
+        return new Functor<>(recoveryF, null);
     }
 
     public Either<Exception, A> result() {
@@ -59,13 +62,8 @@ public class Functor<A> {
 
     public Functor<A> applied() {
         if (result == null) {
-            Either<Exception, A> e;
-            try {
-                e = func.provide();
-            } catch (Exception ex) {
-                e = Either.left(ex);
-            }
-            return new Functor<>(e.isRight() ? Provider.defer(e) : func, e);
+            Either<Exception, A> e = func.produce();
+            return new Functor<>(e.isRight() ? Producer.defer(e) : func, e);
         }
         return this;
     }

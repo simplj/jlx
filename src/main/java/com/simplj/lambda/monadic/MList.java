@@ -133,4 +133,15 @@ public class MList<T> {
         }
         return res;
     }
+
+    @Override
+    public int hashCode() {
+        MList<T> current = this;
+        int hashCode = current.head == null ? 0 : 1;
+        while (current.head != null) {
+            hashCode = 31 * hashCode + current.head.hashCode();
+            current = current.tail();
+        }
+        return hashCode;
+    }
 }
