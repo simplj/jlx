@@ -6,6 +6,15 @@ import java.util.Objects;
 public interface BiFunction<A, B, O> {
     O apply(A inpA, B inpB);
 
+    /**
+     * Applies the TriFunction partially (that is why the name `ap` depicting partial `apply`-ing)
+     * @param a the first argument to be applied
+     * @return Function with the other argument
+     */
+    default Function<B, O> ap(A a) {
+        return b -> apply(a, b);
+    }
+
     default <T> BiFunction<T, B, O> composeFirst(Function<T, A> f) {
         Objects.requireNonNull(f);
         return (t, b) -> apply(f.apply(t), b);
@@ -18,10 +27,6 @@ public interface BiFunction<A, B, O> {
     default <R> BiFunction<A, B, R> andThen(Function<O, R> after) {
         Objects.requireNonNull(after);
         return (a, b) -> after.apply(apply(a, b));
-    }
-
-    default Function<B, O> partial(A a) {
-        return b -> apply(a, b);
     }
 
     default Function<A, Function<B, O>> curried() {

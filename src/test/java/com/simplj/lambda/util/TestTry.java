@@ -30,7 +30,7 @@ public class TestTry {
     }
 
     @Test
-    public void testTrySnippetExecution() {
+    public void testTryExcerptExecution() {
         Try.execute(this::noOp)
                 .handle(IOException.class, e -> null)
                 .handle(IOException.class, e -> null)

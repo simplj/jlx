@@ -1,13 +1,13 @@
 package com.simplj.lambda.util;
 
-import com.simplj.lambda.data.ImmutableSet;
+import com.simplj.lambda.executable.Provider;
+import com.simplj.lambda.executable.Excerpt;
+import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Consumer;
+import com.simplj.lambda.function.Function;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Holds following attributes for retrying an execution:
@@ -18,24 +18,30 @@ import java.util.stream.Collectors;
  *     Specific exceptions (inclusive/exclusive) to retry
  * </pre>
  */
-public final class RetryContext {
+public class RetryContext {
     private static final Consumer<String> DEFAULT_LOGGER = l -> System.out.println("jlx.default.logger: " + l);
     private final long initialDelay;
     private final double multiplier;
-    private final int maxAttempt;
     private final long maxDelay;
-    private final ImmutableSet<Class<? extends Exception>> exceptions;
-    private final boolean inclusive;
+    private final int maxAttempt;
+    private final long maxDuration;
+    private final Condition<Exception> exceptionF;
     private final Consumer<String> logger;
+    private final String notification;
 
-    private RetryContext(RetryContextBuilder builder) {
+    RetryContext(RetryContextBuilder builder) {
         this.initialDelay = builder.initialDelay;
         this.multiplier = builder.multiplier;
-        this.maxAttempt = builder.maxAttempt;
         this.maxDelay = builder.maxDelay;
-        this.exceptions = ImmutableSet.of(builder.exceptions());
-        this.inclusive = builder.inclusive;
+        this.maxAttempt = builder.maxAttempt;
+        this.maxDuration = builder.maxDuration;
+        this.exceptionF = builder.exceptionF == null ? e -> true : builder.exceptionF;
         this.logger = builder.logger;
+        if (maxAttempt < 0) {
+            this.notification = "Retrying %s after delay of %s ms for %s ...";
+        } else {
+            this.notification = "Retrying [%s / " + maxAttempt + "] after delay of %s ms for %s ...";
+        }
     }
 
     public long initialDelay() {
@@ -46,24 +52,43 @@ public final class RetryContext {
         return multiplier;
     }
 
-    public int maxAttempt() {
-        return maxAttempt;
-    }
-
     public long maxDelay() {
         return maxDelay;
     }
 
-    public ImmutableSet<Class<? extends Exception>> exceptions() {
-        return exceptions;
+    public int maxAttempt() {
+        return maxAttempt;
     }
 
-    public boolean inclusive() {
-        return inclusive;
+    public long maxDuration() {
+        return maxDuration;
+    }
+
+    public boolean retryNeededFor(Exception ex) {
+        return exceptionF.evaluate(ex);
     }
 
     public Consumer<String> logger() {
         return logger;
+    }
+
+    public void retry(Excerpt f) throws Exception {
+        retry(f.toProvider());
+    }
+
+    public <R> R retry(Provider<R> f) throws Exception {
+        Mutable<Integer> count = Mutable.of(0);
+        Mutable<Long> delay = Mutable.of(initialDelay);
+        Lazy<Long> timeLimit = Lazy.of(() -> System.currentTimeMillis() + maxDuration);
+        do {
+            try {
+                return f.provide();
+            } catch (Exception ex) {
+                if (!complementRetry(count, timeLimit.get(), ex, delay)) {
+                    throw ex;
+                }
+            }
+        } while (true);
     }
 
     /**
@@ -74,7 +99,45 @@ public final class RetryContext {
      * @return {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
      */
     public static RetryContextBuilder builder(long initialDelay, double multiplier, int maxAttempts) {
-        return new RetryContextBuilder(initialDelay, multiplier, maxAttempts);
+        if (initialDelay < 0 || maxAttempts < 0) {
+            throw new IllegalArgumentException("Initial Delay or Max Attempts cannot be Negative!");
+        }
+        return new RetryContextBuilder(initialDelay, multiplier, maxAttempts, -1L);
+    }
+    public static RetryContextBuilder builder(long initialDelay, double multiplier, long maxDuration) {
+        if (initialDelay < 0 || maxDuration < 0) {
+            throw new IllegalArgumentException("Initial Delay or Max Duration cannot be Negative!");
+        }
+        return new RetryContextBuilder(initialDelay, multiplier, -1, maxDuration);
+    }
+    public static RetryContextBuilder builder(long initialDelay, double multiplier, int maxAttempts, long maxDuration) {
+        if (initialDelay < 0 || maxAttempts < 0 || maxDuration < 0) {
+            throw new IllegalArgumentException("Initial Delay or Max Attempts or Max Duration cannot be Negative!");
+        }
+        return new RetryContextBuilder(initialDelay, multiplier, maxAttempts, maxDuration);
+    }
+
+    public <T> ResettableRetryContext<T> resettableContext(Function<T, T> retryInputResetF) {
+        return new ResettableRetryContext<>(this, retryInputResetF);
+    }
+
+    boolean complementRetry(Mutable<Integer> count, long timeLimitTs, Exception ex, Mutable<Long> delay) {
+        boolean res = (maxAttempt < 0 || count.get() < maxAttempt) && (maxDuration < 0 || System.currentTimeMillis() < timeLimitTs) && exceptionF.evaluate(ex);
+        if (res) {
+            count.mutate(n -> n + 1);
+            delay.mutate(this::sleep);
+            logger.consume(String.format(notification, count, delay, ex.getClass().getName()));
+        }
+        return res;
+    }
+
+    private long sleep(long delay) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(delay);
+        } catch (InterruptedException e) {
+            logger.consume("Sleep interrupted! Reason: " + e.getMessage());
+        }
+        return Math.max(maxDelay, (long) (delay * multiplier));
     }
 
     /**
@@ -84,15 +147,16 @@ public final class RetryContext {
         private final long initialDelay;
         private final double multiplier;
         private final int maxAttempt;
+        private final long maxDuration;
         private Consumer<String> logger;
         private long maxDelay = -1;
-        private Set<Class<? extends Exception>> exceptions;
-        private boolean inclusive;
+        private Condition<Exception> exceptionF;
 
-        private RetryContextBuilder(long initialDelay, double multiplier, int maxAttempt) {
+        private RetryContextBuilder(long initialDelay, double multiplier, int maxAttempt, long maxDuration) {
             this.initialDelay = initialDelay;
             this.multiplier = multiplier;
             this.maxAttempt = maxAttempt;
+            this.maxDuration = maxDuration;
             this.logger = DEFAULT_LOGGER;
         }
 
@@ -129,8 +193,7 @@ public final class RetryContext {
          * @return Current instance of {@link RetryContextBuilder}
          */
         public <T extends Exception> RetryContextBuilder exceptions(Set<Class<T>> exceptions, boolean isInclusive) {
-            this.exceptions = new HashSet<>(exceptions);
-            this.inclusive = isInclusive;
+            this.exceptionF = ex -> exceptions.stream().anyMatch(e -> isInclusive == e.isAssignableFrom(ex.getClass()));
             return this;
         }
 
@@ -140,10 +203,6 @@ public final class RetryContext {
          */
         public RetryContext build() {
             return new RetryContext(this);
-        }
-
-        private Set<Class<? extends Exception>> exceptions() {
-            return exceptions == null ? Collections.emptySet() : exceptions;
         }
     }
 }

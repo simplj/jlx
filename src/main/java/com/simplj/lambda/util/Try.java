@@ -4,14 +4,13 @@ import com.simplj.lambda.data.Util;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Provider;
 import com.simplj.lambda.executable.Receiver;
-import com.simplj.lambda.executable.Snippet;
+import com.simplj.lambda.executable.Excerpt;
 import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Try can be used to execute a code which might throw an exception and recovering from the exception if thrown.
@@ -19,8 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @param <A>
  */
 public class Try<A> {
-    private final Executable<AutoCloseableMarker, A> func;
-    private RetryContext retryCtx;
+    private Executable<AutoCloseableMarker, A> func;
     private Consumer<Exception> logger;
     private Function<Exception, Either<Exception, A>> recovery;
     private Function<Exception, Exception> exF;
@@ -45,11 +43,11 @@ public class Try<A> {
     }
 
     /**
-     * Sets a Snippet for execution
-     * @param f Snippet to be executed
-     * @return An instance of Try with the Snippet set for execution
+     * Sets a Excerpt for execution
+     * @param f Excerpt to be executed
+     * @return An instance of Try with the Excerpt set for execution
      */
-    public static Try<Void> execute(Snippet f) {
+    public static Try<Void> execute(Excerpt f) {
         return execute(f.toExecutable());
     }
 
@@ -82,7 +80,7 @@ public class Try<A> {
      * @return Current instance of Try.
      */
     public Try<A> retry(RetryContext ctx) {
-        this.retryCtx = ctx;
+        this.func = func.withRetry(ctx.resettableContext(AutoCloseableMarker::reset));
         return this;
     }
 
@@ -150,13 +148,9 @@ public class Try<A> {
         try {
             res = Either.right(func.execute(m));
         } catch (Exception ex) {
-            res = retry(m, ex);
-            if (res.isLeft()) {
-                ex = res.left();
-                ex = exF.apply(ex);
-                logger.consume(ex);
-                res = handleException(ex);
-            }
+            ex = exF.apply(ex);
+            logger.consume(ex);
+            res = handleException(ex);
         } finally {
             List<Couple<AutoCloseable, Exception>> l = m.close();
             if (!l.isEmpty()) {
@@ -171,41 +165,6 @@ public class Try<A> {
      */
     public void run() {
         result();
-    }
-
-    private Either<Exception, A> retry(AutoCloseableMarker m, Exception ex) {
-        if (retryCtx != null) {
-            int count = 0;
-            long delay = retryCtx.initialDelay();
-            Mutable<Class<? extends Exception>> mE = Mutable.of(ex.getClass());
-            while (count < retryCtx.maxAttempt()) {
-                //`none` is used instead of `any` to handle empty exception list scenario as well
-                if (retryCtx.exceptions().none(e -> retryCtx.inclusive() != e.isAssignableFrom(mE.get()))) {
-                    count++;
-                    delay = sleep(delay);
-                    m.reset();
-                    retryCtx.logger().consume("Retrying " + count + " / " + retryCtx.maxAttempt() + "for " + ex.getClass().getName() + " ...");
-                    try {
-                        return Either.right(func.execute(m));
-                    } catch (Exception e) {
-                        ex = e;
-                        mE.set(ex.getClass());
-                    }
-                } else {
-                    count = retryCtx.maxAttempt();
-                }
-            }
-        }
-        return Either.left(ex);
-    }
-
-    private long sleep(long delay) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(delay);
-        } catch (InterruptedException e) {
-            retryCtx.logger().consume("Sleep interrupted! Reason: " + e.getMessage());
-        }
-        return Math.max(retryCtx.maxDelay(), (long) (delay * retryCtx.multiplier()));
     }
 
     private Either<Exception, A> handleException(Exception ex) {
@@ -235,8 +194,9 @@ public class Try<A> {
             return closeable;
         }
 
-        private void reset() {
+        private AutoCloseableMarker reset() {
             closeableList.clear();
+            return this;
         }
 
         private List<Couple<AutoCloseable, Exception>> close() {

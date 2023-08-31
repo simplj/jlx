@@ -6,6 +6,15 @@ import java.util.Objects;
 public interface BiConsumer<A, B> {
     void consume(A inpA, B inpB);
 
+    /**
+     * Applies the BiConsumer partially (that is why the name `cons` depicting partial `consume`-ing)
+     * @param a argument to be applied
+     * @return Consumer with the other argument
+     */
+    default Consumer<B> cons(A a) {
+        return b -> consume(a, b);
+    }
+
     default <T> BiConsumer<T, B> composeFirst(Function<T, A> f) {
         Objects.requireNonNull(f);
         return (t, b) -> consume(f.apply(t), b);
@@ -13,10 +22,6 @@ public interface BiConsumer<A, B> {
     default <T> BiConsumer<A, T> composeSecond(Function<T, B> f) {
         Objects.requireNonNull(f);
         return (a, t) -> consume(a, f.apply(t));
-    }
-
-    default Consumer<B> partial(A a) {
-        return b -> consume(a, b);
     }
 
     default Function<A, Consumer<B>> curried() {
