@@ -7,6 +7,15 @@ public interface TriFunction<A, B, C, R> {
 
     R apply(A a, B b, C c);
 
+    /**
+     * Applies the TriFunction partially (that is why the name `ap` depicting partial `apply`-ing)
+     * @param a the first argument to be applied
+     * @return BiFunction with the remaining arguments
+     */
+    default BiFunction<B, C, R> ap(A a) {
+        return (b, c) -> apply(a, b, c);
+    }
+
     default <T> TriFunction<T, B, C, R> composeFirst(Function<T, A> after) {
         Objects.requireNonNull(after);
         return (t, b, c) -> apply(after.apply(t), b, c);
@@ -23,13 +32,6 @@ public interface TriFunction<A, B, C, R> {
     default <T> TriFunction<A, B, C, T> andThen(Function<R, T> after) {
         Objects.requireNonNull(after);
         return (a, b, c) -> after.apply(apply(a, b, c));
-    }
-
-    default BiFunction<B, C, R> partial(A a) {
-        return (b, c) -> apply(a, b, c);
-    }
-    default Function<C, R> partial(A a, B b) {
-        return c -> apply(a, b, c);
     }
 
     default Function<A, Function<B, Function<C, R>>> curried() {

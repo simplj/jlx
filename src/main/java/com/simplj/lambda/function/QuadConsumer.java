@@ -6,6 +6,15 @@ import java.util.Objects;
 public interface QuadConsumer<A, B, C, D> {
     void consume(A inpA, B inpB, C inpC, D inpD);
 
+    /**
+     * Applies the QuadConsumer partially (that is why the name `cons` depicting partial `consume`-ing)
+     * @param a argument to be applied
+     * @return TriConsumer with the remaining arguments
+     */
+    default TriConsumer<B, C, D> cons(A a) {
+        return (b, c, d) -> consume(a, b, c, d);
+    }
+
     default <T> QuadConsumer<T, B, C, D> composeFirst(Function<T, A> f) {
         Objects.requireNonNull(f);
         return (t, b, c, d) -> consume(f.apply(t), b, c, d);
@@ -21,16 +30,6 @@ public interface QuadConsumer<A, B, C, D> {
     default <T> QuadConsumer<A, B, C, T> composeFourth(Function<T, D> f) {
         Objects.requireNonNull(f);
         return (a, b, c, t) -> consume(a, b, c, f.apply(t));
-    }
-
-    default TriConsumer<B, C, D> partial(A a) {
-        return (b, c, d) -> consume(a, b, c, d);
-    }
-    default BiConsumer<C, D> partial(A a, B b) {
-        return (c, d) -> consume(a, b, c, d);
-    }
-    default Consumer<D> partial(A a, B b, C c) {
-        return d -> consume(a, b, c, d);
     }
 
     default Function<A, Function<B, Function<C, Consumer<D>>>> curried() {
