@@ -7,6 +7,15 @@ public interface QuadFunction<A, B, C, D, R> {
 
     R apply(A a, B b, C c, D d);
 
+    /**
+     * Applies the QuadFunction partially (that is why the name `ap` depicting partial `apply`-ing)
+     * @param a the first argument to be applied
+     * @return TriFunction with the remaining arguments
+     */
+    default TriFunction<B, C, D, R> ap(A a) {
+        return (b, c, d) -> apply(a, b, c, d);
+    }
+
     default <T> QuadFunction<T, B, C, D, R> composeFirst(Function<T, A> after) {
         Objects.requireNonNull(after);
         return (t, b, c, d) -> apply(after.apply(t), b, c, d);
@@ -27,16 +36,6 @@ public interface QuadFunction<A, B, C, D, R> {
     default <T> QuadFunction<A, B, C, D, T> andThen(Function<R, T> after) {
         Objects.requireNonNull(after);
         return (a, b, c, d) -> after.apply(apply(a, b, c, d));
-    }
-
-    default TriFunction<B, C, D, R> partial(A a) {
-        return (b, c, d) -> apply(a, b, c, d);
-    }
-    default BiFunction<C, D, R> partial(A a, B b) {
-        return (c, d) -> apply(a, b, c, d);
-    }
-    default Function<D, R> partial(A a, B b, C c) {
-        return d -> apply(a, b, c, d);
     }
 
     default Function<A, Function<B, Function<C, Function<D, R>>>> curried() {

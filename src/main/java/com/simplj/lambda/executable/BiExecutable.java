@@ -2,10 +2,22 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.util.Either;
+import com.simplj.lambda.util.RetryContext;
+
+import java.util.Objects;
 
 @FunctionalInterface
 public interface BiExecutable<A, B, R> {
     R execute(A inpA, B inpB) throws Exception;
+
+    /**
+     * Applies the BiExecutable partially (that is why the name `exec` depicting partial `execute`-ing)
+     * @param a the first argument to be applied
+     * @return Executable with the other argument
+     */
+    default Executable<B, R> exec(A a) {
+        return b -> execute(a, b);
+    }
 
     default BiFunction<A, B, Either<Exception, R>> pure() {
         return (A a, B b) -> {
@@ -19,6 +31,16 @@ public interface BiExecutable<A, B, R> {
         };
     }
 
+    /**
+     * Attempts retry as per the given RetryContext when an exception is occurred during execution
+     * @param ctx RetryContext containing max retry attempt, exceptions to retry (inclusive/exclusive) along with other supporting attributes.
+     * @return BiExecutable with retrying behavior as per the given RetryContext.
+     */
+    default BiExecutable<A, B, R> withRetry(RetryContext ctx) {
+        Objects.requireNonNull(ctx);
+        return (a, b) -> ctx.retry(() -> execute(a, b));
+    }
+
     default <T> BiExecutable<T, B, R> composeFirst(Executable<T, A> f) {
         return (t, b) -> execute(f.execute(t), b);
     }
@@ -30,12 +52,12 @@ public interface BiExecutable<A, B, R> {
         return (a, b) -> f.execute(execute(a, b));
     }
 
-    default Executable<B, R> partial(A a) {
-        return b -> execute(a, b);
-    }
-
     default Executable<A, Executable<B, R>> curried() {
         return a -> b -> execute(a, b);
+    }
+
+    static <T, U, R> BiExecutable<T, U, R> retrying(RetryContext ctx, BiExecutable<T, U, R> f) {
+        return f.withRetry(ctx);
     }
 
     static <T, U> BiExecutable<T, U, T> first() {

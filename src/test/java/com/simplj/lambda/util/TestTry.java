@@ -30,7 +30,7 @@ public class TestTry {
     }
 
     @Test
-    public void testTrySnippetExecution() {
+    public void testTryExcerptExecution() {
         Try.execute(this::noOp)
                 .handle(IOException.class, e -> null)
                 .handle(IOException.class, e -> null)
@@ -63,6 +63,13 @@ public class TestTry {
         assertAutoCloseException(r, e -> e.isRight() && "1".equals(e.right()));
         r = Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, -1)).result();
         assertAutoCloseException(r, Either::isLeft);
+    }
+
+    @Test
+    public void testMapException() {
+        Either<Exception, String> r = Try.execute(() -> unsafe("")).mapException(e -> new IllegalArgumentException(e.getMessage())).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof IllegalArgumentException);
     }
 
     @Test
@@ -189,7 +196,7 @@ public class TestTry {
         return String.valueOf(flag);
     }
 
-    public void retry(int n, Mutable<Integer> m, Exception e) throws Exception {
+    private void retry(int n, Mutable<Integer> m, Exception e) throws Exception {
         if (m.mutate(v -> v + 1).get() < n) {
             throw e;
         }

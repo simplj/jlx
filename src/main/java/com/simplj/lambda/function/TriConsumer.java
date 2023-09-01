@@ -6,6 +6,15 @@ import java.util.Objects;
 public interface TriConsumer<A, B, C> {
     void consume(A inpA, B inpB, C inpC);
 
+    /**
+     * Applies the TriConsumer partially (that is why the name `cons` depicting partial `consume`-ing)
+     * @param a argument to be applied
+     * @return BiConsumer with the remaining arguments
+     */
+    default BiConsumer<B, C> cons(A a) {
+        return (b, c) -> consume(a, b, c);
+    }
+
     default <T> TriConsumer<T, B, C> composeFirst(Function<T, A> f) {
         Objects.requireNonNull(f);
         return (t, b, c) -> consume(f.apply(t), b, c);
@@ -17,13 +26,6 @@ public interface TriConsumer<A, B, C> {
     default <T> TriConsumer<A, B, T> composeThird(Function<T, C> f) {
         Objects.requireNonNull(f);
         return (a, b, t) -> consume(a, b, f.apply(t));
-    }
-
-    default BiConsumer<B, C> partial(A a) {
-        return (b, c) -> consume(a, b, c);
-    }
-    default Consumer<C> partial(A a, B b) {
-        return c -> consume(a, b, c);
     }
 
     default Function<A, Function<B, Consumer<C>>> curried() {
