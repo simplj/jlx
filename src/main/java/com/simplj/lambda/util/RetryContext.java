@@ -6,6 +6,7 @@ import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -72,10 +73,23 @@ public class RetryContext {
         return logger;
     }
 
+    /**
+     * Executes the Excerpt f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution.
+     * @param f Excerpt to execute (and retry if needed)).
+     * @throws Exception when the retry exceeds, throws the exception occurred during execution.
+     */
     public void retry(Excerpt f) throws Exception {
+        Objects.requireNonNull(f);
         retry(f.toProvider());
     }
 
+    /**
+     * Executes the Provider f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution
+     * @param f   Provider to execute (and retry if needed)).
+     * @param <R> Type of the resultant value of Provider f.
+     * @return The resultant value (of type R) if the execution succeeded.
+     * @throws Exception when the retry exceeds, throws the exception occurred during execution.
+     */
     public <R> R retry(Provider<R> f) throws Exception {
         Mutable<Integer> count = Mutable.of(0);
         Mutable<Long> delay = Mutable.of(initialDelay);
@@ -104,12 +118,29 @@ public class RetryContext {
         }
         return new RetryContextBuilder(initialDelay, multiplier, maxAttempts, -1L);
     }
+
+    /**
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * @param initialDelay initial delay for the retry operation
+     * @param multiplier   delay multiplier for the retry operation
+     * @param maxDuration  maximum time (in milliseconds) to keep retrying
+     * @return {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     */
     public static RetryContextBuilder builder(long initialDelay, double multiplier, long maxDuration) {
         if (initialDelay < 0 || maxDuration < 0) {
             throw new IllegalArgumentException("Initial Delay or Max Duration cannot be Negative!");
         }
         return new RetryContextBuilder(initialDelay, multiplier, -1, maxDuration);
     }
+
+    /**
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * @param initialDelay initial delay for the retry operation
+     * @param multiplier   delay multiplier for the retry operation
+     * @param maxAttempts  max retry attempt
+     * @param maxDuration  maximum time (in milliseconds) to keep retrying
+     * @return {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     */
     public static RetryContextBuilder builder(long initialDelay, double multiplier, int maxAttempts, long maxDuration) {
         if (initialDelay < 0 || maxAttempts < 0 || maxDuration < 0) {
             throw new IllegalArgumentException("Initial Delay or Max Attempts or Max Duration cannot be Negative!");
@@ -117,6 +148,12 @@ public class RetryContext {
         return new RetryContextBuilder(initialDelay, multiplier, maxAttempts, maxDuration);
     }
 
+    /**
+     * Returns ResettableRetryContext instance with the resetting function. ResettableRetryContext resets the input using the resetF before attempting retry.
+     * @param retryInputResetF Function to reset the input while retrying
+     * @param <T>              Type of the value to reset (which is same as the return type of function that will be retried)
+     * @return {@link ResettableRetryContext} with the resetting function.
+     */
     public <T> ResettableRetryContext<T> resettableContext(Function<T, T> retryInputResetF) {
         return new ResettableRetryContext<>(this, retryInputResetF);
     }
@@ -125,8 +162,9 @@ public class RetryContext {
         boolean res = (maxAttempt < 0 || count.get() < maxAttempt) && (maxDuration < 0 || System.currentTimeMillis() < timeLimitTs) && exceptionF.evaluate(ex);
         if (res) {
             count.mutate(n -> n + 1);
+            long currDelay = delay.get();
             delay.mutate(this::sleep);
-            logger.consume(String.format(notification, count, delay, ex.getClass().getName()));
+            logger.consume(String.format(notification, count, currDelay, ex.getClass().getName()));
         }
         return res;
     }

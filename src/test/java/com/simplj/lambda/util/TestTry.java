@@ -66,6 +66,13 @@ public class TestTry {
     }
 
     @Test
+    public void testMapException() {
+        Either<Exception, String> r = Try.execute(() -> unsafe("")).mapException(e -> new IllegalArgumentException(e.getMessage())).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof IllegalArgumentException);
+    }
+
+    @Test
     public void testReTry() {
         List<String> l = new LinkedList<>();
         IllegalStateException ise = new IllegalStateException("needs retry!");
@@ -189,7 +196,7 @@ public class TestTry {
         return String.valueOf(flag);
     }
 
-    public void retry(int n, Mutable<Integer> m, Exception e) throws Exception {
+    private void retry(int n, Mutable<Integer> m, Exception e) throws Exception {
         if (m.mutate(v -> v + 1).get() < n) {
             throw e;
         }

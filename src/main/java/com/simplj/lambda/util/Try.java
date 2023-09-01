@@ -55,6 +55,7 @@ public class Try<A> {
      * Sets a Receiver for execution.
      * The input argument for the Receiver is an instance of AutoCloseableMarker where an AutoCloseable can be marked for auto-closing after the execution of the Receiver.
      * This is similar to `try-with-resource`
+     * Passing a `Receiver with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Consumer to be executed
      * @return An instance of Try with the Receiver set for execution
      */
@@ -66,6 +67,7 @@ public class Try<A> {
      * Sets a Executable for execution.
      * The input argument for the Executable is an instance of AutoCloseableMarker where an AutoClosable can be marked for auto-closing after the execution of the Executable.
      * This is similar to `try-with-resource`
+     * Passing a `Executable with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Executable to be executed
      * @param <R> Return type of the Executable. This can be get by using the `result()` API of Try.
      * @return An instance of Try with the Executable set for execution
