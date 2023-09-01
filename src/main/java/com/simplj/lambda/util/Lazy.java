@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Wraps a initializer (such as a constructor) and initializes lazily when needed.
  * Also, provides capability to restate a value on a certain condition.
- * @param <A>
+ * @param <A> Type of the resultant value
  */
 public class Lazy<A> {
     private volatile Producer<A> valueF;

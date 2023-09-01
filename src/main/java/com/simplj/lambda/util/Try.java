@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Try can be used to execute a code which might throw an exception and recovering from the exception if thrown.
  * This is the functional style representation of try-catch block.
- * @param <A>
+ * @param <A> Type of the resultant value
  */
 public class Try<A> {
     private Executable<AutoCloseableMarker, A> func;
