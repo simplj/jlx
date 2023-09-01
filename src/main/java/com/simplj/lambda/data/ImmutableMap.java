@@ -53,6 +53,8 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
+     * @param <A> Type of the resultant key
+     * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
     public abstract <A, B> ImmutableMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
@@ -65,6 +67,8 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
+     * @param <A> Type of the resultant key
+     * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
     public abstract <A, B> ImmutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
