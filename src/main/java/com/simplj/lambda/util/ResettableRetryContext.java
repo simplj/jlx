@@ -5,7 +5,7 @@ import com.simplj.lambda.function.Function;
 
 /**
  * Resets the input using the provided reset-er function before attempting for retry.
- * @param <T>
+ * @param <T> Type of the value to reset (which is same as the return type of function that will be retried)
  */
 public final class ResettableRetryContext<T> {
     private final RetryContext ctx;
@@ -22,7 +22,7 @@ public final class ResettableRetryContext<T> {
 
     /**
      * Executes the Executable f with input T and attempts retry if needed as per the current RetryContext when an exception is occurred during execution.
-     * <br />While retrying, it applies the resetting function `retryInputResetF` on `input` to reset the value before passing to the executable again.
+     * &lt;br /&gt;While retrying, it applies the resetting function `retryInputResetF` on `input` to reset the value before passing to the executable again.
      * @param f     Executable to execute (and retry if needed)).
      * @param input value to be passed in the Executable. This will be reset during retry using the provided resetting function.
      * @param <R>   Type of the resultant value of Provider f.
