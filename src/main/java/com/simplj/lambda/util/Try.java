@@ -54,7 +54,7 @@ public class Try<A> {
     /**
      * Sets a Receiver for execution.
      * The input argument for the Receiver is an instance of AutoCloseableMarker where an AutoCloseable can be marked for auto-closing after the execution of the Receiver.
-     * This is similar to `try-with-resource`
+     * This is similar to `try-with-resource`.
      * Passing a `Receiver with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Consumer to be executed
      * @return An instance of Try with the Receiver set for execution
@@ -66,7 +66,7 @@ public class Try<A> {
     /**
      * Sets a Executable for execution.
      * The input argument for the Executable is an instance of AutoCloseableMarker where an AutoClosable can be marked for auto-closing after the execution of the Executable.
-     * This is similar to `try-with-resource`
+     * This is similar to `try-with-resource`.
      * Passing a `Executable with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Executable to be executed
      * @param <R> Return type of the Executable. This can be get by using the `result()` API of Try.
@@ -77,7 +77,7 @@ public class Try<A> {
     }
 
     /**
-     * Attempts retry as per the given RetryContext when an exception is occurred during execution
+     * Attempts retry as per the given RetryContext when an exception is occurred during execution.
      * @param ctx RetryContext containing max retry attempt, exceptions to retry (inclusive/exclusive) along with other supporting attributes.
      * @return Current instance of Try.
      */
@@ -109,7 +109,7 @@ public class Try<A> {
     }
 
     /**
-     * Recovers from an exception that may occur during execution
+     * Recovers from an exception that may occur during execution.
      * @param f If any exception occurs, then that exception is passed to this Function f to recover from it.
      * @return Current instance of Try
      */
@@ -119,7 +119,7 @@ public class Try<A> {
     }
 
     /**
-     * Handles a specific Exception sub-type that may occur during execution
+     * Handles a specific Exception sub-type that may occur during execution.
      * @param type Specific exception sub-type to handle and recover from the exception
      * @param f    If the specific exception occurs, then that exception is passed to this Function f to recover from it.
      * @param <E>  Sub type of Exception
@@ -141,7 +141,7 @@ public class Try<A> {
     }
 
     /**
-     * Executes the code and returns either the result of type A in right or Exception if occurred in left.
+     * Executes the code (attempting retry if provided) and returns either the result of type A in right or Exception if occurred in left.
      * @return Either right with result of type A or Exception in left
      */
     public Either<Exception, A> result() {
@@ -163,7 +163,20 @@ public class Try<A> {
     }
 
     /**
-     * Executes the code silently i.e. does not return anything and any exception occurred during the execution is suppressed (or logged if set)
+     * Executes the code (attempting retry if provided) and returns result if succeeds or throws Exception if occurred during the execution.
+     * @return Resultant value if succeeds
+     * @throws Exception if occurred during the execution
+     */
+    public A resultOrThrow() throws Exception {
+        Either<Exception, A> r = result();
+        if (r.isLeft()) {
+            throw r.left();
+        }
+        return r.right();
+    }
+
+    /**
+     * Executes the code silently i.e. does not return anything and any exception occurred during the execution is suppressed (or logged if set).
      */
     public void run() {
         result();
@@ -191,6 +204,12 @@ public class Try<A> {
             closeableList = new LinkedList<>();
         }
 
+        /**
+         * Marks for closing the AutoCloseable when the execution is complete.
+         * @param closeable AutoCloseable to be closed
+         * @param <T>       Any class extending AutoCloseable
+         * @return passed AutoCloseable object
+         */
         public <T extends AutoCloseable> T markForAutoClose(T closeable) {
             this.closeableList.add(closeable);
             return closeable;

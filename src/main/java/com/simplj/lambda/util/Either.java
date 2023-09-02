@@ -87,8 +87,8 @@ public class Either<L, R> {
     /**
      * Applies the Function f to the Right value of current Either instance.
      * If the current Either instance has a Left value then f is not applied.
-     * &lt;br /&gt;API is eager i.e. Function f is applied to Right value of current instance (or not applied at all if current instance has a Left value) as soon as this API is called.
-     * &lt;br /&gt;Following are true about this operation:
+     * <br>API is eager i.e. Function f is applied to Right value of current instance (or not applied at all if current instance has a Left value) as soon as this API is called.
+     * <br>Following are true about this operation:
      * <pre>
      *     Either.left(l).map(f).left() is equal to l
      *     Either.right(r).map(f).right() is equal to f(r)
@@ -103,8 +103,8 @@ public class Either<L, R> {
 
     /**
      * Applies the Function f to the Right value of current Either instance and flattens the result. If the current Either instance has a Left value then f is not applied.
-     * &lt;br /&gt;API is eager i.e. Function f is applied to Right value of current instance (or not applied at all if current instance has a Left value) as soon as this API is called.
-     * &lt;br /&gt;Following are true about this operation:
+     * <br>API is eager i.e. Function f is applied to Right value of current instance (or not applied at all if current instance has a Left value) as soon as this API is called.
+     * <br>Following are true about this operation:
      * <pre>
      *     Either.left(l).map(f).left() is equal to l
      *     Either.right(r).map(f).right() is equal to f(r)

@@ -84,7 +84,7 @@ public class RetryContext {
     }
 
     /**
-     * Executes the Provider f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution
+     * Executes the Provider f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution.
      * @param f   Provider to execute (and retry if needed)).
      * @param <R> Type of the resultant value of Provider f.
      * @return The resultant value (of type R) if the execution succeeded.
@@ -106,7 +106,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxAttempts  max retry attempt
@@ -120,7 +120,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxDuration  maximum time (in milliseconds) to keep retrying
@@ -134,7 +134,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxAttempts  max retry attempt

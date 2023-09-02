@@ -47,7 +47,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
 
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the set and returns the resultant set. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the set and returns the resultant set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
      * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on set &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a set &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
@@ -58,7 +58,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     public abstract <R> ImmutableSet<R> map(Function<T, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; set&lt;R&gt;)&lt;/i&gt; to all the elements in the set and returns the resultant flattened set. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
+     * Applies the function `f` of type &lt;i&gt;(T -&gt; set&lt;R&gt;)&lt;/i&gt; to all the elements in the set and returns the resultant flattened set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
      * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on set &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a set &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
      * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
      * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
@@ -69,7 +69,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     public abstract <R> ImmutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which satisfies the condition `c`
@@ -77,7 +77,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     public abstract ImmutableSet<T> filter(Condition<T> c);
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
+     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. <br>
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which does not satisfy the condition `c`
