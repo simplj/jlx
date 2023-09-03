@@ -9,6 +9,7 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
     final E[] arr;
 
     private ImmutableArray(E[] arr) {
+        super();
         this.arr = arr;
     }
 
@@ -80,7 +81,7 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
         public final ArrayFunctor<T, T> applied() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
-                T[] r = apply(src, func, new LinkedList<>()).toArray(Util.cast(new Object[0]));
+                T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
                 res = new ArrayFunctor<>(r, Data::new, r);
             } else {
                 res = new ArrayFunctor<>(arr, Data::new, arr);

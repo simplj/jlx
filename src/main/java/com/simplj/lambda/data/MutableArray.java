@@ -9,6 +9,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
     volatile E[] arr;
 
     private MutableArray(E[] arr) {
+        super();
         this.arr = arr;
     }
 
@@ -95,7 +96,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
         public final ArrayFunctor<T, T> appliedList() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
-                T[] r = apply(src, func, new LinkedList<>()).toArray(Util.cast(new Object[0]));
+                T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
                 res = new ArrayFunctor<>(r, Data::new, r);
             } else {
                 res = new ArrayFunctor<>(arr, Data::new, arr);

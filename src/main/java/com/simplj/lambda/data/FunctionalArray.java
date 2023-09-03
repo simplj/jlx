@@ -9,6 +9,11 @@ import java.util.*;
 import java.util.stream.Stream;
 
 abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements Iterable<E> {
+    final E[] newArray;
+
+    protected FunctionalArray() {
+        newArray = Util.cast(new Object[0]);
+    }
 
     abstract A unit(E[] arr);
 
@@ -26,18 +31,18 @@ abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements It
 
     public Couple<A, A> split(Condition<E> c) {
         E[] arr = array();
-        List<E> first = new LinkedList<>();
-        List<E> second = new LinkedList<>();
+        List<E> match = new LinkedList<>();
+        List<E> rest = new LinkedList<>();
         for (E e : arr) {
             if (c.evaluate(e)) {
-                first.add(e);
+                match.add(e);
             } else {
-                second.add(e);
+                rest.add(e);
             }
         }
-        A a = unit(first.toArray(Util.cast(new Object[first.size()])));
-        A b = unit(second.toArray(Util.cast(new Object[second.size()])));
-        return Tuple.of(a, b);
+        E[] a = Util.cast(new Object[match.size()]);
+        E[] b = Util.cast(new Object[rest.size()]);
+        return Tuple.of(unit(match.toArray(a)), unit(rest.toArray(b)));
     }
 
     public Couple<Integer, E>[] indexed() {
