@@ -22,7 +22,7 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
     public abstract boolean isApplied();
     /**
      * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
+     * @return <code>current instance</code> with all the lazy functions (if any) applied
      */
     public abstract M applied();
 

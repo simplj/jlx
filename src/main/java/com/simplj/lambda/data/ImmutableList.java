@@ -14,11 +14,10 @@ import java.util.stream.Stream;
 
 public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     final List<T> list;
-    final Producer<List<?>> constructor;
 
     protected ImmutableList(List<T> list, Producer<List<?>> constructor) {
+        super(constructor);
         this.list = list;
-        this.constructor = constructor;
     }
 
     public static <R> ImmutableList<R> unit() {
@@ -40,9 +39,9 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>map</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
@@ -51,25 +50,14 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>flatmap</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
     public abstract <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f);
-
-    /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
-     * @param c condition to evaluate against each element
-     * @return list containing elements which does not satisfy the condition `c`
-     */
-    @Override
-    public ImmutableList<T> filterOut(Condition<T> c) {
-        return filter(c.negate());
-    }
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
@@ -82,58 +70,13 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
         return list != null;
     }
 
-    @Override
-    public Couple<ImmutableList<T>, ImmutableList<T>> split(Condition<T> c) {
-        ImmutableList<T> match = ImmutableList.newInstance(constructor);
-        ImmutableList<T> rest = ImmutableList.newInstance(constructor);
-        ImmutableList<T> l = applied();
-        for (T t : l) {
-            if (c.evaluate(t)) {
-                match.list.add(t);
-            } else {
-                rest.list.add(t);
-            }
-        }
-        return Tuple.of(match, rest);
-    }
-
-    public ImmutableList<Couple<Integer, T>> indexedList() {
+    public ImmutableList<Couple<Integer, T>> indexed() {
         return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>newInstance(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
-    }
-
-    @Override
-    public int size() {
-        return list().size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return list().isEmpty();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        return list().contains(o);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        return list().containsAll(c);
     }
 
     @Override
     public Iterator<T> iterator() {
         return list().iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return list().toArray();
-    }
-
-    @Override
-    public <T1> T1[] toArray(T1[] a) {
-        return list().toArray(a);
     }
 
     @Override
@@ -205,41 +148,6 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     }
 
     @Override
-    public T get(int index) {
-        return list().get(index);
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        return list().indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        return list().lastIndexOf(o);
-    }
-
-    @Override
-    public ListIterator<T> listIterator() {
-        return list().listIterator();
-    }
-
-    @Override
-    public ListIterator<T> listIterator(int index) {
-        return list().listIterator(index);
-    }
-
-    @Override
-    public Spliterator<T> spliterator() {
-        return list().spliterator();
-    }
-
-    @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        return list().subList(fromIndex, toIndex);
-    }
-
-    @Override
     public ImmutableList<T> sorted(Comparator<? super T> c) {
         ImmutableList<T> res = applied();
         res.list.sort(c);
@@ -261,44 +169,8 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     }
 
     @Override
-    public Stream<T> stream() {
-        return list().stream();
-    }
-
-    @Override
-    public Stream<T> parallelStream() {
-        return list().parallelStream();
-    }
-
-    @Override
-    public void forEach(Consumer<? super T> action) {
-        list().forEach(action);
-    }
-
-    @Override
     public String toString() {
         return isApplied() ? list().toString() : "[?]";
-    }
-
-    @Override
-    public int hashCode() {
-        return list().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof FunctionalList) {
-            FunctionalList<?, ?> fList = Util.cast(obj);
-            obj = fList.list();
-        }
-        return list().equals(obj);
-    }
-
-    @Override
-    public ImmutableList<T> copy() {
-        ImmutableList<T> r = newInstance(constructor);
-        r.list.addAll(list);
-        return r;
     }
 
     private static <A> ImmutableList<A> newInstance(Producer<List<?>> constructor) {
@@ -314,6 +186,11 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
             super(applied, constructor);
             this.src = list;
             this.func = f;
+        }
+
+        @Override
+        ImmutableList<T> instantiate(Producer<List<?>> constructor) {
+            return new ListFunctor<>(list, constructor, Data::new, list);
         }
 
         @Override

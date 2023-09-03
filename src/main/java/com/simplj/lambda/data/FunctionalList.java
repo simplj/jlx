@@ -2,60 +2,99 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
+import com.simplj.lambda.tuples.Tuple;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
+    final Producer<List<?>> constructor;
+
+    protected FunctionalList(Producer<List<?>> constructor) {
+        this.constructor = constructor;
+    }
+
+    abstract L instantiate(Producer<List<?>> constructor);
 
     /**
      * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return the underlying &lt;code&gt;list&lt;/code&gt; with all the lazy functions (if any) applied
+     * @return the underlying <code>list</code> with all the lazy functions (if any) applied
      * @throws IllegalStateException if not {@link #applied() applied}
      */
     public abstract List<T> list();
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br>
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which satisfies the condition `c`
      */
     public abstract L filter(Condition<T> c);
 
-    public abstract L filterOut(Condition<T> c);
+    /**
+     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. <br>
+     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * @param c condition to evaluate against each element
+     * @return list containing elements which does not satisfy the condition `c`
+     */
+    public L filterOut(Condition<T> c) {
+        return filter(c.negate());
+    }
 
     /**
-     * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
+     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
      */
     public abstract boolean isApplied();
 
     /**
      * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; if already &lt;code&gt;applied&lt;/code&gt; otherwise a &lt;code&gt;new instance&lt;/code&gt; with all the lazy functions applied
+     * @return <code>current instance</code> if already <code>applied</code> otherwise a <code>new instance</code> with all the lazy functions applied
      */
     public abstract L applied();
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} list and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} list and returns a <code>Couple</code> of <code>ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @return <code>Couple&lt;/code&gt; of <code>ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @throws IllegalStateException if not {@link #applied() applied}
      */
-    public abstract Couple<L, L> split(Condition<T> c);
+    public Couple<L, L> split(Condition<T> c) {
+        L match = instantiate(constructor);
+        L rest = instantiate(constructor);
+        L l = applied();
+        for (T t : l) {
+            if (c.evaluate(t)) {
+                match.append(t);
+            } else {
+                rest.append(t);
+            }
+        }
+        return Tuple.of(match, rest);
+    }
 
-    public abstract int size();
-    public abstract boolean isEmpty();
-    public abstract boolean contains(Object o);
-    public abstract boolean containsAll(Collection<?> c);
-    public abstract Object[] toArray();
-    public abstract <T1> T1[] toArray(T1[] a);
+    public int size() {
+        return list().size();
+    }
+    public boolean isEmpty() {
+        return list().isEmpty();
+    }
+    public boolean contains(Object o) {
+        return list().contains(o);
+    }
+    public boolean containsAll(Collection<?> c) {
+        return list().containsAll(c);
+    }
+    public Object[] toArray() {
+        return list().toArray();
+    }
+    public <T1> T1[] toArray(T1[] a) {
+        return list().toArray(a);
+    }
 
     public abstract L append(T val);
 
@@ -77,18 +116,43 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
 
     public abstract L empty();
 
-    public abstract T get(int index);
-    public abstract int indexOf(Object o);
-    public abstract int lastIndexOf(Object o);
-    public abstract ListIterator<T> listIterator();
-    public abstract ListIterator<T> listIterator(int index);
-    public abstract List<T> subList(int fromIndex, int toIndex);
+    public T get(int index) {
+        return list().get(index);
+    }
+    public int indexOf(Object o) {
+        return list().indexOf(o);
+    }
+    public int lastIndexOf(Object o) {
+        return list().lastIndexOf(o);
+    }
+    public ListIterator<T> listIterator() {
+        return list().listIterator();
+    }
+    public ListIterator<T> listIterator(int index) {
+        return list().listIterator(index);
+    }
+    @Override
+    public Spliterator<T> spliterator() {
+        return list().spliterator();
+    }
+    public List<T> subList(int fromIndex, int toIndex) {
+        return list().subList(fromIndex, toIndex);
+    }
     public abstract L sorted(Comparator<? super T> c);
     public abstract L replacingAll(UnaryOperator<T> operator);
     public abstract L deleteIf(Predicate<? super T> filter);
 
-    public abstract Stream<T> stream();
-    public abstract Stream<T> parallelStream();
+    public Stream<T> stream() {
+        return list().stream();
+    }
+    public Stream<T> parallelStream() {
+        return list().parallelStream();
+    }
+
+    @Override
+    public void forEach(Consumer<? super T> action) {
+        list().forEach(action);
+    }
 
     public T find(Condition<T> c) {
         return Util.find(list(), c);
@@ -151,5 +215,23 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
         return res;
     }
 
-    public abstract L copy();
+    @Override
+    public int hashCode() {
+        return list().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FunctionalList) {
+            FunctionalList<?, ?> fList = Util.cast(obj);
+            obj = fList.list();
+        }
+        return list().equals(obj);
+    }
+
+    public L copy() {
+        L r = instantiate(constructor);
+        r.append(list());
+        return r;
+    }
 }

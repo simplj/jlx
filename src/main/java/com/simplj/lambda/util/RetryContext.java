@@ -27,6 +27,7 @@ public class RetryContext {
     private final int maxAttempt;
     private final long maxDuration;
     private final Condition<Exception> exceptionF;
+    private final boolean isInclusive;
     private final Consumer<String> logger;
     private final String notification;
 
@@ -37,6 +38,7 @@ public class RetryContext {
         this.maxAttempt = builder.maxAttempt;
         this.maxDuration = builder.maxDuration;
         this.exceptionF = builder.exceptionF == null ? e -> true : builder.exceptionF;
+        this.isInclusive = builder.isInclusive;
         this.logger = builder.logger;
         if (maxAttempt < 0) {
             this.notification = "Retrying %s after delay of %s ms for %s ...";
@@ -67,6 +69,10 @@ public class RetryContext {
 
     public boolean retryNeededFor(Exception ex) {
         return exceptionF.evaluate(ex);
+    }
+
+    public boolean isisInclusive() {
+        return isInclusive;
     }
 
     public Consumer<String> logger() {
@@ -189,6 +195,7 @@ public class RetryContext {
         private Consumer<String> logger;
         private long maxDelay = -1;
         private Condition<Exception> exceptionF;
+        private boolean isInclusive;
 
         private RetryContextBuilder(long initialDelay, double multiplier, int maxAttempt, long maxDuration) {
             this.initialDelay = initialDelay;
@@ -231,6 +238,7 @@ public class RetryContext {
          * @return Current instance of {@link RetryContextBuilder}
          */
         public <T extends Exception> RetryContextBuilder exceptions(Set<Class<T>> exceptions, boolean isInclusive) {
+            this.isInclusive = isInclusive;
             this.exceptionF = ex -> exceptions.stream().anyMatch(e -> isInclusive == e.isAssignableFrom(ex.getClass()));
             return this;
         }

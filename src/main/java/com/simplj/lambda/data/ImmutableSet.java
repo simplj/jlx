@@ -38,7 +38,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
 
     /**
      * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return the underlying &lt;code&gt;set&lt;/code&gt; with all the lazy functions (if any) applied
+     * @return the underlying <code>set</code> with all the lazy functions (if any) applied
      */
     @Override
     public final Set<T> set() {
@@ -48,9 +48,9 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the set and returns the resultant set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on set &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a set &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>map</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
@@ -59,9 +59,9 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
 
     /**
      * Applies the function `f` of type &lt;i&gt;(T -&gt; set&lt;R&gt;)&lt;/i&gt; to all the elements in the set and returns the resultant flattened set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on set &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a set &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
+     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>flatmap</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
@@ -69,7 +69,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     public abstract <R> ImmutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which satisfies the condition `c`
@@ -77,7 +77,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     public abstract ImmutableSet<T> filter(Condition<T> c);
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. <br>
      * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which does not satisfy the condition `c`
@@ -88,7 +88,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * @return &lt;code&gt;true&lt;/code&gt; if all the lazy functions (if any) are applied otherwise &lt;code&gt;false&lt;/code&gt;
+     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
      */
     @Override
     public boolean isApplied() {
@@ -96,9 +96,9 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     }
 
     /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the {@link #applied() applied} set and returns a &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} set and returns a <code>Couple</code> of <code>ImmutableSet</code>s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return &lt;code&gt;Couple&lt;/code&gt; of &lt;code&gt;ImmutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @return <code>Couple&lt;/code&gt; of <code>ImmutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
      */
     public Couple<ImmutableSet<T>, ImmutableSet<T>> split(Condition<T> c) {
         ImmutableSet<T> match = ImmutableSet.newInstance(constructor);

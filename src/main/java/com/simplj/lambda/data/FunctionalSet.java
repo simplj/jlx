@@ -21,7 +21,7 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterab
 
     /**
      * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
-     * @return &lt;code&gt;current instance&lt;/code&gt; with all the lazy functions (if any) applied
+     * @return <code>current instance</code> with all the lazy functions (if any) applied
      */
     public abstract S applied();
 
