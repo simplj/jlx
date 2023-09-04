@@ -81,6 +81,7 @@ jobs:
       run: |
         echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
         echo "branches = ${{ steps.jacoco.outputs.branches }}"
+        echo "all = ${{ steps.jacoco.outputs }}"
 
     - name: Commit and push
       if: ${{ github.event_name != 'pull_request' }}
