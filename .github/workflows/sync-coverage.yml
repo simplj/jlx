@@ -15,4 +15,4 @@ jobs:
         run: |
           git config --global user.name 'Simpl.J'
           git config --global user.email 'simplj@users.noreply.github.com'
-          git push origin main:coverage
+          git push origin main:coverage --force
