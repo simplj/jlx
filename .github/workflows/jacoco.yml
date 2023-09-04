@@ -111,7 +111,7 @@ jobs:
         val=$(jq -r '.branches' <<< "$REPORT")
         BRANCHES="${val:0:5}%"
         NEWLINE=$'\n'
-        BODY="## JaCoCo Test Coverage Summary Statistics${NEWLINE}| Coverage Type | Coverage    |${NEWLINE}|---------------|-------------|${NEWLINE}| __Coverage:__ | ${COVERAGE} |${NEWLINE}| __Branches:__ | ${BRANCHES} |"
+        BODY="## Code Coverage Summary [using JaCoCo]${NEWLINE}| Coverage Type | Coverage    |${NEWLINE}|---------------|-------------|${NEWLINE}| __Coverage:__ | ${COVERAGE} |${NEWLINE}| __Branches:__ | ${BRANCHES} |"
         gh pr comment ${{github.event.pull_request.number}} -b "${BODY}"
       env:
         GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
