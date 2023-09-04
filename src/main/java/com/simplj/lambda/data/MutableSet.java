@@ -37,7 +37,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to set elements
+     * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to set elements
      * @return the underlying <code>set</code> with all the lazy functions (if any) applied
      */
     @Override
@@ -48,10 +48,10 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the set and returns the resultant set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>map</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the set and returns the resultant set. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>map</i>-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>map</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
@@ -59,10 +59,10 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     public abstract <R> MutableSet<R> map(Function<T, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; set&lt;R&gt;)&lt;/i&gt; to all the elements in the set and returns the resultant flattened set. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>flatmap</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; set&lt;R&gt;)</i> to all the elements in the set and returns the resultant flattened set. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>flatmap</i>-ing `f` on set <code>[1, 2, 3]</code> will return a set <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>flatmap</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
@@ -71,7 +71,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which satisfies the condition `c`
      */
@@ -79,7 +79,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which does not satisfy the condition `c`
      */
@@ -103,9 +103,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} set and returns a <code>Couple</code> of <code>MutableSet</code>s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} set and returns a <code>Couple</code> of <code>MutableSet</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return <code>Couple</code> of <code>MutableSet&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @return <code>Couple</code> of <code>MutableSet</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      */
     public Couple<MutableSet<T>, MutableSet<T>> split(Condition<T> c) {
         MutableSet<T> match = MutableSet.newInstance(constructor);

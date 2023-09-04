@@ -22,7 +22,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
     abstract L instantiate(Producer<List<?>> constructor);
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to list elements
      * @return the underlying <code>list</code> with all the lazy functions (if any) applied
      * @throws IllegalStateException if not {@link #applied() applied}
      */
@@ -30,7 +30,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
 
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which satisfies the condition `c`
      */
@@ -38,7 +38,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
 
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which does not satisfy the condition `c`
      */
@@ -52,15 +52,15 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
     public abstract boolean isApplied();
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to list elements
+     * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to list elements
      * @return <code>current instance</code> if already <code>applied</code> otherwise a <code>new instance</code> with all the lazy functions applied
      */
     public abstract L applied();
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} list and returns a <code>Couple</code> of <code>ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} list and returns a <code>Couple</code> of <code>ImmutableList</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return <code>Couple&lt;/code&gt; of <code>ImmutableList&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @return <code>Couple</code> of <code>ImmutableList</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      * @throws IllegalStateException if not {@link #applied() applied}
      */
     public Couple<L, L> split(Condition<T> c) {

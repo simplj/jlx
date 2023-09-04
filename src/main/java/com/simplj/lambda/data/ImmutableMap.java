@@ -38,7 +38,7 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
     }
 
     /**
-     * Function application is &lt;b&gt;eager&lt;/b&gt; i.e. it applies all the lazy functions (if any) to map elements
+     * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to map elements
      * @return the underlying <code>map</code> with all the lazy functions (if any) applied
      */
     @Override
@@ -48,10 +48,10 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
 
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the map and returns the resultant map. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on map <code>[1, 2, 3]</code> will return a map <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>map</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the map and returns the resultant map. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>map</i>-ing `f` on map <code>[1, 2, 3]</code> will return a map <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>map</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <A> Type of the resultant key
      * @param <B> Type of the resultant value
@@ -62,10 +62,10 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
     public abstract <R> ImmutableMap<K, R> mapV(Function<V, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; map&lt;R&gt;)&lt;/i&gt; to all the elements in the map and returns the resultant flattened map. Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on map <code>[1, 2, 3]</code> will return a map <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>flatmap</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; map&lt;R&gt;)</i> to all the elements in the map and returns the resultant flattened map. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>flatmap</i>-ing `f` on map <code>[1, 2, 3]</code> will return a map <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>flatmap</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <A> Type of the resultant key
      * @param <B> Type of the resultant value
@@ -76,14 +76,14 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
 
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return map containing elements which satisfies the condition `c`
      */
     public abstract ImmutableMap<K, V> filter(BiFunction<K, V, Boolean> c);
     /**
      * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return map containing elements which does not satisfy the condition `c`
      */
@@ -105,7 +105,7 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
-     * @return &lt;code&gt;true</code> if all the lazy functions (if any) are applied otherwise &lt;code&gt;false</code>
+     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
      */
     @Override
     public boolean isApplied() {
@@ -113,9 +113,9 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
     }
 
     /**
-     * Applies the &lt;code&gt;Condition</code> `c` to all the elements in the {@link #applied() applied} map and returns a &lt;code&gt;Couple</code> of &lt;code&gt;ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} map and returns a <code>Couple</code> of <code>ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      * @param c condition based on which the elements will be segregated
-     * @return &lt;code&gt;Couple</code> of &lt;code&gt;ImmutableMap&lt;/code&gt;s with satisfying elements in {@link Couple#first() first} and &lt;b&gt;not&lt;/b&gt; satisfying elements in {@link Couple#second() second}
+     * @return <code>Couple</code> of <code>ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      */
     @Override
     public Couple<ImmutableMap<K, V>, ImmutableMap<K, V>> split(BiFunction<K, V, Boolean> c) {

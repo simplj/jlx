@@ -16,6 +16,7 @@ public class TestTry {
     @Test
     public void testTryProviderExecution() throws Exception {
         assertEquals("1", Try.execute(() -> unsafe("1")).result().right());
+        assertEquals("1", Try.flatExecute(() -> Either.right(unsafe("1"))).result().right());
         assertEquals("1", Try.execute(() -> unsafe("")).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute(() -> unsafe(""))
                 .handle(InstantiationException.class, e -> "IE")
@@ -48,6 +49,7 @@ public class TestTry {
     @Test
     public void testTryExecutableExecution() {
         assertEquals("2", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 2)).result().right());
+        assertEquals("2", Try.flatExecute((Try.AutoCloseableMarker m) -> Either.right(unsafe(m, 2))).result().right());
         assertTrue(Try.execute((Try.AutoCloseableMarker m) -> m.markForAutoClose(new TestAutoCloseable(2))).result().right().isClosed);
         assertEquals("1", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 0)).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 0))

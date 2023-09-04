@@ -18,13 +18,13 @@ import java.util.*;
  * @param <A> Type of the resultant value
  */
 public class Try<A> {
-    private Executable<AutoCloseableMarker, A> func;
+    private Executable<AutoCloseableMarker, Either<Exception, A>> func;
     private Consumer<Exception> logger;
     private Function<Exception, Either<Exception, A>> recovery;
     private Function<Exception, Exception> exF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
-    private Try(Executable<AutoCloseableMarker, A> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
+    private Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
         this.func = f;
         this.logger = logger;
         this.recovery = recovery;
@@ -40,6 +40,16 @@ public class Try<A> {
      */
     public static <R> Try<R> execute(Provider<R> f) {
         return execute(f.toExecutable());
+    }
+
+    /**
+     * Sets a Provider for execution. Resultant `Either` of the Provider is flattened after execution.
+     * @param f Provider function to be executed
+     * @param <R> Return type of the Provider. This can be get by using the `result()` API of Try.
+     * @return An instance of Try with the Provider set for execution
+     */
+    public static <R> Try<R> flatExecute(Provider<Either<Exception, R>> f) {
+        return flatExecute(f.toExecutable());
     }
 
     /**
@@ -73,6 +83,19 @@ public class Try<A> {
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> execute(Executable<AutoCloseableMarker, R> f) {
+        return flatExecute(f.andThen(Either::right));
+    }
+
+    /**
+     * Sets a Executable for execution. Resultant `Either` of the Provider is flattened after execution.
+     * The input argument for the Executable is an instance of AutoCloseableMarker where an AutoClosable can be marked for auto-closing after the execution of the Executable.
+     * This is similar to `try-with-resource`.
+     * Passing a `Executable with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
+     * @param f Executable to be executed
+     * @param <R> Return type of the Executable. This can be get by using the `result()` API of Try.
+     * @return An instance of Try with the Executable set for execution
+     */
+    public static <R> Try<R> flatExecute(Executable<AutoCloseableMarker, Either<Exception, R>> f) {
         return new Try<>(f, Try::noOp, Either::<Exception, R>left);
     }
 
@@ -148,7 +171,7 @@ public class Try<A> {
         Either<Exception, A> res = null;
         AutoCloseableMarker m = new AutoCloseableMarker();
         try {
-            res = Either.right(func.execute(m));
+            res = func.execute(m);
         } catch (Exception ex) {
             ex = exF.apply(ex);
             logger.consume(ex);

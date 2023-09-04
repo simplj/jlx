@@ -38,10 +38,10 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>map</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the list and returns the resultant applied(). Function application is <i>lazy</i><br>
+     * Detailed Description: <i>map</i>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>map</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
@@ -49,10 +49,10 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     public abstract <R> ImmutableList<R> map(Function<T, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened applied(). Function application is &lt;b&gt;lazy&lt;/b&gt;<br>
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
-     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling <code>flatmap</code> has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened applied(). Function application is <i>lazy</i><br>
+     * Detailed Description: <i>flatmap</i>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>flatmap</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
