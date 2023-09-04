@@ -9,41 +9,40 @@ Let's see the key hightlights of JLX.
   > ```java
   > class CannotDivideByZeroException extends Exception {...}
   > 
-  > //an unsafe method which throws a checked exception
-  > public int divide(int dividend, int divisor) throws CannotDivideByZeroException {
-  >   if (divisor == 0) throw new CannotDivideByZeroException();
-  >   return divident / divisor;
+  > //an unsafe method which throws a checked exception when input number is odd
+  > public int unsafe(int num) throws IllegalArgumentException {
+  >   if (num % 2 != 0) throw new IllegalArgumentException();
+  >   return someProcessWithNum(num);
   > }
   > 
   > //Using Function:
   > Function<Integer, Integer> dividerF = n -> {
   >   int res;
   >   try {
-  >     res = divide(n);
-  >   } catch (CannotDivideByZeroException ex) {
+  >     res = unsafe(n);
+  >   } catch (IllegalArgumentException ex) {
   >     res = 0;
   >   }
   >   return res;
   > }
   > 
   > //Using Executable:
-  > Executable<Integer, Integer> dividerE = n -> divide(n); //or using method reference: this::divide
+  > Executable<Integer, Integer> dividerE = n -> unsafe(n); //or using method reference: this::divide
   > //pure
-  > Function<Integer, Either<Exception, Integer>> dividerE.pure();
+  > Function<Integer, Either<Exception, Integer>> dividerP = dividerE.pure();
   > ```
   > In the above example the method `divide` throws a checked exception and to use it in a `Function` we have to wrap it inside `try-catch` and on the other hand we can simply use the unsafe method `divide` with no exception handling using `Executable`.
   > 
   > Okay, the next question could be, how is the exception handled then in case of using `Executable`? The answer is, at the time of execution i.e. when I am executing the exectuable I need to handle the exception. This makes sense because exception occurs while executing not while defining. Following code explains execution of `Executable` vs `Function`.
   > ```java
   > int a = //user input
-  > int b = //user input
   > 
   > //Using Function
-  > int res = divididerF.apply(a, b); //We don't know if exception occurred or not (I know we can handle using better design but that will add extra complexity to the simple code)
+  > int res = divididerF.apply(a); //We don't know if exception occurred or not (I know we can handle using better design but that will add extra complexity to the simple code)
   > 
   > //Using Executable
   > try {
-  >   int res = dividerE.execute(a, b);
+  >   int res = dividerE.execute(a);
   > } catch (Exception ex) {
   >   //Boom, exception occured while exeucuting, we got that information and can handle that here.
   > }
