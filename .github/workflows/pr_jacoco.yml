@@ -1,4 +1,4 @@
-name: Coverage
+name: PR Coverage Check
 
 on:
   pull_request:
