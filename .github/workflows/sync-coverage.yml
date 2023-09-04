@@ -1,7 +1,7 @@
 name: Sync Coverage Branch
 on:
   push:
-    branches: [ main ]
+    branches: [ main1 ]
 jobs:
   sync-coverage-branch:
     runs-on: ubuntu-latest
