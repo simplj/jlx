@@ -31,3 +31,5 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           min-coverage-overall: 10
           min-coverage-changed-files: 20
+          pass-emoji: :white_check_mark:
+          fail-emoji: :broken_heart:
