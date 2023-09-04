@@ -45,7 +45,7 @@
 # with the actions/checkout step. However, some of the other workflows in this
 # directory provide alternatives that do not require additional access.
 
-name: Coverage
+name: Code Coverage
 
 on:
   push:
