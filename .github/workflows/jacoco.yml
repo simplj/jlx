@@ -69,7 +69,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Build with Maven
-      run: mvn -B test
+      run: mvn -B test -Pcoverage
 
     - name: Generate Jacoco Badge
       id: jacoco
