@@ -94,7 +94,6 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       run: |
         cd .github/badges
-        ls
         if [[ `git status --porcelain *.svg *.json` ]]; then
           git config --global user.name 'Simpl.J'
           git config --global user.email 'simplj@users.noreply.github.com'
@@ -106,8 +105,9 @@ jobs:
     - name: Comment on PR with coverage percentages
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        REPORT=$(<badges/coverage-summary.json)
-        COVERAGE=$(jq -r '.coverage' <<< "$REPORT")%
+        REPORT=$(<.github/badges/coverage-summary.json)
+        val=$(jq -r '.coverage' <<< "$REPORT")
+        COVERAGE="${val:0:3}%"
         BRANCHES=$(jq -r '.branches' <<< "$REPORT")%
         NEWLINE=$'\n'
         BODY="## JaCoCo Test Coverage Summary Statistics${NEWLINE}| Coverage Type | Coverage    |${NEWLINE}|---------------|-------------|${NEWLINE}| __Coverage:__ | ${COVERAGE} |${NEWLINE}| __Branches:__ | ${BRANCHES} |"
