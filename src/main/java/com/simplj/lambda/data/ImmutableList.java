@@ -71,12 +71,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     }
 
     public ImmutableList<Couple<Integer, T>> indexed() {
-        return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>newInstance(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        return list().iterator();
+        return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
@@ -144,7 +139,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
     @Override
     public ImmutableList<T> empty() {
-        return newInstance(constructor);
+        return unit(constructor);
     }
 
     @Override
@@ -162,20 +157,10 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     }
 
     @Override
-    public ImmutableList<T> deleteIf(Predicate<? super T> filter) {
+    public ImmutableList<T> deleteIf(Condition<? super T> c) {
         ImmutableList<T> res = applied();
-        res.list.removeIf(filter);
+        res.list.removeIf(c::evaluate);
         return res;
-    }
-
-    @Override
-    public String toString() {
-        return isApplied() ? list().toString() : "[?]";
-    }
-
-    private static <A> ImmutableList<A> newInstance(Producer<List<?>> constructor) {
-        List<A> list = Util.cast(constructor.produce());
-        return new ListFunctor<>(list, constructor, Data::new, list);
     }
 
     private static final class ListFunctor<A, T> extends ImmutableList<T> implements Functor<A, T> {

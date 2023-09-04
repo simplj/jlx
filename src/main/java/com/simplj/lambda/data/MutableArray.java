@@ -14,10 +14,68 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
     }
 
     public static <A> MutableArray<A> of(int size) {
-        return of(Util.cast(new Object[size]));
+        A[] arr = Util.cast(new Object[size]);
+        return of(arr);
     }
     public static <A> MutableArray<A> of(A[] arr) {
         return new ArrayFunctor<>(arr, Data::new, arr);
+    }
+
+    public static MutableArray<Integer> of(int...arr) {
+        Integer[] a = new Integer[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Byte> of(byte...arr) {
+        Byte[] a = new Byte[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Short> of(short...arr) {
+        Short[] a = new Short[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Long> of(long...arr) {
+        Long[] a = new Long[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Float> of(float...arr) {
+        Float[] a = new Float[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Double> of(double...arr) {
+        Double[] a = new Double[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Boolean> of(boolean...arr) {
+        Boolean[] a = new Boolean[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static MutableArray<Character> of(char...arr) {
+        Character[] a = new Character[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
     }
 
     @Override
@@ -57,11 +115,11 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
 
     private void apply() {
         if (!isApplied()) {
-            arr = appliedList().arr;
+            arr = appliedArray().arr;
         }
     }
 
-    public abstract MutableArray<E> appliedList();
+    public abstract MutableArray<E> appliedArray();
 
     private static final class ArrayFunctor<A, T> extends MutableArray<T> implements Functor<A, T> {
         private final A[] src;
@@ -93,7 +151,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
             return new ArrayFunctor<>(src, filter(func, c), null);
         }
 
-        public final ArrayFunctor<T, T> appliedList() {
+        public final ArrayFunctor<T, T> appliedArray() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);

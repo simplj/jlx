@@ -14,10 +14,68 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
     }
 
     public static <A> ImmutableArray<A> of(int size) {
-        return of(Util.cast(new Object[size]));
+        A[] arr = Util.cast(new Object[size]);
+        return of(arr);
     }
     public static <A> ImmutableArray<A> of(A[] arr) {
         return new ArrayFunctor<>(arr, Data::new, arr);
+    }
+
+    public static ImmutableArray<Integer> of(int...arr) {
+        Integer[] a = new Integer[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Byte> of(byte...arr) {
+        Byte[] a = new Byte[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Short> of(short...arr) {
+        Short[] a = new Short[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Long> of(long...arr) {
+        Long[] a = new Long[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Float> of(float...arr) {
+        Float[] a = new Float[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Double> of(double...arr) {
+        Double[] a = new Double[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Boolean> of(boolean...arr) {
+        Boolean[] a = new Boolean[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
+    }
+    public static ImmutableArray<Character> of(char...arr) {
+        Character[] a = new Character[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            a[i] = arr[i];
+        }
+        return of(a);
     }
 
     @Override

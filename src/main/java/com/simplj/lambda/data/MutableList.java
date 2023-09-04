@@ -56,16 +56,6 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
      * @return resultant list after applying `f` to all the list elements
      */
     public abstract <R> MutableList<R> flatmap(Function<T, ? extends List<R>> f);
-
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
-     * @param c condition to evaluate against each element
-     * @return list containing elements which satisfies the condition `c`
-     */
-    @Override
-    public abstract MutableList<T> filter(Condition<T> c);
-
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
@@ -86,7 +76,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     public MutableList<Couple<Integer, T>> indexed() {
-        return foldl(Tuple.of(0, MutableList.<Couple<Integer, T>>newInstance(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
+        return foldl(Tuple.of(0, MutableList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
@@ -243,14 +233,9 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         return list.removeIf(filter);
     }
 
-    public MutableList<T> deleteIf(Predicate<? super T> filter) {
-        removeIf(filter);
+    public MutableList<T> deleteIf(Condition<? super T> c) {
+        removeIf(c::evaluate);
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return isApplied() ? list.toString() : "[?]";
     }
 
     private void apply() {
@@ -259,12 +244,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         }
     }
 
-    public abstract MutableList<T> appliedList();
-
-    private static <A> MutableList<A> newInstance(Producer<List<?>> constructor) {
-        List<A> list = Util.cast(constructor.produce());
-        return new ListFunctor<>(list, constructor, Data::new, list);
-    }
+    abstract MutableList<T> appliedList();
 
     private static final class ListFunctor<A, T> extends MutableList<T> implements Functor<A, T> {
         private final List<A> src;
@@ -296,7 +276,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final ListFunctor<T, T> appliedList() {
+        final ListFunctor<T, T> appliedList() {
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));

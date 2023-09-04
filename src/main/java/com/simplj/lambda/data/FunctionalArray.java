@@ -109,6 +109,10 @@ abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements It
         return -1;
     }
 
+    public List<E> toList() {
+        return Arrays.asList(array());
+    }
+
     public E find(Condition<E> c) {
         return Util.find(array(), c);
     }
@@ -174,6 +178,45 @@ abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements It
         return Arrays.stream(array());
     }
 
+    /**
+     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
+     */
+    public abstract boolean isApplied();
+
+    public abstract A applied();
+
+    @Override
+    public String toString() {
+        return isApplied() ? Arrays.toString(array()) : "[?]";
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(array());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean res;
+        if (obj == null) {
+            res = null == array();
+        } else {
+            if (obj instanceof FunctionalArray) {
+                FunctionalArray<?, ?> fList = Util.cast(obj);
+                res = Arrays.equals(array(), fList.array());
+            } else if (obj.getClass().isArray()) {
+                if (obj.getClass().getComponentType().isPrimitive()) {
+                    res = primEq(obj);
+                } else {
+                    res = Arrays.equals(array(), Util.cast(obj));
+                }
+            } else {
+                res = false;
+            }
+        }
+        return res;
+    }
+
     public A copy() {
         E[] arr = array();
         E[] res = Util.cast(new Object[arr.length]);
@@ -186,10 +229,79 @@ abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements It
         return Arrays.asList(array()).iterator();
     }
 
-    /**
-     * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
-     */
-    public abstract boolean isApplied();
-
-    public abstract A applied();
+    /*int, byte, short, long, float, double, boolean and char*/
+    private boolean primEq(Object obj) {
+        boolean res;
+        String primType = obj.getClass().getComponentType().getSimpleName();
+        E[] arr;
+        switch (primType) {
+            case "int":
+                int[] iArr = Util.cast(obj);
+                arr = array();
+                res = iArr.length == arr.length;
+                for (int i = 0; res && i < iArr.length; i++) {
+                    res = arr[i].equals(iArr[i]);
+                }
+                break;
+            case "byte":
+                byte[] bArr = Util.cast(obj);
+                arr = array();
+                res = bArr.length == arr.length;
+                for (int i = 0; res && i < bArr.length; i++) {
+                    res = arr[i].equals(bArr[i]);
+                }
+                break;
+            case "short":
+                short[] sArr = Util.cast(obj);
+                arr = array();
+                res = sArr.length == arr.length;
+                for (int i = 0; res && i < sArr.length; i++) {
+                    res = arr[i].equals(sArr[i]);
+                }
+                break;
+            case "long":
+                long[] lArr = Util.cast(obj);
+                arr = array();
+                res = lArr.length == arr.length;
+                for (int i = 0; res && i < lArr.length; i++) {
+                    res = arr[i].equals(lArr[i]);
+                }
+                break;
+            case "float":
+                float[] fArr = Util.cast(obj);
+                arr = array();
+                res = fArr.length == arr.length;
+                for (int i = 0; res && i < fArr.length; i++) {
+                    res = arr[i].equals(fArr[i]);
+                }
+                break;
+            case "double":
+                double[] dArr = Util.cast(obj);
+                arr = array();
+                res = dArr.length == arr.length;
+                for (int i = 0; res && i < dArr.length; i++) {
+                    res = arr[i].equals(dArr[i]);
+                }
+                break;
+            case "boolean":
+                boolean[] binArr = Util.cast(obj);
+                arr = array();
+                res = binArr.length == arr.length;
+                for (int i = 0; res && i < binArr.length; i++) {
+                    res = arr[i].equals(binArr[i]);
+                }
+                break;
+            case "char":
+                char[] cArr = Util.cast(obj);
+                arr = array();
+                res = cArr.length == arr.length;
+                for (int i = 0; res && i < cArr.length; i++) {
+                    res = arr[i].equals(cArr[i]);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Not supported primitive data type '" + primType + "'!");
+        }
+        return res;
+    }
 }

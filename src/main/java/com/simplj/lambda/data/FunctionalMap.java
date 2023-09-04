@@ -4,20 +4,47 @@ import com.simplj.lambda.function.*;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements Iterable<Map.Entry<K, V>> {
+    final Producer<Map<?, ?>> constructor;
+
+    FunctionalMap(Producer<Map<?, ?>> constructor) {
+        this.constructor = constructor;
+    }
+
+    abstract M instantiate(Producer<Map<?, ?>> constructor);
 
     public abstract Map<K, V> map();
 
+    /**
+     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`. <br>
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
+     * @param c condition to evaluate against each element
+     * @return map containing elements which satisfies the condition `c`
+     */
     public abstract M filter(BiFunction<K, V, Boolean> c);
-    public abstract M filterOut(BiFunction<K, V, Boolean> c);
-    public abstract M filterByKey(Condition<K> c);
-    public abstract M filterOutByKey(Condition<K> c);
-    public abstract M filterByValue(Condition<V> c);
-    public abstract M filterOutByValue(Condition<V> c);
+    /**
+     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`. <br>
+     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
+     * @param c condition to evaluate against each element
+     * @return map containing elements which does not satisfy the condition `c`
+     */
+    public M filterOut(BiFunction<K, V, Boolean> c) {
+        return filter((a, b) -> !c.apply(a, b));
+    }
+    public M filterByKey(Condition<K> c) {
+        return filter((a, x) -> c.evaluate(a));
+    }
+    public M filterOutByKey(Condition<K> c) {
+        return filterByKey(c.negate());
+    }
+    public M filterByValue(Condition<V> c) {
+        return filter((x, b) -> c.evaluate(b));
+    }
+    public M filterOutByValue(Condition<V> c) {
+        return filterByValue(c.negate());
+    }
 
     public abstract boolean isApplied();
     /**
@@ -26,15 +53,48 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
      */
     public abstract M applied();
 
-    public abstract Couple<M, M> split(BiFunction<K, V, Boolean> c);
-    public abstract int size();
-    public abstract boolean isEmpty();
-    public abstract boolean containsKey(Object key);
-    public abstract boolean containsValue(Object value);
-    public abstract boolean containsKeys(Set<K> keys);
-    public abstract boolean containsValues(Set<V> values);
-    public abstract V get(Object key);
-    public abstract V getOrDefault(Object key, V defaultValue);
+    /**
+     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} map and returns a <code>Couple</code> of <code>ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
+     * @param c condition based on which the elements will be segregated
+     * @return <code>Couple</code> of <code>ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
+     */
+    public Couple<M, M> split(BiFunction<K, V, Boolean> c) {
+        M match = instantiate(constructor);
+        M rest = instantiate(constructor);
+        Map<K, V> map = map();
+        for (Map.Entry<K, V> t : map.entrySet()) {
+            if (c.apply(t.getKey(), t.getValue())) {
+                match.include(t.getKey(), t.getValue());
+            } else {
+                rest.include(t.getKey(), t.getValue());
+            }
+        }
+        return Tuple.of(match, rest);
+    }
+    public int size() {
+        return map().size();
+    }
+    public boolean isEmpty() {
+        return map().isEmpty();
+    }
+    public boolean containsKey(Object key) {
+        return map().containsKey(key);
+    }
+    public boolean containsValue(Object value) {
+        return map().containsValue(value);
+    }
+    public boolean containsKeys(Set<K> keys) {
+        return keySet().containsAll(keys);
+    }
+    public boolean containsValues(Set<V> values) {
+        return values().containsAll(values);
+    }
+    public V get(Object key) {
+        return map().get(key);
+    }
+    public V getOrDefault(Object key, V defaultValue) {
+        return map().getOrDefault(key, defaultValue);
+    }
     public abstract M include(K key, V val);
     public abstract M includeIfAbsent(K key, V val);
     public abstract M include(Map<K, V> that);
@@ -43,17 +103,33 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
     public abstract M replacing(K key, V value);
     public abstract M replacing(K key, V oldValue, V newValue);
     public abstract M empty();
-    public abstract Set<K> keySet();
-    public abstract Collection<V> values();
-    public abstract Set<Map.Entry<K, V>> entrySet();
+    public Set<K> keySet() {
+        return map().keySet();
+    }
+    public Collection<V> values() {
+        return map().values();
+    }
+    public Set<Map.Entry<K, V>> entrySet() {
+        return map().entrySet();
+    }
 
-    public abstract void forEach(java.util.function.BiConsumer<? super K, ? super V> action);
+    public void forEach(java.util.function.BiConsumer<? super K, ? super V> action) {
+        map().forEach(action);
+    }
 
     public abstract M replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function);
-    public abstract V computeIfAbsent(K key, java.util.function.Function<? super K, ? extends V> mappingFunction);
-    public abstract V computeIfPresent(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction);
-    public abstract V compute(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction);
-    public abstract V merge(K key, V value, java.util.function.BiFunction<? super V, ? super V, ? extends V> remappingFunction);
+    public V computeIfAbsent(K key, java.util.function.Function<? super K, ? extends V> mappingFunction) {
+        return map().computeIfAbsent(key, mappingFunction);
+    }
+    public V computeIfPresent(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return map().computeIfPresent(key, remappingFunction);
+    }
+    public V compute(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return map().compute(key, remappingFunction);
+    }
+    public V merge(K key, V value, java.util.function.BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        return map().merge(key, value, remappingFunction);
+    }
 
     public Couple<K, V> find(BiFunction<K, V, Boolean> c) {
         Couple<K, V> res = null;
@@ -125,5 +201,38 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
         return res;
     }
 
-    public abstract M copy();
+    @Override
+    public Iterator<Map.Entry<K, V>> iterator() {
+        return map().entrySet().iterator();
+    }
+
+    @Override
+    public Spliterator<Map.Entry<K, V>> spliterator() {
+        return map().entrySet().spliterator();
+    }
+
+    @Override
+    public String toString() {
+        return isApplied() ? map().toString() : "(?=?)";
+    }
+
+    @Override
+    public int hashCode() {
+        return map().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FunctionalMap) {
+            FunctionalMap<?, ?, ?> fMap = Util.cast(obj);
+            obj = fMap.map();
+        }
+        return map().equals(obj);
+    }
+
+    public M copy() {
+        M r = instantiate(constructor);
+        r.include(map());
+        return r;
+    }
 }

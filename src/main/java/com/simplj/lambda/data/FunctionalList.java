@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
     final Producer<List<?>> constructor;
 
-    protected FunctionalList(Producer<List<?>> constructor) {
+    FunctionalList(Producer<List<?>> constructor) {
         this.constructor = constructor;
     }
 
@@ -132,6 +132,10 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
         return list().listIterator(index);
     }
     @Override
+    public Iterator<T> iterator() {
+        return list().iterator();
+    }
+    @Override
     public Spliterator<T> spliterator() {
         return list().spliterator();
     }
@@ -140,7 +144,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
     }
     public abstract L sorted(Comparator<? super T> c);
     public abstract L replacingAll(UnaryOperator<T> operator);
-    public abstract L deleteIf(Predicate<? super T> filter);
+    public abstract L deleteIf(Condition<? super T> filter);
 
     public Stream<T> stream() {
         return list().stream();
@@ -213,6 +217,11 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
             }
         }
         return res;
+    }
+
+    @Override
+    public String toString() {
+        return isApplied() ? list().toString() : "[?]";
     }
 
     @Override

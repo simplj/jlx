@@ -14,11 +14,10 @@ import java.util.function.Consumer;
 
 public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> implements Map<K, V> {
     Map<K, V> map;
-    final Producer<Map<?, ?>> constructor;
 
     private MutableMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
+        super(constructor);
         this.map = map;
-        this.constructor = constructor;
     }
 
     public static <A, B> MutableMap<A, B> unit() {
@@ -74,35 +73,6 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
      */
     public abstract <A, B> MutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
     public abstract <R> MutableMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
-
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
-     * @param c condition to evaluate against each element
-     * @return map containing elements which satisfies the condition `c`
-     */
-    public abstract MutableMap<K, V> filter(BiFunction<K, V, Boolean> c);
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
-     * @param c condition to evaluate against each element
-     * @return map containing elements which does not satisfy the condition `c`
-     */
-    public MutableMap<K, V> filterOut(BiFunction<K, V, Boolean> c) {
-        return filter((a, b) -> !c.apply(a, b));
-    }
-    public MutableMap<K, V> filterByKey(Condition<K> c) {
-        return filter((a, x) -> c.evaluate(a));
-    }
-    public MutableMap<K, V> filterOutByKey(Condition<K> c) {
-        return filterByKey(c.negate());
-    }
-    public MutableMap<K, V> filterByValue(Condition<V> c) {
-        return filter((x, b) -> c.evaluate(b));
-    }
-    public MutableMap<K, V> filterOutByValue(Condition<V> c) {
-        return filterByValue(c.negate());
-    }
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -113,70 +83,10 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
         return map != null;
     }
 
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} map and returns a <code>Couple</code> of <code>MutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
-     * @param c condition based on which the elements will be segregated
-     * @return <code>Couple</code> of <code>MutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
-     */
     @Override
-    public Couple<MutableMap<K, V>, MutableMap<K, V>> split(BiFunction<K, V, Boolean> c) {
-        MutableMap<K, V> match = MutableMap.newInstance(constructor);
-        MutableMap<K, V> rest = MutableMap.newInstance(constructor);
+    public MutableMap<K, V> applied() {
         apply();
-        for (Entry<K, V> t : map.entrySet()) {
-            if (c.apply(t.getKey(), t.getValue())) {
-                match.put(t.getKey(), t.getValue());
-            } else {
-                rest.put(t.getKey(), t.getValue());
-            }
-        }
-        return Tuple.of(match, rest);
-    }
-
-    @Override
-    public int size() {
-        apply();
-        return map.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        apply();
-        return map.isEmpty();
-    }
-
-    @Override
-    public boolean containsKey(Object key) {
-        apply();
-        return map.containsKey(key);
-    }
-
-    @Override
-    public boolean containsValue(Object value) {
-        apply();
-        return map.containsValue(value);
-    }
-
-    @Override
-    public boolean containsKeys(Set<K> keys) {
-        return keySet().containsAll(keys);
-    }
-
-    @Override
-    public boolean containsValues(Set<V> values) {
-        return values().containsAll(values);
-    }
-
-    @Override
-    public V get(Object key) {
-        apply();
-        return map.get(key);
-    }
-
-    @Override
-    public V getOrDefault(Object key, V defaultValue) {
-        apply();
-        return map.getOrDefault(key, defaultValue);
+        return this;
     }
 
     @Override
@@ -276,30 +186,6 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public Set<K> keySet() {
-        apply();
-        return map.keySet();
-    }
-
-    @Override
-    public Collection<V> values() {
-        apply();
-        return map.values();
-    }
-
-    @Override
-    public Set<Entry<K, V>> entrySet() {
-        apply();
-        return map.entrySet();
-    }
-
-    @Override
-    public void forEach(BiConsumer<? super K, ? super V> action) {
-        apply();
-        map.forEach(action);
-    }
-
-    @Override
     public void replaceAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
         apply();
         map.replaceAll(function);
@@ -312,81 +198,18 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public V computeIfAbsent(K key, java.util.function.Function<? super K, ? extends V> mappingFunction) {
-        apply();
-        return map.computeIfAbsent(key, mappingFunction);
-    }
-
-    @Override
-    public V computeIfPresent(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        apply();
-        return map.computeIfPresent(key, remappingFunction);
-    }
-
-    @Override
-    public V compute(K key, java.util.function.BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        apply();
-        return map.compute(key, remappingFunction);
-    }
-
-    @Override
-    public V merge(K key, V value, java.util.function.BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        apply();
-        return map.merge(key, value, remappingFunction);
-    }
-
-    @Override
-    public Iterator<Entry<K, V>> iterator() {
-        apply();
-        return map.entrySet().iterator();
-    }
-
-    @Override
     public void forEach(Consumer<? super Entry<K, V>> action) {
         apply();
         super.forEach(action);
     }
 
-    @Override
-    public Spliterator<Entry<K, V>> spliterator() {
-        apply();
-        return map.entrySet().spliterator();
-    }
-
-    @Override
-    public String toString() {
-        return isApplied() ? map.toString() : "(?=?)";
-    }
-
-    @Override
-    public int hashCode() {
-        apply();
-        return map.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        apply();
-        if (obj instanceof FunctionalMap) {
-            FunctionalMap<?, ?, ?> fMap = Util.cast(obj);
-            obj = fMap.map();
-        }
-        return map.equals(obj);
-    }
-
-    @Override
-    public MutableMap<K, V> copy() {
-        apply();
-        MutableMap<K, V> r = newInstance(constructor);
-        r.putAll(map);
-        return r;
-    }
-
     private void apply() {
         if (!isApplied()) {
-            map = applied().map;
+            map = appliedMap().map;
         }
     }
+
+    abstract MutableMap<K, V> appliedMap();
 
     public static <A, B> MutableMap<A, B> newInstance(Producer<Map<?, ?>> constructor) {
         Map<A, B> map = Util.cast(constructor.produce());
@@ -401,6 +224,11 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
             super(applied, constructor);
             this.src = map;
             this.func = f;
+        }
+
+        @Override
+        MutableMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
+            return new MapFunctor<>(map, constructor, Pair::new, map);
         }
 
         public <C, D> MutableMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
@@ -430,7 +258,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
             return new MapFunctor<>(src, constructor, flatmapK(func, f), null);
         }
 
-        public final MapFunctor<A, B, A, B> applied() {
+        final MapFunctor<A, B, A, B> appliedMap() {
             MapFunctor<A, B, A, B> res;
             if (map == null) {
                 Map<A, B> r = apply(src, func, Util.cast(constructor.produce()));

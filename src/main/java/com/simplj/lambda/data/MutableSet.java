@@ -13,11 +13,10 @@ import java.util.stream.Stream;
 
 public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
     Set<T> set;
-    final Producer<Set<?>> constructor;
 
     private MutableSet(Set<T> set, Producer<Set<?>> constructor) {
+        super(constructor);
         this.set = set;
-        this.constructor = constructor;
     }
 
     public static <A> MutableSet<A> unit() {
@@ -68,24 +67,6 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
      * @return resultant set after applying `f` to all the set elements
      */
     public abstract <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
-
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
-     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
-     * @param c condition to evaluate against each element
-     * @return set containing elements which satisfies the condition `c`
-     */
-    public abstract MutableSet<T> filter(Condition<T> c);
-
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which satisfies `c`. Hence the resultant set of this api only contains the elements which does not satisfy the condition `c`. <br>
-     * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
-     * @param c condition to evaluate against each element
-     * @return set containing elements which does not satisfy the condition `c`
-     */
-    public MutableSet<T> filterOut(Condition<T> c) {
-        return filter(c.negate());
-    }
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -100,73 +81,6 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     public MutableSet<T> applied() {
         apply();
         return this;
-    }
-
-    /**
-     * Applies the <code>Condition</code> `c` to all the elements in the {@link #applied() applied} set and returns a <code>Couple</code> of <code>MutableSet</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
-     * @param c condition based on which the elements will be segregated
-     * @return <code>Couple</code> of <code>MutableSet</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
-     */
-    public Couple<MutableSet<T>, MutableSet<T>> split(Condition<T> c) {
-        MutableSet<T> match = MutableSet.newInstance(constructor);
-        MutableSet<T> rest = MutableSet.newInstance(constructor);
-        apply();
-        for (T t : set) {
-            if (c.evaluate(t)) {
-                match.add(t);
-            } else {
-                rest.add(t);
-            }
-        }
-        return Tuple.of(match, rest);
-    }
-
-    @Override
-    public int size() {
-        apply();
-        return set.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        apply();
-        return set.isEmpty();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        apply();
-        return set.contains(o);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        apply();
-        return set.containsAll(c);
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        apply();
-        return set.iterator();
-    }
-
-    @Override
-    public Spliterator<T> spliterator() {
-        apply();
-        return set.spliterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        apply();
-        return set.toArray();
-    }
-
-    @Override
-    public <T1> T1[] toArray(T1[] a) {
-        apply();
-        return set.toArray(a);
     }
 
     @Override
@@ -247,68 +161,18 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
         return set.removeIf(filter);
     }
 
-    public MutableSet<T> deleteIf(Predicate<? super T> filter) {
-        removeIf(filter);
+    public MutableSet<T> deleteIf(Condition<? super T> c) {
+        removeIf(c::evaluate);
         return this;
-    }
-
-    @Override
-    public Stream<T> stream() {
-        apply();
-        return set.stream();
-    }
-
-    @Override
-    public Stream<T> parallelStream() {
-        apply();
-        return set.parallelStream();
-    }
-
-    @Override
-    public void forEach(Consumer<? super T> action) {
-        apply();
-        set.forEach(action);
-    }
-
-    @Override
-    public String toString() {
-        return isApplied() ? set.toString() : "[?]";
-    }
-
-    @Override
-    public int hashCode() {
-        apply();
-        return set.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        apply();
-        if (obj instanceof FunctionalSet) {
-            FunctionalSet<?, ?> fSet = Util.cast(obj);
-            obj = fSet.set();
-        }
-        return set.equals(obj);
-    }
-
-    @Override
-    public MutableSet<T> copy() {
-        apply();
-        MutableSet<T> r = newInstance(constructor);
-        r.addAll(set);
-        return r;
     }
 
     private void apply() {
         if (!isApplied()) {
-            set = applied().set;
+            set = appliedSet().set;
         }
     }
 
-    public static <A> MutableSet<A> newInstance(Producer<Set<?>> constructor) {
-        Set<A> set = Util.cast(constructor.produce());
-        return new SetFunctor<>(set, constructor, Data::new, set);
-    }
+    abstract MutableSet<T> appliedSet();
 
     private static final class SetFunctor<A, T> extends MutableSet<T> implements Functor<A, T> {
         private final Set<A> src;
@@ -318,6 +182,11 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
             super(applied, constructor);
             this.src = set;
             this.func = f;
+        }
+
+        @Override
+        MutableSet<T> instantiate(Producer<Set<?>> constructor) {
+            return new SetFunctor<>(set, constructor, Data::new, set);
         }
 
         @Override
@@ -335,7 +204,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
             return new SetFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final SetFunctor<T, T> applied() {
+        final SetFunctor<T, T> appliedSet() {
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));
