@@ -17,6 +17,17 @@ public final class Util {
         return res;
     }
 
+    static <T> T find(T[] source, Condition<T> c) {
+        T res = null;
+        for (T t : source) {
+            if (c.evaluate(t)) {
+                res = t;
+                break;
+            }
+        }
+        return res;
+    }
+
     @SuppressWarnings("unchecked")
     public static <R> R cast(Object o) {
         return (R) o;

@@ -26,7 +26,7 @@ public class Lazy<A> {
     }
 
     /**
-     * Wraps the initialization of type T in the Lazy instance
+     * Wraps the initialization of type T in the Lazy instance.
      * @param lazyVal Initialization to be wrapped
      * @param <T>     Type of value to be initialized
      * @return Lazy instance with the initializer for type T

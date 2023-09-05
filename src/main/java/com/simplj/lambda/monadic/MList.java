@@ -9,8 +9,8 @@ import java.util.Optional;
 
 /**
  * MList&lt;T&gt; depicts the List Monad from Functional Programming.
- * &lt;br /&gt;&lt;b&gt;&lt;u&gt;WARNING:&lt;/u&gt;&lt;/b&gt; This list follows functional paradigm and the methods are recursive,
- *  hence may throw &lt;b&gt;StackOverFlow&lt;/b&gt; exception when the size grows large!
+ * <br>*WARNING:* This list follows functional paradigm and the methods are recursive,
+ *  hence may throw "StackOverFlow" exception when the size grows large!
  *  (Threshold size depends on the JVM memory)
  * @param <T> Type of underlying value
  */

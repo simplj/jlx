@@ -7,18 +7,15 @@ import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> implements List<T> {
-    List<T> list;
-    final Producer<List<?>> constructor;
+    volatile List<T> list;
 
     MutableList(List<T> list, Producer<List<?>> constructor) {
+        super(constructor);
         this.list = list;
-        this.constructor = constructor;
     }
 
     public static <A> MutableList<A> unit() {
@@ -39,10 +36,10 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
 
     /* ------------------- START: Lazy methods ------------------- */
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; R)&lt;/i&gt; to all the elements in the list and returns the resultant list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
-     * Detailed Description: &lt;b&gt;map&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;map&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;map&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the list and returns the resultant list. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>map</i>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>map</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>map</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
@@ -50,35 +47,15 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     public abstract <R> MutableList<R> map(Function<T, R> f);
 
     /**
-     * Applies the function `f` of type &lt;i&gt;(T -&gt; List&lt;R&gt;)&lt;/i&gt; to all the elements in the list and returns the resultant flattened list. Function application is &lt;b&gt;lazy&lt;/b&gt;&lt;br /&gt;
-     * Detailed Description: &lt;b&gt;flatmap&lt;/b&gt;-ing `f` on list &lt;code&gt;[1, 2, 3]&lt;/code&gt; will return a list &lt;code&gt;[f(1), f(2), f(3)]&lt;/code&gt;.
-     * As it can be seen that the function `f` is not applied immediately which makes &lt;code&gt;flatmap&lt;/code&gt; a &lt;b&gt;lazy&lt;/b&gt; implementation.
-     * The function `f` is not applied to the elements until a &lt;b&gt;eager&lt;/b&gt; api is called. Therefore, calling &lt;code&gt;flatmap&lt;/code&gt; has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
+     * Applies the function `f` of type <i>(T -&gt; List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened list. Function application is <i>lazy</i><br>
+     * Detailed Description: <i>flatmap</i>-ing `f` on list <code>[1, 2, 3]</code> will return a list <code>[f(1), f(2), f(3)]</code>.
+     * As it can be seen that the function `f` is not applied immediately which makes <code>flatmap</code> a <i>lazy</i> implementation.
+     * The function `f` is not applied to the elements until a <i>eager</i> api is called. Therefore, calling <code>flatmap</code> has no effect until a <i>eager</i> api is called.
      * @param f function to apply to each element.
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
     public abstract <R> MutableList<R> flatmap(Function<T, ? extends List<R>> f);
-
-    /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. &lt;br /&gt;
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
-     * @param c condition to evaluate against each element
-     * @return list containing elements which satisfies the condition `c`
-     */
-    @Override
-    public abstract MutableList<T> filter(Condition<T> c);
-
-    /**
-     * Applies the &lt;code&gt;Condition&lt;/code&gt; `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. &lt;br /&gt;
-     * Function application is &lt;b&gt;lazy&lt;/b&gt; which means calling this api has no effect until a &lt;b&gt;eager&lt;/b&gt; api is called.
-     * @param c condition to evaluate against each element
-     * @return list containing elements which does not satisfy the condition `c`
-     */
-    @Override
-    public MutableList<T> filterOut(Condition<T> c) {
-        return filter(c.negate());
-    }
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
@@ -93,64 +70,19 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public Couple<MutableList<T>, MutableList<T>> split(Condition<T> c) {
-        MutableList<T> match = MutableList.newInstance(constructor);
-        MutableList<T> rest = MutableList.newInstance(constructor);
-        MutableList<T> l = applied();
-        for (T t : l) {
-            if (c.evaluate(t)) {
-                match.list.add(t);
-            } else {
-                rest.list.add(t);
-            }
-        }
-        return Tuple.of(match, rest);
-    }
-
-    public MutableList<Couple<Integer, T>> indexedList() {
-        return foldl(Tuple.of(0, MutableList.<Couple<Integer, T>>newInstance(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
-    }
-
-    @Override
-    public int size() {
+    public MutableList<T> applied() {
         apply();
-        return list.size();
+        return this;
     }
 
-    @Override
-    public boolean isEmpty() {
-        apply();
-        return list.isEmpty();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        apply();
-        return list.contains(o);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        apply();
-        return list.containsAll(c);
+    public MutableList<Couple<Integer, T>> indexed() {
+        return foldl(Tuple.of(0, MutableList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
     public Iterator<T> iterator() {
         apply();
         return list.iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        apply();
-        return list.toArray();
-    }
-
-    @Override
-    public <T1> T1[] toArray(T1[] a) {
-        apply();
-        return list.toArray(a);
     }
 
     @Override
@@ -274,48 +206,6 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public T get(int index) {
-        apply();
-        return list.get(index);
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        apply();
-        return list.indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        apply();
-        return list.lastIndexOf(o);
-    }
-
-    @Override
-    public ListIterator<T> listIterator() {
-        apply();
-        return list.listIterator();
-    }
-
-    @Override
-    public ListIterator<T> listIterator(int index) {
-        apply();
-        return list.listIterator(index);
-    }
-
-    @Override
-    public Spliterator<T> spliterator() {
-        apply();
-        return list.spliterator();
-    }
-
-    @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        apply();
-        return list.subList(fromIndex, toIndex);
-    }
-
-    @Override
     public void sort(Comparator<? super T> c) {
         apply();
         list.sort(c);
@@ -343,67 +233,18 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         return list.removeIf(filter);
     }
 
-    public MutableList<T> deleteIf(Predicate<? super T> filter) {
-        removeIf(filter);
+    public MutableList<T> deleteIf(Condition<? super T> c) {
+        removeIf(c::evaluate);
         return this;
-    }
-
-    @Override
-    public Stream<T> stream() {
-        apply();
-        return list.stream();
-    }
-
-    @Override
-    public Stream<T> parallelStream() {
-        apply();
-        return list.parallelStream();
-    }
-
-    @Override
-    public void forEach(Consumer<? super T> action) {
-        apply();
-        list.forEach(action);
-    }
-
-    @Override
-    public String toString() {
-        return isApplied() ? list.toString() : "[?]";
-    }
-
-    @Override
-    public int hashCode() {
-        apply();
-        return list.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        apply();
-        if (obj instanceof FunctionalList) {
-            FunctionalList<?, ?> fList = Util.cast(obj);
-            obj = fList.list();
-        }
-        return list.equals(obj);
-    }
-
-    @Override
-    public MutableList<T> copy() {
-        MutableList<T> r = newInstance(constructor);
-        r.list.addAll(list);
-        return r;
     }
 
     private void apply() {
         if (!isApplied()) {
-            list = applied().list;
+            list = appliedList().list;
         }
     }
 
-    private static <A> MutableList<A> newInstance(Producer<List<?>> constructor) {
-        List<A> list = Util.cast(constructor.produce());
-        return new ListFunctor<>(list, constructor, Data::new, list);
-    }
+    abstract MutableList<T> appliedList();
 
     private static final class ListFunctor<A, T> extends MutableList<T> implements Functor<A, T> {
         private final List<A> src;
@@ -413,6 +254,11 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
             super(applied, constructor);
             this.src = list;
             this.func = f;
+        }
+
+        @Override
+        MutableList<T> instantiate(Producer<List<?>> constructor) {
+            return new ListFunctor<>(list, constructor, Data::new, list);
         }
 
         @Override
@@ -430,7 +276,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final ListFunctor<T, T> applied() {
+        final ListFunctor<T, T> appliedList() {
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));
@@ -442,4 +288,3 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         }
     }
 }
-

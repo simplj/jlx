@@ -10,13 +10,13 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestTry {
     @Test
-    public void testTryProviderExecution() {
+    public void testTryProviderExecution() throws Exception {
         assertEquals("1", Try.execute(() -> unsafe("1")).result().right());
+        assertEquals("1", Try.flatExecute(() -> Either.right(unsafe("1"))).result().right());
         assertEquals("1", Try.execute(() -> unsafe("")).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute(() -> unsafe(""))
                 .handle(InstantiationException.class, e -> "IE")
@@ -27,6 +27,8 @@ public class TestTry {
         assertTrue(Try.execute(() -> unsafe(null)).handle(InstantiationException.class, e -> "IE").result().isLeft());
         assertTrue(Try.execute(() -> unsafe("")).handle(IllegalStateException.class, e -> "ISE").result().isLeft());
         assertTrue(Try.execute(() -> unsafe("")).result().isLeft());
+        assertEquals("1", Try.execute(() -> unsafe("1")).resultOrThrow());
+        assertThrows(InstantiationException.class, () -> Try.execute(() -> unsafe("")).resultOrThrow());
     }
 
     @Test
@@ -47,6 +49,7 @@ public class TestTry {
     @Test
     public void testTryExecutableExecution() {
         assertEquals("2", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 2)).result().right());
+        assertEquals("2", Try.flatExecute((Try.AutoCloseableMarker m) -> Either.right(unsafe(m, 2))).result().right());
         assertTrue(Try.execute((Try.AutoCloseableMarker m) -> m.markForAutoClose(new TestAutoCloseable(2))).result().right().isClosed);
         assertEquals("1", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 0)).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute((Try.AutoCloseableMarker m) -> unsafe(m, 0))

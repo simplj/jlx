@@ -18,13 +18,13 @@ import java.util.*;
  * @param <A> Type of the resultant value
  */
 public class Try<A> {
-    private Executable<AutoCloseableMarker, A> func;
+    private Executable<AutoCloseableMarker, Either<Exception, A>> func;
     private Consumer<Exception> logger;
     private Function<Exception, Either<Exception, A>> recovery;
     private Function<Exception, Exception> exF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
-    private Try(Executable<AutoCloseableMarker, A> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
+    private Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
         this.func = f;
         this.logger = logger;
         this.recovery = recovery;
@@ -43,6 +43,16 @@ public class Try<A> {
     }
 
     /**
+     * Sets a Provider for execution. Resultant `Either` of the Provider is flattened after execution.
+     * @param f Provider function to be executed
+     * @param <R> Return type of the Provider. This can be get by using the `result()` API of Try.
+     * @return An instance of Try with the Provider set for execution
+     */
+    public static <R> Try<R> flatExecute(Provider<Either<Exception, R>> f) {
+        return flatExecute(f.toExecutable());
+    }
+
+    /**
      * Sets a Excerpt for execution
      * @param f Excerpt to be executed
      * @return An instance of Try with the Excerpt set for execution
@@ -54,7 +64,7 @@ public class Try<A> {
     /**
      * Sets a Receiver for execution.
      * The input argument for the Receiver is an instance of AutoCloseableMarker where an AutoCloseable can be marked for auto-closing after the execution of the Receiver.
-     * This is similar to `try-with-resource`
+     * This is similar to `try-with-resource`.
      * Passing a `Receiver with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Consumer to be executed
      * @return An instance of Try with the Receiver set for execution
@@ -66,18 +76,31 @@ public class Try<A> {
     /**
      * Sets a Executable for execution.
      * The input argument for the Executable is an instance of AutoCloseableMarker where an AutoClosable can be marked for auto-closing after the execution of the Executable.
-     * This is similar to `try-with-resource`
+     * This is similar to `try-with-resource`.
      * Passing a `Executable with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
      * @param f Executable to be executed
      * @param <R> Return type of the Executable. This can be get by using the `result()` API of Try.
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> execute(Executable<AutoCloseableMarker, R> f) {
+        return flatExecute(f.andThen(Either::right));
+    }
+
+    /**
+     * Sets a Executable for execution. Resultant `Either` of the Provider is flattened after execution.
+     * The input argument for the Executable is an instance of AutoCloseableMarker where an AutoClosable can be marked for auto-closing after the execution of the Executable.
+     * This is similar to `try-with-resource`.
+     * Passing a `Executable with Retry` can result into unexpected behavior, hence, it is strongly recommended to use `Try.retry` when a retry mechanism is required.
+     * @param f Executable to be executed
+     * @param <R> Return type of the Executable. This can be get by using the `result()` API of Try.
+     * @return An instance of Try with the Executable set for execution
+     */
+    public static <R> Try<R> flatExecute(Executable<AutoCloseableMarker, Either<Exception, R>> f) {
         return new Try<>(f, Try::noOp, Either::<Exception, R>left);
     }
 
     /**
-     * Attempts retry as per the given RetryContext when an exception is occurred during execution
+     * Attempts retry as per the given RetryContext when an exception is occurred during execution.
      * @param ctx RetryContext containing max retry attempt, exceptions to retry (inclusive/exclusive) along with other supporting attributes.
      * @return Current instance of Try.
      */
@@ -109,7 +132,7 @@ public class Try<A> {
     }
 
     /**
-     * Recovers from an exception that may occur during execution
+     * Recovers from an exception that may occur during execution.
      * @param f If any exception occurs, then that exception is passed to this Function f to recover from it.
      * @return Current instance of Try
      */
@@ -119,7 +142,7 @@ public class Try<A> {
     }
 
     /**
-     * Handles a specific Exception sub-type that may occur during execution
+     * Handles a specific Exception sub-type that may occur during execution.
      * @param type Specific exception sub-type to handle and recover from the exception
      * @param f    If the specific exception occurs, then that exception is passed to this Function f to recover from it.
      * @param <E>  Sub type of Exception
@@ -141,14 +164,14 @@ public class Try<A> {
     }
 
     /**
-     * Executes the code and returns either the result of type A in right or Exception if occurred in left.
+     * Executes the code (attempting retry if provided) and returns either the result of type A in right or Exception if occurred in left.
      * @return Either right with result of type A or Exception in left
      */
     public Either<Exception, A> result() {
         Either<Exception, A> res = null;
         AutoCloseableMarker m = new AutoCloseableMarker();
         try {
-            res = Either.right(func.execute(m));
+            res = func.execute(m);
         } catch (Exception ex) {
             ex = exF.apply(ex);
             logger.consume(ex);
@@ -163,7 +186,20 @@ public class Try<A> {
     }
 
     /**
-     * Executes the code silently i.e. does not return anything and any exception occurred during the execution is suppressed (or logged if set)
+     * Executes the code (attempting retry if provided) and returns result if succeeds or throws Exception if occurred during the execution.
+     * @return Resultant value if succeeds
+     * @throws Exception if occurred during the execution
+     */
+    public A resultOrThrow() throws Exception {
+        Either<Exception, A> r = result();
+        if (r.isLeft()) {
+            throw r.left();
+        }
+        return r.right();
+    }
+
+    /**
+     * Executes the code silently i.e. does not return anything and any exception occurred during the execution is suppressed (or logged if set).
      */
     public void run() {
         result();
@@ -191,6 +227,12 @@ public class Try<A> {
             closeableList = new LinkedList<>();
         }
 
+        /**
+         * Marks for closing the AutoCloseable when the execution is complete.
+         * @param closeable AutoCloseable to be closed
+         * @param <T>       Any class extending AutoCloseable
+         * @return passed AutoCloseable object
+         */
         public <T extends AutoCloseable> T markForAutoClose(T closeable) {
             this.closeableList.add(closeable);
             return closeable;
