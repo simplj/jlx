@@ -1,11 +1,10 @@
 package com.simplj.lambda.monadic;
 
-import com.simplj.lambda.executable.Provider;
-import com.simplj.lambda.function.Producer;
-import com.simplj.lambda.util.Either;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Receiver;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.function.Producer;
+import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.Try;
 
 public class Functor<A> {

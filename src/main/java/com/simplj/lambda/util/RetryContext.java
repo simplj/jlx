@@ -27,6 +27,7 @@ public class RetryContext {
     private final int maxAttempt;
     private final long maxDuration;
     private final Condition<Exception> exceptionF;
+    private final boolean isInclusive;
     private final Consumer<String> logger;
     private final String notification;
 
@@ -37,6 +38,7 @@ public class RetryContext {
         this.maxAttempt = builder.maxAttempt;
         this.maxDuration = builder.maxDuration;
         this.exceptionF = builder.exceptionF == null ? e -> true : builder.exceptionF;
+        this.isInclusive = builder.isInclusive;
         this.logger = builder.logger;
         if (maxAttempt < 0) {
             this.notification = "Retrying %s after delay of %s ms for %s ...";
@@ -69,6 +71,10 @@ public class RetryContext {
         return exceptionF.evaluate(ex);
     }
 
+    public boolean isisInclusive() {
+        return isInclusive;
+    }
+
     public Consumer<String> logger() {
         return logger;
     }
@@ -84,7 +90,7 @@ public class RetryContext {
     }
 
     /**
-     * Executes the Provider f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution
+     * Executes the Provider f and attempts retry if needed as per the current RetryContext when an exception is occurred during execution.
      * @param f   Provider to execute (and retry if needed)).
      * @param <R> Type of the resultant value of Provider f.
      * @return The resultant value (of type R) if the execution succeeded.
@@ -106,7 +112,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxAttempts  max retry attempt
@@ -120,7 +126,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxDuration  maximum time (in milliseconds) to keep retrying
@@ -134,7 +140,7 @@ public class RetryContext {
     }
 
     /**
-     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set
+     * Returns {@link RetryContextBuilder} with initial delay, delay multiplier and max retry attempt values set.
      * @param initialDelay initial delay for the retry operation
      * @param multiplier   delay multiplier for the retry operation
      * @param maxAttempts  max retry attempt
@@ -189,6 +195,7 @@ public class RetryContext {
         private Consumer<String> logger;
         private long maxDelay = -1;
         private Condition<Exception> exceptionF;
+        private boolean isInclusive;
 
         private RetryContextBuilder(long initialDelay, double multiplier, int maxAttempt, long maxDuration) {
             this.initialDelay = initialDelay;
@@ -231,6 +238,7 @@ public class RetryContext {
          * @return Current instance of {@link RetryContextBuilder}
          */
         public <T extends Exception> RetryContextBuilder exceptions(Set<Class<T>> exceptions, boolean isInclusive) {
+            this.isInclusive = isInclusive;
             this.exceptionF = ex -> exceptions.stream().anyMatch(e -> isInclusive == e.isAssignableFrom(ex.getClass()));
             return this;
         }
