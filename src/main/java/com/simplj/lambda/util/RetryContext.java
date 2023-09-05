@@ -71,7 +71,7 @@ public class RetryContext {
         return exceptionF.evaluate(ex);
     }
 
-    public boolean isisInclusive() {
+    public boolean isInclusive() {
         return isInclusive;
     }
 
