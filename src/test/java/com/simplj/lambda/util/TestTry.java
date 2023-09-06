@@ -16,6 +16,7 @@ public class TestTry {
     @Test
     public void testTryProviderExecution() throws Exception {
         assertEquals("1", Try.execute(() -> unsafe("1")).result().right());
+        assertEquals("1", Try.flatten(Try.execute(() -> unsafe("1"))).result().right());
         assertEquals("1", Try.flatExecute(() -> Either.right(unsafe("1"))).result().right());
         assertEquals("1", Try.execute(() -> unsafe("")).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute(() -> unsafe(""))

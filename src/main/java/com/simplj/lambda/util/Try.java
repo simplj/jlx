@@ -44,6 +44,16 @@ public class Try<A> {
 
     /**
      * Sets a Provider for execution. Resultant `Either` of the Provider is flattened after execution.
+     * @param t Try to be flattened (and executed)
+     * @param <R> Result type of the Try.
+     * @return An instance of Try flattening another Try instance
+     */
+    public static <R> Try<R> flatten(Try<R> t) {
+        return flatExecute(t::result);
+    }
+
+    /**
+     * Sets a Provider for execution. Resultant `Either` of the Provider is flattened after execution.
      * @param f Provider function to be executed
      * @param <R> Return type of the Provider. This can be get by using the `result()` API of Try.
      * @return An instance of Try with the Provider set for execution
