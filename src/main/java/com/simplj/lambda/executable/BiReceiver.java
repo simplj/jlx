@@ -62,4 +62,8 @@ public interface BiReceiver<A, B> {
     static <T, U> BiReceiver<T, U> retrying(RetryContext ctx, BiReceiver<T, U> f) {
         return f.withRetry(ctx);
     }
+
+    static <T, P> BiReceiver<T, P> noOp() {
+        return (x1, x2) -> {};
+    }
 }

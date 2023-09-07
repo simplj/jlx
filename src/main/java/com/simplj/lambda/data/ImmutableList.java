@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     final List<T> list;
 
-    protected ImmutableList(List<T> list, Producer<List<?>> constructor) {
+    ImmutableList(List<T> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
     }

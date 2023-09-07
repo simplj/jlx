@@ -1,5 +1,6 @@
 package com.simplj.lambda.executable;
 
+import com.simplj.lambda.function.TriConsumer;
 import com.simplj.lambda.function.TriFunction;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.RetryContext;
@@ -75,5 +76,9 @@ public interface TriExecutable<A, B, C, R> {
     }
     static <T, U, V> TriExecutable<T, U, V, V> third() {
         return (a, b, c) -> c;
+    }
+
+    static <T, P, Q> TriReceiver<T, P, Q> noOp() {
+        return (x1, x2, x3) -> {};
     }
 }

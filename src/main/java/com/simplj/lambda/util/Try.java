@@ -22,13 +22,14 @@ public class Try<A> {
     private Consumer<Exception> logger;
     private Function<Exception, Either<Exception, A>> recovery;
     private Function<Exception, Exception> exF;
+    private Excerpt finalizeF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
-    private Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
+    Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
         this.func = f;
         this.logger = logger;
         this.recovery = recovery;
-        this.exF = Function.id();
+        this.finalizeF = Excerpt.numb();
         this.handlers = new HashMap<>();
     }
 
@@ -106,7 +107,7 @@ public class Try<A> {
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> flatExecute(Executable<AutoCloseableMarker, Either<Exception, R>> f) {
-        return new Try<>(f, Try::noOp, Either::<Exception, R>left);
+        return new Try<>(f, Consumer.noOp(), Either::<Exception, R>left);
     }
 
     /**
@@ -174,6 +175,16 @@ public class Try<A> {
     }
 
     /**
+     * Like `finally` in `try-catch` block, Excerpt is run post execution regardless of whether the execution is successful or not.
+     * @param f Excerpt which will be run post execution
+     * @return Current instance of Try.
+     */
+    public Try<A> finalize(Excerpt f) {
+        this.finalizeF = f;
+        return this;
+    }
+
+    /**
      * Executes the code (attempting retry if provided) and returns either the result of type A in right or Exception if occurred in left.
      * @return Either right with result of type A or Exception in left
      */
@@ -187,6 +198,7 @@ public class Try<A> {
             logger.consume(ex);
             res = handleException(ex);
         } finally {
+            Try.execute(finalizeF).log(e -> logger.consume(new FinalizingException(e))).run();
             List<Couple<AutoCloseable, Exception>> l = m.close();
             if (!l.isEmpty()) {
                 res = Either.left(new AutoCloseException(res, l));
@@ -215,6 +227,20 @@ public class Try<A> {
         result();
     }
 
+    /**
+     * Executes the code silently i.e. does not return anything or throws RuntimeException (wrapping actual Exception inside if occurred during the execution).
+     */
+    public void runOrThrowRE() throws RuntimeException {
+        Either<Exception, A> r = result();
+        if (r.isLeft()) {
+            if (r.left() instanceof RuntimeException) {
+                throw Util.<RuntimeException>cast(r.left());
+            } else {
+                throw new RuntimeException(r.left());
+            }
+        }
+    }
+
     private Either<Exception, A> handleException(Exception ex) {
         Either<Exception, A> res;
         Function<? extends Exception, A> f = handlers.get(ex.getClass().getName());
@@ -224,10 +250,6 @@ public class Try<A> {
             res = Either.right(f.apply(Util.cast(ex)));
         }
         return res;
-    }
-
-    private static void noOp(Exception ex) {
-        //No Op
     }
 
     public static class AutoCloseableMarker {
@@ -286,6 +308,12 @@ public class Try<A> {
 
         public List<Couple<AutoCloseable, Exception>> failedCloseableList() {
             return closeableList;
+        }
+    }
+
+    private static class FinalizingException extends Exception {
+        private FinalizingException(Exception e) {
+            super("Failed to finalize Try!", e);
         }
     }
 }

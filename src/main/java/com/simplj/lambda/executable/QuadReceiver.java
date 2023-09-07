@@ -71,4 +71,8 @@ public interface QuadReceiver<A, B, C, D> {
     static <T, U, V, W> QuadReceiver<T, U, V, W> retrying(RetryContext ctx, QuadReceiver<T, U, V, W> f) {
         return f.withRetry(ctx);
     }
+
+    static <T, P, Q, R> QuadReceiver<T, P, Q, R> noOp() {
+        return (x1, x2, x3, x4) -> {};
+    }
 }

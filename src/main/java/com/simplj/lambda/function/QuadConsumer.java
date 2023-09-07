@@ -54,4 +54,8 @@ public interface QuadConsumer<A, B, C, D> {
             return c;
         };
     }
+
+    static <T, P, Q, R> QuadConsumer<T, P, Q, R> noOp() {
+        return (x1, x2, x3, x4) -> {};
+    }
 }
