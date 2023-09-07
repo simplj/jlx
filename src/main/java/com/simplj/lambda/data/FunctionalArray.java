@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements Iterable<E> {
     final E[] newArray;
 
-    protected FunctionalArray() {
+    FunctionalArray() {
         newArray = Util.cast(new Object[0]);
     }
 

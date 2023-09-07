@@ -26,4 +26,8 @@ public interface Consumer<A> {
             return a;
         };
     }
+
+    static <T> Consumer<T> noOp() {
+        return x -> {};
+    }
 }

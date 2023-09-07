@@ -50,4 +50,8 @@ public interface TriConsumer<A, B, C> {
             return c;
         };
     }
+
+    static <T, P, Q> TriConsumer<T, P, Q> noOp() {
+        return (x1, x2, x3) -> {};
+    }
 }
