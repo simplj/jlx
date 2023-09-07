@@ -1,5 +1,6 @@
 package com.simplj.lambda.executable;
 
+import com.simplj.lambda.function.Snippet;
 import com.simplj.lambda.util.RetryContext;
 
 import java.util.Objects;
@@ -44,5 +45,17 @@ public interface Excerpt {
 
     static Excerpt retrying(RetryContext ctx, Excerpt f) {
         return f.withRetry(ctx);
+    }
+
+    /**
+     * """I'm tired of being what you want me to be
+     * Feeling so faithless, lost under the surface
+     * Don't know what you're expecting of me
+     * Put under the pressure of walking in your shoes"""
+     * - Linkin Park
+     * @return Excerpt instance that is numb
+     */
+    static Excerpt numb() {
+        return () -> {};
     }
 }

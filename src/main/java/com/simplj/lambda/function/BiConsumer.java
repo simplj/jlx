@@ -40,4 +40,8 @@ public interface BiConsumer<A, B> {
             return b;
         };
     }
+
+    static <T, P> BiConsumer<T, P> noOp() {
+        return (x1, x2) -> {};
+    }
 }
