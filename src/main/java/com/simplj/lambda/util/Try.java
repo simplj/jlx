@@ -29,6 +29,7 @@ public class Try<A> {
         this.func = f;
         this.logger = logger;
         this.recovery = recovery;
+        this.exF = Function.id();
         this.finalizeF = Excerpt.numb();
         this.handlers = new HashMap<>();
     }
@@ -198,7 +199,7 @@ public class Try<A> {
             logger.consume(ex);
             res = handleException(ex);
         } finally {
-            Try.execute(finalizeF).log(e -> logger.consume(new FinalizingException(e))).run();
+            processFinally();
             List<Couple<AutoCloseable, Exception>> l = m.close();
             if (!l.isEmpty()) {
                 res = Either.left(new AutoCloseException(res, l));
@@ -250,6 +251,14 @@ public class Try<A> {
             res = Either.right(f.apply(Util.cast(ex)));
         }
         return res;
+    }
+
+    private void processFinally() {
+        try {
+            finalizeF.execute();
+        } catch (Exception e) {
+            logger.consume(new FinalizingException(e));
+        }
     }
 
     public static class AutoCloseableMarker {
