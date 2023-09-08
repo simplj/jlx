@@ -18,14 +18,14 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
     public abstract Map<K, V> map();
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which does not satisfy `c`. Hence the resultant map of this api only contains the elements which satisfies the condition `c`.<br>
      * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return map containing elements which satisfies the condition `c`
      */
     public abstract M filter(BiFunction<K, V, Boolean> c);
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the map excludes elements from the map which satisfies `c`. Hence the resultant map of this api only contains the elements which does not satisfy the condition `c`.<br>
      * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return map containing elements which does not satisfy the condition `c`

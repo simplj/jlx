@@ -1,6 +1,7 @@
 package com.simplj.lambda.util;
 
 import com.simplj.lambda.data.Util;
+import com.simplj.lambda.executable.Excerpt;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.tuples.Couple;
 import org.junit.Test;
@@ -16,8 +17,6 @@ public class TestTry {
     @Test
     public void testTryProviderExecution() throws Exception {
         assertEquals("1", Try.execute(() -> unsafe("1")).result().right());
-        assertEquals("1", Try.flatten(Try.execute(() -> unsafe("1"))).result().right());
-        assertEquals("1", Try.flatExecute(() -> Either.right(unsafe("1"))).result().right());
         assertEquals("1", Try.execute(() -> unsafe("")).recover(e -> "1").result().right());
         assertEquals("IE", Try.execute(() -> unsafe(""))
                 .handle(InstantiationException.class, e -> "IE")
@@ -74,6 +73,28 @@ public class TestTry {
         Either<Exception, String> r = Try.execute(() -> unsafe("")).mapException(e -> new IllegalArgumentException(e.getMessage())).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof IllegalArgumentException);
+    }
+
+    @Test
+    public void testFinalize() {
+        Mutable<Boolean> flag = Mutable.of(false);
+        Try.flatten(Try.execute(() -> unsafe("1"))).finalize(() -> flag.mutate(b -> !b)).runOrThrowRE();
+        assertTrue(flag.get());
+        Try.flatten(Try.execute(() -> unsafe(""))).finalize(() -> flag.mutate(b -> !b)).run();
+        assertFalse(flag.get());
+        Mutable<Exception> e = Mutable.of(null);
+        Try.execute(Excerpt.numb()).finalize(() -> {throw new IllegalStateException("ISE");}).log(e::set).runOrThrowRE();
+        assertNotNull(e.get());
+        assertEquals(IllegalStateException.class, e.get().getCause().getClass());
+        assertEquals("Failed to finalize Try!", e.get().getMessage());
+        assertEquals("1", Try.flatten(Try.execute(() -> unsafe("1"))).result().right());
+        assertEquals("1", Try.flatExecute(() -> Either.right(unsafe("1"))).result().right());
+    }
+
+    @Test
+    public void testRunOrThrowRE() {
+        assertThrows(IllegalStateException.class, () -> Try.flatten(Try.execute(() -> unsafe(null))).runOrThrowRE());
+        assertThrows(RuntimeException.class, () -> Try.flatten(Try.execute(() -> unsafe(""))).runOrThrowRE());
     }
 
     @Test

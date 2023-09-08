@@ -32,8 +32,8 @@ public interface Snippet {
      * """I'm tired of being what you want me to be
      * Feeling so faithless, lost under the surface
      * Don't know what you're expecting of me
-     * Put under the pressure of walking in your shoes"""
-     * - Linkin Park
+     * Put under the pressure of walking in your shoes""" - Linkin Park
+     * <br><br>
      * @return Snippet instance that is numb
      */
     static Snippet numb() {
