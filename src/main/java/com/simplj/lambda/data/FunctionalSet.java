@@ -23,7 +23,7 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterab
     public abstract Set<T> set();
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the set excludes elements from the set which does not satisfy `c`. Hence the resultant set of this api only contains the elements which satisfies the condition `c`.<br>
      * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return set containing elements which satisfies the condition `c`

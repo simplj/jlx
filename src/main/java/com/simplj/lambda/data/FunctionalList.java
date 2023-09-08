@@ -29,7 +29,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
     public abstract List<T> list();
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which does not satisfy `c`. Hence the resultant list of this api only contains the elements which satisfies the condition `c`.<br>
      * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which satisfies the condition `c`
@@ -37,7 +37,7 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
     public abstract L filter(Condition<T> c);
 
     /**
-     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`. <br>
+     * Applies the <code>Condition</code> `c` to all the elements in the list excludes elements from the list which satisfies `c`. Hence the resultant list of this api only contains the elements which does not satisfy the condition `c`.<br>
      * Function application is <i>lazy</i> which means calling this api has no effect until a <i>eager</i> api is called.
      * @param c condition to evaluate against each element
      * @return list containing elements which does not satisfy the condition `c`
