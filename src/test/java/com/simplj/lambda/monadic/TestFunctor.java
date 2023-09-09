@@ -35,7 +35,7 @@ public class TestFunctor {
     @Test
     public void testExecute() {
         Mutable<Integer> m = Mutable.of(0);
-        Functor.arg(1).hook(m::set).applied();
+        Functor.arg(1).record(m::set).applied();
         assertEquals(1, m.get().intValue());
     }
 

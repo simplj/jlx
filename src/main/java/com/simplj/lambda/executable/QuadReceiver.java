@@ -1,6 +1,5 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.function.*;
 import com.simplj.lambda.util.RetryContext;
 
 import java.util.Objects;
@@ -28,24 +27,24 @@ public interface QuadReceiver<A, B, C, D> {
         return (a, b, c, d) -> ctx.retry(() -> receive(a, b, c, d));
     }
 
-    default <T> QuadReceiver<T, B, C, D> composeFirst(Function<T, A> f) {
+    default <T> QuadReceiver<T, B, C, D> composeFirst(Executable<T, A> f) {
         Objects.requireNonNull(f);
-        return (t, b, c, d) -> receive(f.apply(t), b, c, d);
+        return (t, b, c, d) -> receive(f.execute(t), b, c, d);
     }
-    default <T> QuadReceiver<A, T, C, D> composeSecond(Function<T, B> f) {
+    default <T> QuadReceiver<A, T, C, D> composeSecond(Executable<T, B> f) {
         Objects.requireNonNull(f);
-        return (a, t, c, d) -> receive(a, f.apply(t), c, d);
+        return (a, t, c, d) -> receive(a, f.execute(t), c, d);
     }
-    default <T> QuadReceiver<A, B, T, D> composeThird(Function<T, C> f) {
+    default <T> QuadReceiver<A, B, T, D> composeThird(Executable<T, C> f) {
         Objects.requireNonNull(f);
-        return (a, b, t, d) -> receive(a, b, f.apply(t), d);
+        return (a, b, t, d) -> receive(a, b, f.execute(t), d);
     }
-    default <T> QuadReceiver<A, B, C, T> composeFourth(Function<T, D> f) {
+    default <T> QuadReceiver<A, B, C, T> composeFourth(Executable<T, D> f) {
         Objects.requireNonNull(f);
-        return (a, b, c, t) -> receive(a, b, c, f.apply(t));
+        return (a, b, c, t) -> receive(a, b, c, f.execute(t));
     }
 
-    default Function<A, Function<B, Function<C, Receiver<D>>>> curried() {
+    default Executable<A, Executable<B, Executable<C, Receiver<D>>>> curried() {
         return a -> b -> c -> d -> receive(a, b, c, d);
     }
 

@@ -1,15 +1,15 @@
 package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.BiFunction;
-import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
-import com.simplj.lambda.tuples.Tuple;
 import com.simplj.lambda.tuples.Tuple2;
 
-import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> {
@@ -28,12 +28,17 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
         return of(Util.cast(constructor.produce()), constructor);
     }
 
+    @SafeVarargs
+    public static <A, B> ImmutableMap<A, B> of(Couple<A, B>...elems) {
+        return of(Util.asMap(elems));
+    }
+
     public static <A, B> ImmutableMap<A, B> of(Map<A, B> map) {
         return of(map, HashMap::new);
     }
 
     public static <A, B> ImmutableMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
-        return new MapFunctor<>(map, constructor, Pair::new, map);
+        return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
     /**
@@ -149,9 +154,9 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
 
     private static final class MapFunctor<T, R, A, B> extends ImmutableMap<A, B> implements BiFunctor<T, R, A, B> {
         private final Map<T, R> src;
-        private final BiFunction<T, R, Pair<A, B>> func;
+        private final BiFunction<T, R, LinkedPair<A, B>> func;
 
-        MapFunctor(Map<T, R> map, Producer<Map<?, ?>> constructor, BiFunction<T, R, Pair<A, B>> f, Map<A, B> applied) {
+        MapFunctor(Map<T, R> map, Producer<Map<?, ?>> constructor, BiFunction<T, R, LinkedPair<A, B>> f, Map<A, B> applied) {
             super(applied, constructor);
             this.src = map;
             this.func = f;
@@ -159,7 +164,7 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
 
         @Override
         ImmutableMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
-            return new MapFunctor<>(map, constructor, Pair::new, map);
+            return new MapFunctor<>(map, constructor, LinkedPair::new, map);
         }
 
         public <C, D> ImmutableMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
@@ -193,9 +198,9 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
             MapFunctor<A, B, A, B> res;
             if (map == null) {
                 Map<A, B> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new MapFunctor<>(r, constructor, Pair::new, r);
+                res = new MapFunctor<>(r, constructor, LinkedPair::new, r);
             } else {
-                res = new MapFunctor<>(map, constructor, Pair::new, map);
+                res = new MapFunctor<>(map, constructor, LinkedPair::new, map);
             }
             return res;
         }

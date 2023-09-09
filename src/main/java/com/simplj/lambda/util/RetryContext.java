@@ -41,9 +41,9 @@ public class RetryContext {
         this.isInclusive = builder.isInclusive;
         this.logger = builder.logger;
         if (maxAttempt < 0) {
-            this.notification = "Retrying %s after delay of %s ms for %s ...";
+            this.notification = "Retrying %s after delay of %s ms for '%s' ...";
         } else {
-            this.notification = "Retrying [%s / " + maxAttempt + "] after delay of %s ms for %s ...";
+            this.notification = "Retrying [%s / " + maxAttempt + "] after delay of %s ms for '%s' ...";
         }
     }
 
