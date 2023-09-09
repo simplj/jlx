@@ -5,7 +5,6 @@ import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -36,7 +35,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     public static <E> MutableSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
-        return new SetFunctor<>(set, constructor, LinkedItem::new, set);
+        return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
     /**
@@ -180,9 +179,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
     private static final class SetFunctor<A, T> extends MutableSet<T> implements Functor<A, T> {
         private final Set<A> src;
-        private final Function<A, LinkedItem<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, LinkedItem<T>> f, Set<T> applied) {
+        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, LinkedUnit<T>> f, Set<T> applied) {
             super(applied, constructor);
             this.src = set;
             this.func = f;
@@ -190,7 +189,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
         @Override
         MutableSet<T> instantiate(Producer<Set<?>> constructor) {
-            return new SetFunctor<>(set, constructor, LinkedItem::new, set);
+            return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
         }
 
         @Override
@@ -212,9 +211,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new SetFunctor<>(r, constructor, LinkedItem::new, r);
+                res = new SetFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
-                res = new SetFunctor<>(set, constructor, LinkedItem::new, set);
+                res = new SetFunctor<>(set, constructor, LinkedUnit::new, set);
             }
             return res;
         }

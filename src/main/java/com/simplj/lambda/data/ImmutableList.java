@@ -35,7 +35,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
     }
 
     public static <E> ImmutableList<E> of(List<E> list, Producer<List<?>> constructor) {
-        return new ListFunctor<>(list, constructor, LinkedItem::new, list);
+        return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -167,9 +167,9 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
     private static final class ListFunctor<A, T> extends ImmutableList<T> implements Functor<A, T> {
         private final List<A> src;
-        private final Function<A, LinkedItem<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        ListFunctor(List<A> list, Producer<List<?>> constructor, Function<A, LinkedItem<T>> f, List<T> applied) {
+        ListFunctor(List<A> list, Producer<List<?>> constructor, Function<A, LinkedUnit<T>> f, List<T> applied) {
             super(applied, constructor);
             this.src = list;
             this.func = f;
@@ -177,7 +177,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
         @Override
         ImmutableList<T> instantiate(Producer<List<?>> constructor) {
-            return new ListFunctor<>(list, constructor, LinkedItem::new, list);
+            return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
         }
 
         @Override
@@ -199,9 +199,9 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new ListFunctor<>(r, constructor, LinkedItem::new, r);
+                res = new ListFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
-                res = new ListFunctor<>(list, constructor, LinkedItem::new, list);
+                res = new ListFunctor<>(list, constructor, LinkedUnit::new, list);
             }
             return res;
         }

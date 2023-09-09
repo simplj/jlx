@@ -18,7 +18,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
         return of(arr);
     }
     public static <A> MutableArray<A> of(A[] arr) {
-        return new ArrayFunctor<>(arr, LinkedItem::new, arr);
+        return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
     }
 
     public static MutableArray<Integer> of(int...arr) {
@@ -123,9 +123,9 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
 
     private static final class ArrayFunctor<A, T> extends MutableArray<T> implements Functor<A, T> {
         private final A[] src;
-        private final Function<A, LinkedItem<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        ArrayFunctor(A[] arr, Function<A, LinkedItem<T>> f, T[] applied) {
+        ArrayFunctor(A[] arr, Function<A, LinkedUnit<T>> f, T[] applied) {
             super(applied);
             this.src = arr;
             this.func = f;
@@ -133,7 +133,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
 
         @Override
         MutableArray<T> unit(T[] arr) {
-            return new ArrayFunctor<>(arr, LinkedItem::new, arr);
+            return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
         }
 
         @Override
@@ -155,9 +155,9 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
-                res = new ArrayFunctor<>(r, LinkedItem::new, r);
+                res = new ArrayFunctor<>(r, LinkedUnit::new, r);
             } else {
-                res = new ArrayFunctor<>(arr, LinkedItem::new, arr);
+                res = new ArrayFunctor<>(arr, LinkedUnit::new, arr);
             }
             return res;
         }

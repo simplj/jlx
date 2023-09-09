@@ -32,7 +32,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     }
 
     public static <E> ImmutableSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
-        return new SetFunctor<>(set, constructor, LinkedItem::new, set);
+        return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
     /**
@@ -124,9 +124,9 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
 
     private static final class SetFunctor<A, T> extends ImmutableSet<T> implements Functor<A, T> {
         private final Set<A> src;
-        private final Function<A, LinkedItem<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, LinkedItem<T>> f, Set<T> applied) {
+        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, LinkedUnit<T>> f, Set<T> applied) {
             super(applied, constructor);
             this.src = set;
             this.func = f;
@@ -134,7 +134,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
 
         @Override
         ImmutableSet<T> instantiate(Producer<Set<?>> constructor) {
-            return new SetFunctor<>(set, constructor, LinkedItem::new, set);
+            return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
         }
 
         @Override
@@ -156,9 +156,9 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new SetFunctor<>(r, constructor, LinkedItem::new, r);
+                res = new SetFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
-                res = new SetFunctor<>(set, constructor, LinkedItem::new, set);
+                res = new SetFunctor<>(set, constructor, LinkedUnit::new, set);
             }
             return res;
         }
