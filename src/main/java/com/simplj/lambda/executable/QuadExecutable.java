@@ -1,6 +1,5 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.QuadFunction;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.RetryContext;
@@ -43,26 +42,26 @@ public interface QuadExecutable<A, B, C, D, R> {
         return (a, b, c, d) -> ctx.retry(() -> execute(a, b, c, d));
     }
 
-    default <T> QuadExecutable<T, B, C, D, R> composeFirst(Function<T, A> after) {
+    default <T> QuadExecutable<T, B, C, D, R> composeFirst(Executable<T, A> after) {
         Objects.requireNonNull(after);
-        return (t, b, c, d) -> execute(after.apply(t), b, c, d);
+        return (t, b, c, d) -> execute(after.execute(t), b, c, d);
     }
-    default <T> QuadExecutable<A, T, C, D, R> composeSecond(Function<T, B> after) {
+    default <T> QuadExecutable<A, T, C, D, R> composeSecond(Executable<T, B> after) {
         Objects.requireNonNull(after);
-        return (a, t, c, d) -> execute(a, after.apply(t), c, d);
+        return (a, t, c, d) -> execute(a, after.execute(t), c, d);
     }
-    default <T> QuadExecutable<A, B, T, D, R> composeThird(Function<T, C> after) {
+    default <T> QuadExecutable<A, B, T, D, R> composeThird(Executable<T, C> after) {
         Objects.requireNonNull(after);
-        return (a, b, t, d) -> execute(a, b, after.apply(t), d);
+        return (a, b, t, d) -> execute(a, b, after.execute(t), d);
     }
-    default <T> QuadExecutable<A, B, C, T, R> composeFourth(Function<T, D> after) {
+    default <T> QuadExecutable<A, B, C, T, R> composeFourth(Executable<T, D> after) {
         Objects.requireNonNull(after);
-        return (a, b, c, t) -> execute(a, b, c, after.apply(t));
+        return (a, b, c, t) -> execute(a, b, c, after.execute(t));
     }
 
-    default <T> QuadExecutable<A, B, C, D, T> andThen(Function<R, T> after) {
+    default <T> QuadExecutable<A, B, C, D, T> andThen(Executable<R, T> after) {
         Objects.requireNonNull(after);
-        return (a, b, c, d) -> after.apply(execute(a, b, c, d));
+        return (a, b, c, d) -> after.execute(execute(a, b, c, d));
     }
 
     default Executable<A, Executable<B, Executable<C, Executable<D, R>>>> curried() {

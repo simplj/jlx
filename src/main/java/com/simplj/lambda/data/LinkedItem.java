@@ -1,13 +1,13 @@
 package com.simplj.lambda.data;
 
-class Data<T> {
+class LinkedItem<T> {
     private Node<T> head;
     private Node<T> last;
 
-    Data() {
+    LinkedItem() {
 
     }
-    Data(T val) {
+    LinkedItem(T val) {
         head = new Node<>(val);
         last = head;
     }

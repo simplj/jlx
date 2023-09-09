@@ -7,10 +7,7 @@ import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
     final List<T> list;
@@ -20,20 +17,25 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
         this.list = list;
     }
 
-    public static <R> ImmutableList<R> unit() {
+    public static <E> ImmutableList<E> unit() {
         return unit(LinkedList::new);
     }
 
-    public static <R> ImmutableList<R> unit(Producer<List<?>> constructor) {
+    public static <E> ImmutableList<E> unit(Producer<List<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
-    public static <R> ImmutableList<R> of(List<R> list) {
+    @SafeVarargs
+    public static <E> ImmutableList<E> of(E...elems) {
+        return of(Arrays.asList(elems));
+    }
+
+    public static <E> ImmutableList<E> of(List<E> list) {
         return of(list, LinkedList::new);
     }
 
-    public static <R> ImmutableList<R> of(List<R> list, Producer<List<?>> constructor) {
-        return new ListFunctor<>(list, constructor, Data::new, list);
+    public static <E> ImmutableList<E> of(List<E> list, Producer<List<?>> constructor) {
+        return new ListFunctor<>(list, constructor, LinkedItem::new, list);
     }
 
     /* ------------------- START: Lazy methods ------------------- */
@@ -165,9 +167,9 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
     private static final class ListFunctor<A, T> extends ImmutableList<T> implements Functor<A, T> {
         private final List<A> src;
-        private final Function<A, Data<T>> func;
+        private final Function<A, LinkedItem<T>> func;
 
-        ListFunctor(List<A> list, Producer<List<?>> constructor, Function<A, Data<T>> f, List<T> applied) {
+        ListFunctor(List<A> list, Producer<List<?>> constructor, Function<A, LinkedItem<T>> f, List<T> applied) {
             super(applied, constructor);
             this.src = list;
             this.func = f;
@@ -175,7 +177,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
 
         @Override
         ImmutableList<T> instantiate(Producer<List<?>> constructor) {
-            return new ListFunctor<>(list, constructor, Data::new, list);
+            return new ListFunctor<>(list, constructor, LinkedItem::new, list);
         }
 
         @Override
@@ -197,9 +199,9 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new ListFunctor<>(r, constructor, Data::new, r);
+                res = new ListFunctor<>(r, constructor, LinkedItem::new, r);
             } else {
-                res = new ListFunctor<>(list, constructor, Data::new, list);
+                res = new ListFunctor<>(list, constructor, LinkedItem::new, list);
             }
             return res;
         }

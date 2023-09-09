@@ -2,14 +2,14 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.tuples.Tuple2;
 
-class Pair<T, R> {
+class LinkedPair<T, R> {
     private Node<T, R> head;
     private Node<T, R> last;
 
-    Pair() {
+    LinkedPair() {
 
     }
-    Pair(T key, R val) {
+    LinkedPair(T key, R val) {
         head = new Node<>(key, val);
         last = head;
     }
