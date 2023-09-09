@@ -3,13 +3,11 @@ package com.simplj.lambda.data;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
-import com.simplj.lambda.tuples.Couple;
-import com.simplj.lambda.tuples.Tuple;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
     Set<T> set;
@@ -19,20 +17,25 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
         this.set = set;
     }
 
-    public static <A> MutableSet<A> unit() {
+    public static <E> MutableSet<E> unit() {
         return unit(HashSet::new);
     }
 
-    public static <A> MutableSet<A> unit(Producer<Set<?>> constructor) {
+    public static <E> MutableSet<E> unit(Producer<Set<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
-    public static <A> MutableSet<A> of(Set<A> set) {
+    @SafeVarargs
+    public static <E> MutableSet<E> of(E...elems) {
+        return of(Util.asSet(elems));
+    }
+
+    public static <E> MutableSet<E> of(Set<E> set) {
         return of(set, HashSet::new);
     }
 
-    public static <A> MutableSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
-        return new SetFunctor<>(set, constructor, Data::new, set);
+    public static <E> MutableSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
+        return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
     /**
@@ -176,9 +179,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
     private static final class SetFunctor<A, T> extends MutableSet<T> implements Functor<A, T> {
         private final Set<A> src;
-        private final Function<A, Data<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, Data<T>> f, Set<T> applied) {
+        SetFunctor(Set<A> set, Producer<Set<?>> constructor, Function<A, LinkedUnit<T>> f, Set<T> applied) {
             super(applied, constructor);
             this.src = set;
             this.func = f;
@@ -186,7 +189,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
 
         @Override
         MutableSet<T> instantiate(Producer<Set<?>> constructor) {
-            return new SetFunctor<>(set, constructor, Data::new, set);
+            return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
         }
 
         @Override
@@ -208,9 +211,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));
-                res = new SetFunctor<>(r, constructor, Data::new, r);
+                res = new SetFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
-                res = new SetFunctor<>(set, constructor, Data::new, set);
+                res = new SetFunctor<>(set, constructor, LinkedUnit::new, set);
             }
             return res;
         }

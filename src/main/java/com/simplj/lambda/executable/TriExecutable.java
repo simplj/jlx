@@ -1,6 +1,5 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.function.TriConsumer;
 import com.simplj.lambda.function.TriFunction;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.RetryContext;

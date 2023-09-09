@@ -46,7 +46,7 @@ public class Functor<A> {
         return new Functor<>(next, null);
     }
 
-    public Functor<A> hook(Receiver<A> r) {
+    public Functor<A> record(Receiver<A> r) {
         return map(r.yield());
     }
 

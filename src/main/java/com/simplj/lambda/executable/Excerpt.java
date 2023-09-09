@@ -1,6 +1,5 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.function.Snippet;
 import com.simplj.lambda.util.RetryContext;
 
 import java.util.Objects;

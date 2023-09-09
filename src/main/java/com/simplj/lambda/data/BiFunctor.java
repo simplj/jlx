@@ -9,10 +9,10 @@ import java.util.Set;
 
 interface BiFunctor<K, V, A, B> {
 
-    default <T, R> BiFunction<K, V, Pair<T, R>> map(BiFunction<K, V, Pair<A, B>> a, BiFunction<A, B, Tuple2<T, R>> b) {
+    default <T, R> BiFunction<K, V, LinkedPair<T, R>> map(BiFunction<K, V, LinkedPair<A, B>> a, BiFunction<A, B, Tuple2<T, R>> b) {
         return a.andThen(d -> {
-            Pair<T, R> r = new Pair<>();
-            Pair.Node<A, B> n = d.head();
+            LinkedPair<T, R> r = new LinkedPair<>();
+            LinkedPair.Node<A, B> n = d.head();
             while (n != null) {
                 r.add(b.apply(n.key(), n.val()));
                 n = n.next();
@@ -20,10 +20,10 @@ interface BiFunctor<K, V, A, B> {
             return r;
         });
     }
-    default <T> BiFunction<K, V, Pair<T, B>> mapK(BiFunction<K, V, Pair<A, B>> a, Function<A, T> b) {
+    default <T> BiFunction<K, V, LinkedPair<T, B>> mapK(BiFunction<K, V, LinkedPair<A, B>> a, Function<A, T> b) {
         return a.andThen(d -> {
-            Pair<T, B> r = new Pair<>();
-            Pair.Node<A, B> n = d.head();
+            LinkedPair<T, B> r = new LinkedPair<>();
+            LinkedPair.Node<A, B> n = d.head();
             while (n != null) {
                 r.add(b.apply(n.key()), n.val());
                 n = n.next();
@@ -31,10 +31,10 @@ interface BiFunctor<K, V, A, B> {
             return r;
         });
     }
-    default <R> BiFunction<K, V, Pair<A, R>> mapV(BiFunction<K, V, Pair<A, B>> a, Function<B, R> b) {
+    default <R> BiFunction<K, V, LinkedPair<A, R>> mapV(BiFunction<K, V, LinkedPair<A, B>> a, Function<B, R> b) {
         return a.andThen(d -> {
-            Pair<A, R> r = new Pair<>();
-            Pair.Node<A, B> n = d.head();
+            LinkedPair<A, R> r = new LinkedPair<>();
+            LinkedPair.Node<A, B> n = d.head();
             while (n != null) {
                 r.add(n.key(), b.apply(n.val()));
                 n = n.next();
@@ -43,10 +43,10 @@ interface BiFunctor<K, V, A, B> {
         });
     }
 
-    default <T, R> BiFunction<K, V, Pair<T, R>> flatmap(BiFunction<K, V, Pair<A, B>> a, BiFunction<A, B, ? extends Map<T, R>> b) {
+    default <T, R> BiFunction<K, V, LinkedPair<T, R>> flatmap(BiFunction<K, V, LinkedPair<A, B>> a, BiFunction<A, B, ? extends Map<T, R>> b) {
         return a.andThen(d -> {
-            Pair<T, R> r = new Pair<>();
-            Pair.Node<A, B> n = d.head();
+            LinkedPair<T, R> r = new LinkedPair<>();
+            LinkedPair.Node<A, B> n = d.head();
             while (n != null) {
                 Map<T, R> l = b.apply(n.key(), n.val());
                 l.forEach(r::add);
@@ -55,10 +55,10 @@ interface BiFunctor<K, V, A, B> {
             return r;
         });
     }
-    default <T> BiFunction<K, V, Pair<T, B>> flatmapK(BiFunction<K, V, Pair<A, B>> a, Function<A, ? extends Set<T>> b) {
+    default <T> BiFunction<K, V, LinkedPair<T, B>> flatmapK(BiFunction<K, V, LinkedPair<A, B>> a, Function<A, ? extends Set<T>> b) {
         return a.andThen(d -> {
-            Pair<T, B> r = new Pair<>();
-            Pair.Node<A, B> n = d.head();
+            LinkedPair<T, B> r = new LinkedPair<>();
+            LinkedPair.Node<A, B> n = d.head();
             while (n != null) {
                 Set<T> l = b.apply(n.key());
                 for (T t : l) {
@@ -70,10 +70,10 @@ interface BiFunctor<K, V, A, B> {
         });
     }
 
-    default BiFunction<K, V, Pair<A, B>> filter(BiFunction<K, V, Pair<A, B>> f, BiFunction<A, B, Boolean> c) {
+    default BiFunction<K, V, LinkedPair<A, B>> filter(BiFunction<K, V, LinkedPair<A, B>> f, BiFunction<A, B, Boolean> c) {
         return f.andThen(d -> {
-            Pair.Node<A, B> n = d.head();
-            Pair.Node<A, B> p = null;
+            LinkedPair.Node<A, B> n = d.head();
+            LinkedPair.Node<A, B> p = null;
             while (n != null) {
                 if (c.apply(n.key(), n.val())) {
                     p = n;
@@ -88,9 +88,9 @@ interface BiFunctor<K, V, A, B> {
         });
     }
 
-    default Map<A, B> apply(Map<K, V> src, BiFunction<K, V, Pair<A, B>> func, Map<A, B> r) {
+    default Map<A, B> apply(Map<K, V> src, BiFunction<K, V, LinkedPair<A, B>> func, Map<A, B> r) {
         for (Map.Entry<K, V> e : src.entrySet()) {
-            Pair.Node<A, B> fh = func.apply(e.getKey(), e.getValue()).head();
+            LinkedPair.Node<A, B> fh = func.apply(e.getKey(), e.getValue()).head();
             while (fh != null) {
                 r.put(fh.key(), fh.val());
                 fh = fh.next();

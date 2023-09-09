@@ -18,7 +18,7 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
         return of(arr);
     }
     public static <A> ImmutableArray<A> of(A[] arr) {
-        return new ArrayFunctor<>(arr, Data::new, arr);
+        return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
     }
 
     public static ImmutableArray<Integer> of(int...arr) {
@@ -108,9 +108,9 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
 
     private static final class ArrayFunctor<A, T> extends ImmutableArray<T> implements Functor<A, T> {
         private final A[] src;
-        private final Function<A, Data<T>> func;
+        private final Function<A, LinkedUnit<T>> func;
 
-        ArrayFunctor(A[] arr, Function<A, Data<T>> f, T[] applied) {
+        ArrayFunctor(A[] arr, Function<A, LinkedUnit<T>> f, T[] applied) {
             super(applied);
             this.src = arr;
             this.func = f;
@@ -118,7 +118,7 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
 
         @Override
         ImmutableArray<T> unit(T[] arr) {
-            return new ArrayFunctor<>(arr, Data::new, arr);
+            return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
         }
 
         @Override
@@ -140,9 +140,9 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
-                res = new ArrayFunctor<>(r, Data::new, r);
+                res = new ArrayFunctor<>(r, LinkedUnit::new, r);
             } else {
-                res = new ArrayFunctor<>(arr, Data::new, arr);
+                res = new ArrayFunctor<>(arr, LinkedUnit::new, arr);
             }
             return res;
         }
