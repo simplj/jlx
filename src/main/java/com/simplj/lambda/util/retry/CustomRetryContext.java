@@ -11,11 +11,10 @@ import com.simplj.lambda.util.Try;
  * Retries until the provided custom retry logic satisfies.
  * @param <R> Type of the value to reset (which is same as the return type of function that will be retried)
  */
-public final class CustomRetryContext<R> {
-    private final Retry<R> retry;
+public final class CustomRetryContext<R> extends Retryable<R> {
 
     private CustomRetryContext(Retry<R> retry) {
-        this.retry = retry;
+        super(retry);
     }
 
     /**
@@ -36,11 +35,12 @@ public final class CustomRetryContext<R> {
      */
     public R retry(Provider<R> f) throws Exception {
         Mutable<Integer> count = Mutable.of(0);
+        Mutable<Long> delay = Mutable.of(initialDelay());
         Either<Exception, R> res;
         long startTs = System.currentTimeMillis();
         do {
             res = Try.execute(f).result();
-        } while (retry.complementRetry(count, System.currentTimeMillis() - startTs, res));
+        } while (retry.complementRetry(count, System.currentTimeMillis() - startTs, res, delay));
         if (res.isLeft()) {
             throw res.left();
         }

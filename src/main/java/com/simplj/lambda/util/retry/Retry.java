@@ -9,19 +9,19 @@ import java.util.concurrent.TimeUnit;
 
 class Retry<A> {
     static final Consumer<String> DEFAULT_LOGGER = l -> System.out.println("jlx.default.logger: " + l);
-    private final Mutable<Long> delay;
-    private final Function<Long, Long> delayF;
-    private final RetryCondition<A> retryCondition;
-    private final Consumer<String> logger;
+    final long initialDelay;
+    final Function<Long, Long> delayF;
+    final RetryCondition<A> retryCondition;
+    final Consumer<String> logger;
 
     Retry(long initialDelay, Function<Long, Long> delayF, RetryCondition<A> retryCondition, Consumer<String> logger) {
-        this.delay = Mutable.of(initialDelay);
+        this.initialDelay = initialDelay;
         this.delayF = delayF;
         this.retryCondition = retryCondition;
         this.logger = logger;
     }
 
-    boolean complementRetry(Mutable<Integer> count, long elapsedMillis, Either<Exception, ? extends A> e) {
+    boolean complementRetry(Mutable<Integer> count, long elapsedMillis, Either<Exception, ? extends A> e, Mutable<Long> delay) {
         boolean res = retryCondition.isRetryNeeded(count.get(), elapsedMillis, e);
         if (res) {
             count.mutate(n -> n + 1);
