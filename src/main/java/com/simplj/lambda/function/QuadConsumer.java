@@ -55,6 +55,10 @@ public interface QuadConsumer<A, B, C, D> {
         };
     }
 
+    static <T, U, V, W> QuadConsumer<T, U, V, W> of(QuadConsumer<T, U, V, W> f) {
+        return f;
+    }
+
     static <T, P, Q, R> QuadConsumer<T, P, Q, R> noOp() {
         return (x1, x2, x3, x4) -> {};
     }

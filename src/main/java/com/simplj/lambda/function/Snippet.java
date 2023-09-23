@@ -1,5 +1,7 @@
 package com.simplj.lambda.function;
 
+import com.simplj.lambda.executable.Excerpt;
+
 @FunctionalInterface
 public interface Snippet {
     void apply();
@@ -26,6 +28,10 @@ public interface Snippet {
             apply();
             return null;
         };
+    }
+
+    static Snippet of(Snippet f) {
+        return f;
     }
 
     /**

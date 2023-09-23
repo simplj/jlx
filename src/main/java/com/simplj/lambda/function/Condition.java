@@ -15,6 +15,17 @@ public interface Condition<A> {
         return r -> evaluate(f.apply(r));
     }
 
+    default Condition<A> and(Condition<A> c) {
+        return a -> evaluate(a) && c.evaluate(a);
+    }
+    default Condition<A> or(Condition<A> c) {
+        return a -> evaluate(a) || c.evaluate(a);
+    }
+
+    static <T> Condition<T> of(Condition<T> c) {
+        return c;
+    }
+
     static <T> Condition<T> negate(Condition<T> c) {
         return c.negate();
     }

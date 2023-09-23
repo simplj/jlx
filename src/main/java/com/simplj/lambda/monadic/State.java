@@ -1,5 +1,7 @@
 package com.simplj.lambda.monadic;
 
+import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.monadic.exception.FilteredOutException;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Receiver;
@@ -39,6 +41,16 @@ public class State<A> {
             res = Try.execute(() -> f.execute(value.right())).recover(e -> new State<>(Either.left(e))).result().right();
         } else {
             res = new State<>(Either.left(value.left()));
+        }
+        return res;
+    }
+
+    public State<A> filter(Condition<A> f) {
+        State<A> res;
+        if (value.isRight() && !f.evaluate(value.right())) {
+            res = new State<>(Either.left(new FilteredOutException(value.right())));
+        } else {
+            res = this;
         }
         return res;
     }

@@ -2,7 +2,7 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.QuadFunction;
 import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -68,8 +68,8 @@ public interface QuadExecutable<A, B, C, D, R> {
         return a -> b -> c -> d -> execute(a, b, c, d);
     }
 
-    static <T, U, V, W, R> QuadExecutable<T, U, V, W, R> retrying(RetryContext ctx, QuadExecutable<T, U, V, W, R> f) {
-        return f.withRetry(ctx);
+    static <T, U, V, W, R> QuadExecutable<T, U, V, W, R> of(QuadExecutable<T, U, V, W, R> f) {
+        return f;
     }
 
     static <P, Q, R, S> QuadExecutable<P, Q, R, S, P> first() {

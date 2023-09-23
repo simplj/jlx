@@ -2,8 +2,10 @@ package com.simplj.lambda.monadic;
 
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Receiver;
+import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
+import com.simplj.lambda.monadic.exception.FilteredOutException;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.Try;
 
@@ -40,6 +42,19 @@ public class Functor<A> {
                 res = Try.execute(() -> f.execute(e.right())).result().flatmap(Functor::result);
             } else {
                 res = Either.left(e.left());
+            }
+            return res;
+        });
+        return new Functor<>(next, null);
+    }
+
+    public Functor<A> filter(Condition<A> f) {
+        Producer<Either<Exception, A>> next = func.andThen(e -> {
+            Either<Exception, A> res;
+            if (e.isRight() && !f.evaluate(e.right())) {
+                res = Either.left(new FilteredOutException(e.right()));
+            } else {
+                res = e;
             }
             return res;
         });

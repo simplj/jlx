@@ -42,6 +42,10 @@ public interface QuadFunction<A, B, C, D, R> {
         return a -> b -> c -> d -> apply(a, b, c, d);
     }
 
+    static <T, U, V, W, R> QuadFunction<T, U, V, W, R> of(QuadFunction<T, U, V, W, R> f) {
+        return f;
+    }
+
     static <P, Q, R, S> QuadFunction<P, Q, R, S, P> first() {
         return (a, b, c, d) -> a;
     }

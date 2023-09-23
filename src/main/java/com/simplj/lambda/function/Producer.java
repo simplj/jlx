@@ -15,6 +15,10 @@ public interface Producer<R> {
         return x -> produce();
     }
 
+    static <R> Producer<R> of(Producer<R> f) {
+        return f;
+    }
+
     static <T> Producer<T> defer(T val) {
         return () -> val;
     }
