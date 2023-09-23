@@ -1,6 +1,6 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -42,8 +42,8 @@ public interface Excerpt {
         };
     }
 
-    static Excerpt retrying(RetryContext ctx, Excerpt f) {
-        return f.withRetry(ctx);
+    static Excerpt of(Excerpt f) {
+        return f;
     }
 
     /**

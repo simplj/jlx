@@ -2,8 +2,8 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.RetryContext;
-import com.simplj.lambda.util.ResettableRetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
+import com.simplj.lambda.util.retry.ResettableRetryContext;
 
 import java.util.Objects;
 
@@ -55,11 +55,8 @@ public interface Executable<I, O> {
         return (I i) -> after.execute(this.execute(i));
     }
 
-    static <T, R> Executable<T, R> retrying(RetryContext ctx, Executable<T, R> f) {
-        return f.withRetry(ctx);
-    }
-    static <T, R> Executable<T, R> retrying(ResettableRetryContext<T> ctx, Executable<T, R> f) {
-        return f.withRetry(ctx);
+    static <T, R> Executable<T, R> of(Executable<T, R> f) {
+        return f;
     }
 
     static <T> Executable<T, T> id() {

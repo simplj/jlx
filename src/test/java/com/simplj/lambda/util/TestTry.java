@@ -4,6 +4,7 @@ import com.simplj.lambda.data.Util;
 import com.simplj.lambda.executable.Excerpt;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.tuples.Couple;
+import com.simplj.lambda.util.retry.RetryContext;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -101,7 +102,7 @@ public class TestTry {
     public void testReTry() {
         List<String> l = new LinkedList<>();
         IllegalStateException ise = new IllegalStateException("needs retry!");
-        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.builder(100, 1.5, 3).maxDelay(200).logger(l::add);
+        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.times(100, d -> (long) (d * 1.5), 3).logger(l::add);
         Mutable<Integer> m = Mutable.of(0);
         Either<Exception, Void> r = Try.execute(() -> retry(3, m, ise)).retry(retryCtxBuilder.build()).result();
         assertTrue(r.isRight());
@@ -120,7 +121,7 @@ public class TestTry {
         List<String> l = new LinkedList<>();
         IllegalStateException ise = new IllegalStateException("needs retry!");
         RuntimeException re = new RuntimeException("needs retry!");
-        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.builder(100, 1.5, 3).logger(l::add);
+        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.times(100, d -> (long) (d * 1.5), 3).logger(l::add);
         Mutable<Integer> m = Mutable.of(0);
         Either<Exception, Void> r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), true).build()).result();
         assertTrue(r.isLeft());
@@ -133,21 +134,21 @@ public class TestTry {
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof RuntimeException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(0, l.size());
+        assertEquals(0, l.stream().filter(s -> s.startsWith("Retrying ")).count());
         l.clear();
         m.set(0);
         r = Try.execute(() -> retry(5, m, re)).retry(retryCtxBuilder.exceptions(Collections.singleton(RuntimeException.class), true).build()).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof RuntimeException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(3, l.size());
+        assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
         l.clear();
         m.set(0);
         r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Collections.singleton(RuntimeException.class), true).build()).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof IllegalStateException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(3, l.size());
+        assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
     }
 
     @Test
@@ -155,7 +156,7 @@ public class TestTry {
         List<String> l = new LinkedList<>();
         IllegalStateException ise = new IllegalStateException("needs retry!");
         RuntimeException re = new RuntimeException("needs retry!");
-        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.builder(100, 1.5, 3).logger(l::add);
+        RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.times(100, d -> (long) (d * 1.5), 3).logger(l::add);
         Mutable<Integer> m = Mutable.of(0);
         Either<Exception, Void> r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), false).build()).result();
         assertTrue(r.isLeft());
@@ -168,21 +169,21 @@ public class TestTry {
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof RuntimeException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(3, l.size());
+        assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
         l.clear();
         m.set(0);
         r = Try.execute(() -> retry(5, m, re)).retry(retryCtxBuilder.exceptions(Collections.singleton(RuntimeException.class), false).build()).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof RuntimeException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(0, l.size());
+        assertEquals(0, l.stream().filter(s -> s.startsWith("Retrying ")).count());
         l.clear();
         m.set(0);
         r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Collections.singleton(RuntimeException.class), false).build()).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof IllegalStateException);
         assertEquals("needs retry!", r.left().getMessage());
-        assertEquals(0, l.size());
+        assertEquals(0, l.stream().filter(s -> s.startsWith("Retrying ")).count());
     }
 
     private <T> void assertAutoCloseException(Either<Exception, T> res, Condition<Either<Exception, ?>> resultCondition) {

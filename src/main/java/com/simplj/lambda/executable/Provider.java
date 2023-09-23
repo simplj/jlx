@@ -2,7 +2,7 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 import com.simplj.lambda.util.Try;
 
 import java.util.Objects;
@@ -30,12 +30,12 @@ public interface Provider<R> {
         return () -> after.execute(provide());
     }
 
-    static <R> Provider<R> retrying(RetryContext ctx, Provider<R> f) {
-        return f.withRetry(ctx);
-    }
-
     default <X> Executable<X, R> toExecutable() {
         return x -> provide();
+    }
+
+    static <R> Provider<R> of(Provider<R> f) {
+        return f;
     }
 
     static <T> Provider<T> defer(T val) {

@@ -98,7 +98,13 @@ public class Either<L, R> {
      * @return new Either instance with resultant value of Function f (if applied, or the existing Left value)
      */
     public <A> Either<L, A> map(Function<R, A> f) {
-        return flatmap(f.andThen(Either::right));
+        Either<L, A> res;
+        if (isRight()) {
+            res = right(f.apply(right));
+        } else {
+            res = left(left);
+        }
+        return res;
     }
 
     /**
@@ -106,8 +112,10 @@ public class Either<L, R> {
      * <br>API is eager i.e. Function f is applied to Right value of current instance (or not applied at all if current instance has a Left value) as soon as this API is called.
      * <br>Following are true about this operation:
      * <pre>
-     *     Either.left(l).map(f).left() is equal to l
-     *     Either.right(r).map(f).right() is equal to f(r)
+     *     Either.left(l).flatmap(f).left() is equal to l
+     *     Either.right(r).flatmap(f) is equal to f(r)
+     *     Either.right(r).flatmap(f).right() is equal to f(r).right()
+     *     where, f returns an Either instance
      * </pre>
      * @param f   function to be applied on the Right value
      * @param <A> Type of resultant value of Function f
@@ -119,6 +127,71 @@ public class Either<L, R> {
             res = f.apply(right);
         } else {
             res = left(left);
+        }
+        return res;
+    }
+
+    /**
+     * Transforms the current Either instance to a new Either instance using the left or right transformers in from it's arguments.
+     * <br>If the current either instance has a left value, then leftT is applied to it's left value.
+     * <br>If the current either instance has a right value, then rightT is applied to it's right value.
+     * <br>API is eager i.e. leftT or rightT is applied (based on current Either value) as soon as this API is called.
+     * @param leftT  the transformer to be applied if current Either has a left value
+     * @param rightT the transformer to be applied if current Either has a right value
+     * @param <E>    Type of left value of the transformed Either
+     * @param <A>    Type of right value of the transformed Either
+     * @return new Either instance with leftT or rightT applied according to current Either value.
+     */
+    public <E, A> Either<E, A> transform(Function<L, E> leftT, Function<R, A> rightT) {
+        Either<E, A> res;
+        if (isRight()) {
+            res = right(rightT.apply(right));
+        } else {
+            res = left(leftT.apply(left));
+        }
+        return res;
+    }
+
+    /**
+     * Transforms the current Either instance to a new Either instance using the left or right transformers in from it's arguments.
+     * <br>If the current either instance has a left value, then leftT is applied to it's left value.
+     * <br>If the current either instance has a right value, then rightT is applied to it's right value and flattened.
+     * <br>API is eager i.e. leftT or rightT is applied (based on current Either value) as soon as this API is called.
+     * @param leftT  the transformer to be applied if current Either has a left value
+     * @param rightT the transformer to be applied if current Either has a right value
+     * @param <E>    Type of left value of the transformed Either
+     * @param <A>    Type of right value of the transformed Either
+     * @return new Either instance with leftT or rightT applied according to current Either value.
+     */
+    public <E, A> Either<E, A> flatTransform(Function<L, E> leftT, Function<R, Either<E, A>> rightT) {
+        Either<E, A> res;
+        if (isRight()) {
+            res = rightT.apply(right);
+        } else {
+            res = left(leftT.apply(left));
+        }
+        return res;
+    }
+
+    /**
+     * Applies the Function f to the Left value of current Either instance.
+     * If the current Either instance has a Right value then f is not applied.
+     * <br>API is eager i.e. Function f is applied to Left value of current instance (or not applied at all if current instance has a Right value) as soon as this API is called.
+     * <br>Following are true about this operation:
+     * <pre>
+     *     Either.left(l).map(f).left() is equal to f(l)
+     *     Either.right(r).map(f).right() is equal to r
+     * </pre>
+     * @param f   function to be applied on the Left value
+     * @param <E> Type of resultant value of Function f
+     * @return new Either instance with resultant value of Function f (if applied, or the existing Right value)
+     */
+    public <E> Either<E, R> mapLeft(Function<L, E> f) {
+        Either<E, R> res;
+        if (isLeft()) {
+            res = left(f.apply(left));
+        } else {
+            res = right(right);
         }
         return res;
     }

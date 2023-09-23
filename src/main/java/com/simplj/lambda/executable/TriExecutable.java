@@ -2,7 +2,7 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.TriFunction;
 import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -63,8 +63,8 @@ public interface TriExecutable<A, B, C, R> {
         return a -> b -> c -> execute(a, b, c);
     }
 
-    static <T, U, V, R> TriExecutable<T, U, V, R> retrying(RetryContext ctx, TriExecutable<T, U, V, R> f) {
-        return f.withRetry(ctx);
+    static <T, U, V, R> TriExecutable<T, U, V, R> of(TriExecutable<T, U, V, R> f) {
+        return f;
     }
 
     static <T, U, V> TriExecutable<T, U, V, T> first() {
@@ -75,9 +75,5 @@ public interface TriExecutable<A, B, C, R> {
     }
     static <T, U, V> TriExecutable<T, U, V, V> third() {
         return (a, b, c) -> c;
-    }
-
-    static <T, P, Q> TriReceiver<T, P, Q> noOp() {
-        return (x1, x2, x3) -> {};
     }
 }

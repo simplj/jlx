@@ -2,7 +2,7 @@ package com.simplj.lambda.executable;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -56,8 +56,8 @@ public interface BiExecutable<A, B, R> {
         return a -> b -> execute(a, b);
     }
 
-    static <T, U, R> BiExecutable<T, U, R> retrying(RetryContext ctx, BiExecutable<T, U, R> f) {
-        return f.withRetry(ctx);
+    static <T, U, R> BiExecutable<T, U, R> of(BiExecutable<T, U, R> f) {
+        return f;
     }
 
     static <T, U> BiExecutable<T, U, T> first() {

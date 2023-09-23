@@ -1,6 +1,6 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -69,7 +69,11 @@ public interface TriReceiver<A, B, C> {
         };
     }
 
-    static <T, U, V> TriReceiver<T, U, V> retrying(RetryContext ctx, TriReceiver<T, U, V> f) {
-        return f.withRetry(ctx);
+    static <T, U, V> TriReceiver<T, U, V> of(TriReceiver<T, U, V> f) {
+        return f;
+    }
+
+    static <T, P, Q> TriReceiver<T, P, Q> noOp() {
+        return (x1, x2, x3) -> {};
     }
 }
