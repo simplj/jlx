@@ -21,11 +21,10 @@ import java.util.Set;
  *     Specific exceptions (inclusive/exclusive) to retry
  * </pre>
  */
-public class RetryContext {
-    private final Retry<Object> retry;
+public class RetryContext extends Retryable<Object> {
 
-    RetryContext(RetryContextBuilder builder) {
-        this.retry = new Retry<>(builder.initialDelay, builder.delayF, buildRetryCondition(builder), builder.logger);
+    private RetryContext(RetryContextBuilder builder) {
+        super(new Retry<>(builder.initialDelay, builder.delayF, buildRetryCondition(builder), builder.logger));
     }
 
     /**
@@ -47,11 +46,12 @@ public class RetryContext {
      */
     public <R> R retry(Provider<R> f) throws Exception {
         Mutable<Integer> count = Mutable.of(0);
+        Mutable<Long> delay = Mutable.of(initialDelay());
         long startTs = System.currentTimeMillis();
         Either<Exception, R> res;
         do {
             res = Try.execute(f).result();
-        } while (retry.complementRetry(count, System.currentTimeMillis() - startTs, res));
+        } while (retry.complementRetry(count, System.currentTimeMillis() - startTs, res, delay));
         if (res.isLeft()) {
             throw res.left();
         }
@@ -121,7 +121,7 @@ public class RetryContext {
         return new ResettableRetryContext<>(retry, retryInputResetF);
     }
 
-    private RetryCondition<Object> buildRetryCondition(RetryContextBuilder builder) {
+    private static RetryCondition<Object> buildRetryCondition(RetryContextBuilder builder) {
         RetryCondition<Object> res;
         int mA = builder.maxAttempt;
         long mD = builder.maxDuration;
