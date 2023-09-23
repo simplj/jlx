@@ -1,6 +1,6 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -45,8 +45,8 @@ public interface Receiver<A> {
         };
     }
 
-    static <T> Receiver<T> retrying(RetryContext ctx, Receiver<T> f) {
-        return f.withRetry(ctx);
+    static <T> Receiver<T> of(Receiver<T> f) {
+        return f;
     }
 
     static <T> Receiver<T> noOp() {

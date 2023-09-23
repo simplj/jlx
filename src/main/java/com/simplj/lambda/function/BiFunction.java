@@ -7,7 +7,7 @@ public interface BiFunction<A, B, O> {
     O apply(A inpA, B inpB);
 
     /**
-     * Applies the TriFunction partially (that is why the name `ap` depicting partial `apply`-ing)
+     * Applies the BiFunction partially (that is why the name `ap` depicting partial `apply`-ing)
      * @param a the first argument to be applied
      * @return Function with the other argument
      */
@@ -31,6 +31,10 @@ public interface BiFunction<A, B, O> {
 
     default Function<A, Function<B, O>> curried() {
         return a -> b -> apply(a, b);
+    }
+
+    static <T, U, R> BiFunction<T, U, R> of(BiFunction<T, U, R> f) {
+        return f;
     }
 
     static <T, R> BiFunction<T, R, T> first() {

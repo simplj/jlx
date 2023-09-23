@@ -1,5 +1,7 @@
 package com.simplj.lambda.function;
 
+import com.simplj.lambda.executable.Executable;
+
 import java.util.Objects;
 
 @FunctionalInterface
@@ -25,6 +27,16 @@ public interface Consumer<A> {
             consume(a);
             return a;
         };
+    }
+    default Function<A, Void> toFunction() {
+        return a -> {
+            consume(a);
+            return null;
+        };
+    }
+
+    static <T> Consumer<T> of(Consumer<T> f) {
+        return f;
     }
 
     static <T> Consumer<T> noOp() {

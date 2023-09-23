@@ -41,7 +41,11 @@ public interface BiConsumer<A, B> {
         };
     }
 
-    static <T, P> BiConsumer<T, P> noOp() {
+    static <T, U> BiConsumer<T, U> of(BiConsumer<T, U> f) {
+        return f;
+    }
+
+    static <T, U> BiConsumer<T, U> noOp() {
         return (x1, x2) -> {};
     }
 }

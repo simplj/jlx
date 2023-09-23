@@ -51,6 +51,10 @@ public interface TriConsumer<A, B, C> {
         };
     }
 
+    static <T, U, V> TriConsumer<T, U, V> of(TriConsumer<T, U, V> f) {
+        return f;
+    }
+
     static <T, P, Q> TriConsumer<T, P, Q> noOp() {
         return (x1, x2, x3) -> {};
     }

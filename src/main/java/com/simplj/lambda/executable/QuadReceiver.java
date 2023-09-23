@@ -1,6 +1,6 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -67,8 +67,8 @@ public interface QuadReceiver<A, B, C, D> {
         };
     }
 
-    static <T, U, V, W> QuadReceiver<T, U, V, W> retrying(RetryContext ctx, QuadReceiver<T, U, V, W> f) {
-        return f.withRetry(ctx);
+    static <T, U, V, W> QuadReceiver<T, U, V, W> of(QuadReceiver<T, U, V, W> f) {
+        return f;
     }
 
     static <T, P, Q, R> QuadReceiver<T, P, Q, R> noOp() {

@@ -1,5 +1,7 @@
 package com.simplj.lambda.function;
 
+import com.simplj.lambda.executable.TriExecutable;
+
 import java.util.Objects;
 
 @FunctionalInterface
@@ -36,6 +38,10 @@ public interface TriFunction<A, B, C, R> {
 
     default Function<A, Function<B, Function<C, R>>> curried() {
         return a -> b -> c -> apply(a, b, c);
+    }
+
+    static <T, U, V, R> TriFunction<T, U, V, R> of(TriFunction<T, U, V, R> f) {
+        return f;
     }
 
     static <P, Q, R> TriFunction<P, Q, R, P> first() {

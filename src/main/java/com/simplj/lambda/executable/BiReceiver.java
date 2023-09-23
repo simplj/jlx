@@ -1,6 +1,6 @@
 package com.simplj.lambda.executable;
 
-import com.simplj.lambda.util.RetryContext;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.Objects;
 
@@ -59,8 +59,8 @@ public interface BiReceiver<A, B> {
         };
     }
 
-    static <T, U> BiReceiver<T, U> retrying(RetryContext ctx, BiReceiver<T, U> f) {
-        return f.withRetry(ctx);
+    static <T, U> BiReceiver<T, U> of(BiReceiver<T, U> f) {
+        return f;
     }
 
     static <T, P> BiReceiver<T, P> noOp() {

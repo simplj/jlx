@@ -9,6 +9,7 @@ import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
+import com.simplj.lambda.util.retry.RetryContext;
 
 import java.util.*;
 
@@ -118,6 +119,18 @@ public class Try<A> {
      */
     public Try<A> retry(RetryContext ctx) {
         this.func = func.withRetry(ctx.resettableContext(AutoCloseableMarker::reset));
+        return this;
+    }
+
+    /**
+     * Attempts retry as per the given arguments when an exception is occurred during execution.
+     * @param initialDelay initial delay for the retry operation
+     * @param multiplier   delay multiplier for the retry operation
+     * @param maxAttempts  max retry attempt
+     * @return Current instance of Try.
+     */
+    public Try<A> retry(long initialDelay, double multiplier, int maxAttempts) {
+        this.func = func.withRetry(RetryContext.times(initialDelay, l -> (long) (l * multiplier), maxAttempts).build().resettableContext(AutoCloseableMarker::reset));
         return this;
     }
 
