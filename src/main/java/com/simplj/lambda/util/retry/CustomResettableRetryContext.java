@@ -11,12 +11,11 @@ import com.simplj.lambda.util.Try;
  * Resets the input using the provided reset-er function before attempting for retry.
  * @param <T> Type of the value to reset (which is same as the return type of function that will be retried)
  */
-public final class CustomResettableRetryContext<T, R> {
-    private final Retry<R> retry;
+public final class CustomResettableRetryContext<T, R> extends Retryable<R> {
     private final Function<T, T> retryInputResetF;
 
     CustomResettableRetryContext(Retry<R> retry, Function<T, T> retryInputResetF) {
-        this.retry = retry;
+        super(retry);
         this.retryInputResetF = retryInputResetF;
     }
 
@@ -30,12 +29,13 @@ public final class CustomResettableRetryContext<T, R> {
     public R retry(Executable<T, R> e, T input) throws Exception {
         Provider<R> f = e.exec(input);
         Mutable<Integer> count = Mutable.of(0);
+        Mutable<Long> delay = Mutable.of(initialDelay());
         Either<Exception, R> res;
         boolean flag;
         long startTs = System.currentTimeMillis();
         do {
             res = Try.execute(f).result();
-            flag = retry.complementRetry(count, System.currentTimeMillis() - startTs, res);
+            flag = retry.complementRetry(count, System.currentTimeMillis() - startTs, res, delay);
             if (flag) {
                 input = retryInputResetF.apply(input);
             }
