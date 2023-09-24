@@ -5,8 +5,10 @@ import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Provider;
 import com.simplj.lambda.executable.Receiver;
 import com.simplj.lambda.executable.Excerpt;
+import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.monadic.exception.FilteredOutException;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
 import com.simplj.lambda.util.retry.RetryContext;
@@ -26,12 +28,12 @@ public class Try<A> {
     private Excerpt finalizeF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
-    Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Either<Exception, A>> recovery) {
+    Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Exception> exF, Excerpt finalizeF) {
         this.func = f;
         this.logger = logger;
-        this.recovery = recovery;
-        this.exF = Function.id();
-        this.finalizeF = Excerpt.numb();
+        this.recovery = Either::<Exception, A>left;
+        this.exF = exF;
+        this.finalizeF = finalizeF;
         this.handlers = new HashMap<>();
     }
 
@@ -109,7 +111,70 @@ public class Try<A> {
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> flatExecute(Executable<AutoCloseableMarker, Either<Exception, R>> f) {
-        return new Try<>(f, Consumer.noOp(), Either::<Exception, R>left);
+        return new Try<>(f, Consumer.noOp(), Function.id(), Excerpt.numb());
+    }
+
+    /**
+     * It is recommended to use `handler` and `recover` APIs after this API as all handlers and recovery will be reset by this operation.
+     * <br>* This API is lazy.
+     * @param f   executable to be applied on the Left value
+     * @param <R> Type of resultant value of Function f
+     * @return A new Try instance having the provided Executable composed with the existing one
+     */
+    public <R> Try<R> map(Executable<A, R> f) {
+        Executable<AutoCloseableMarker, Either<Exception, R>> next = func.andThen(e -> {
+            Either<Exception, R> res;
+            if (e.isRight()) {
+                res = f.andThen(Either::<Exception, R>right).execute(e.right());
+            } else {
+                res = Either.left(e.left());
+            }
+            return res;
+        });
+        return new Try<>(next, logger, exF, finalizeF);
+    }
+
+    /**
+     * It is recommended to use `handler` and `recover` APIs after this API as all handlers and recovery will be reset by this operation.
+     * <br>* This API is lazy.
+     * @param f   executable to be applied on the Left value
+     * @param <R> Type of resultant value of Function f
+     * @return A new Try instance having the provided Executable composed with the existing one
+     */
+    public <R> Try<R> flatmap(Executable<A, Try<R>> f) {
+        Executable<AutoCloseableMarker, Either<Exception, R>> next = func.andThen(e -> {
+            Either<Exception, R> res;
+            if (e.isRight()) {
+                res = f.andThen(Try::result).execute(e.right());
+            } else {
+                res = Either.left(e.left());
+            }
+            return res;
+        });
+        return new Try<>(next, logger, exF, finalizeF);
+    }
+
+    public Try<A> filter(Condition<A> condition) {
+        this.func = func.andThen(e -> {
+            Either<Exception, A> res;
+            if (e.isRight() && !condition.evaluate(e.right())) {
+                res = Either.left(new FilteredOutException(e.right()));
+            } else {
+                res = e;
+            }
+            return res;
+        });
+        return this;
+    }
+
+    public Try<A> record(Consumer<A> consumer) {
+        this.func = func.andThen(e -> {
+            if (e.isRight()) {
+                consumer.consume(e.right());
+            }
+            return e;
+        });
+        return this;
     }
 
     /**
