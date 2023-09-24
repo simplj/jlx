@@ -1,5 +1,6 @@
 package com.simplj.lambda.util;
 
+import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
 
 import java.util.Objects;
@@ -194,6 +195,19 @@ public class Either<L, R> {
             res = right(right);
         }
         return res;
+    }
+
+    public Either<L, R> record(Consumer<R> consumer) {
+        if (isRight()) {
+            consumer.consume(this.right);
+        }
+        return this;
+    }
+    public Either<L, R> recordLeft(Consumer<L> consumer) {
+        if (isLeft()) {
+            consumer.consume(this.left);
+        }
+        return this;
     }
 
     @Override
