@@ -67,6 +67,13 @@ public interface QuadReceiver<A, B, C, D> {
         };
     }
 
+    default QuadExecutable<A, B, C, D, Void> toExecutable() {
+        return (a, b, c, d) -> {
+            receive(a, b, c, d);
+            return null;
+        };
+    }
+
     static <T, U, V, W> QuadReceiver<T, U, V, W> of(QuadReceiver<T, U, V, W> f) {
         return f;
     }

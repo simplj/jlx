@@ -10,38 +10,38 @@ import static org.junit.Assert.*;
 public class TestFunctor {
     @Test
     public void testFunctor() {
-        Functor<Integer> f = Functor.arg(0).applied();
+        Thunk<Integer> f = Thunk.init(0).applied();
         assertEquals(0, f.result().right().intValue());
         assertNull(f.result().left());
-        assertEquals("Functor[?]", Functor.arg(0).toString());
+        assertEquals("Functor[?]", Thunk.init(0).toString());
         assertEquals("Right[0]", f.toString());
-        TestUtil.testEqualsAndHashCode(f, Functor.arg(0).applied());
+        TestUtil.testEqualsAndHashCode(f, Thunk.init(0).applied());
     }
 
     @Test
     public void testFunctorFlatmap() {
-        assertTrue(Functor.arg(1).flatmap(n -> Functor.arg(1 / n)).result().isRight());
-        assertTrue(Functor.arg(0).flatmap(z -> Functor.arg(1 / z)).flatmap(Functor::arg).result().isLeft());
-        assertTrue(Functor.arg(0).flatmap(z -> Functor.arg(1 / z)).recover(e -> 0).result().isRight());
+        assertTrue(Thunk.init(1).flatmap(n -> Thunk.init(1 / n)).result().isRight());
+        assertTrue(Thunk.init(0).flatmap(z -> Thunk.init(1 / z)).flatmap(Thunk::init).result().isLeft());
+        assertTrue(Thunk.init(0).flatmap(z -> Thunk.init(1 / z)).recover(e -> 0).result().isRight());
     }
 
     @Test
     public void testFunctorMap() {
-        assertTrue(Functor.arg(1).map(n -> 1 / n).result().isRight());
-        assertTrue(Functor.arg(0).map(z -> 1 / z).map(Executable.id()).result().isLeft());
-        assertTrue(Functor.arg(0).map(z -> 1 / z).recover(e -> 0).result().isRight());
+        assertTrue(Thunk.init(1).map(n -> 1 / n).result().isRight());
+        assertTrue(Thunk.init(0).map(z -> 1 / z).map(Executable.id()).result().isLeft());
+        assertTrue(Thunk.init(0).map(z -> 1 / z).recover(e -> 0).result().isRight());
     }
 
     @Test
     public void testExecute() {
         Mutable<Integer> m = Mutable.of(0);
-        Functor.arg(1).record(m::set).applied();
+        Thunk.init(1).record(m::set).applied();
         assertEquals(1, m.get().intValue());
     }
 
     @Test
     public void testFunctorNotApplied() {
-        assertThrows(IllegalStateException.class, () -> Functor.arg(0).equals(null));
-        assertThrows(IllegalStateException.class, () -> Functor.arg(0).hashCode());
+        assertThrows(IllegalStateException.class, () -> Thunk.init(0).equals(null));
+        assertThrows(IllegalStateException.class, () -> Thunk.init(0).hashCode());
     }
 }

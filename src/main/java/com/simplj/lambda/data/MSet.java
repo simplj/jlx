@@ -9,32 +9,32 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> implements Set<T> {
+public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     Set<T> set;
 
-    private MutableSet(Set<T> set, Producer<Set<?>> constructor) {
+    private MSet(Set<T> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
     }
 
-    public static <E> MutableSet<E> unit() {
+    public static <E> MSet<E> unit() {
         return unit(HashSet::new);
     }
 
-    public static <E> MutableSet<E> unit(Producer<Set<?>> constructor) {
+    public static <E> MSet<E> unit(Producer<Set<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <E> MutableSet<E> of(E...elems) {
+    public static <E> MSet<E> of(E...elems) {
         return of(Util.asSet(elems));
     }
 
-    public static <E> MutableSet<E> of(Set<E> set) {
+    public static <E> MSet<E> of(Set<E> set) {
         return of(set, HashSet::new);
     }
 
-    public static <E> MutableSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
+    public static <E> MSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
         return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
@@ -58,7 +58,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> MutableSet<R> map(Function<T, R> f);
+    public abstract <R> MSet<R> map(Function<T, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; set&lt;R&gt;)</i> to all the elements in the set and returns the resultant flattened set. Function application is <i>lazy</i><br>
@@ -69,7 +69,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
+    public abstract <R> MSet<R> flatmap(Function<T, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -81,7 +81,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> applied() {
+    public MSet<T> applied() {
         apply();
         return this;
     }
@@ -93,7 +93,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> include(T val) {
+    public MSet<T> include(T val) {
         add(val);
         return this;
     }
@@ -105,7 +105,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> include(Collection<? extends T> c) {
+    public MSet<T> include(Collection<? extends T> c) {
         addAll(c);
         return this;
     }
@@ -117,7 +117,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> delete(T val) {
+    public MSet<T> delete(T val) {
         remove(val);
         return this;
     }
@@ -129,7 +129,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> delete(Collection<? extends T> c) {
+    public MSet<T> delete(Collection<? extends T> c) {
         removeAll(c);
         return this;
     }
@@ -141,7 +141,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> preserve(Collection<? extends T> c) {
+    public MSet<T> preserve(Collection<? extends T> c) {
         retainAll(c);
         return this;
     }
@@ -153,7 +153,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
     }
 
     @Override
-    public MutableSet<T> empty() {
+    public MSet<T> empty() {
         clear();
         return this;
     }
@@ -164,7 +164,7 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
         return set.removeIf(filter);
     }
 
-    public MutableSet<T> deleteIf(Condition<? super T> c) {
+    public MSet<T> deleteIf(Condition<? super T> c) {
         removeIf(c::evaluate);
         return this;
     }
@@ -175,9 +175,9 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
         }
     }
 
-    abstract MutableSet<T> appliedSet();
+    abstract MSet<T> appliedSet();
 
-    private static final class SetFunctor<A, T> extends MutableSet<T> implements Functor<A, T> {
+    private static final class SetFunctor<A, T> extends MSet<T> implements Functor<A, T> {
         private final Set<A> src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -188,22 +188,22 @@ public abstract class MutableSet<T> extends FunctionalSet<T, MutableSet<T>> impl
         }
 
         @Override
-        MutableSet<T> instantiate(Producer<Set<?>> constructor) {
+        MSet<T> instantiate(Producer<Set<?>> constructor) {
             return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
         }
 
         @Override
-        public <R> MutableSet<R> map(Function<T, R> f) {
+        public <R> MSet<R> map(Function<T, R> f) {
             return new SetFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <R> MutableSet<R> flatmap(Function<T, ? extends Set<R>> f) {
+        public <R> MSet<R> flatmap(Function<T, ? extends Set<R>> f) {
             return new SetFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
         @Override
-        public MutableSet<T> filter(Condition<T> c) {
+        public MSet<T> filter(Condition<T> c) {
             return new SetFunctor<>(src, constructor, filter(func, c), null);
         }
 

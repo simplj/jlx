@@ -11,10 +11,10 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iterable<T> {
+abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
     final Producer<List<?>> constructor;
 
-    FunctionalList(Producer<List<?>> constructor) {
+    FList(Producer<List<?>> constructor) {
         this.constructor = constructor;
     }
 
@@ -230,8 +230,8 @@ abstract class FunctionalList<T, L extends FunctionalList<T, L>> implements Iter
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof FunctionalList) {
-            FunctionalList<?, ?> fList = Util.cast(obj);
+        if (obj instanceof FList) {
+            FList<?, ?> fList = Util.cast(obj);
             obj = fList.list();
         }
         return list().equals(obj);

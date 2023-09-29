@@ -6,10 +6,10 @@ import com.simplj.lambda.tuples.Tuple;
 
 import java.util.*;
 
-abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements Iterable<Map.Entry<K, V>> {
+abstract class FMap<K, V, M extends FMap<K, V, M>> implements Iterable<Map.Entry<K, V>> {
     final Producer<Map<?, ?>> constructor;
 
-    FunctionalMap(Producer<Map<?, ?>> constructor) {
+    FMap(Producer<Map<?, ?>> constructor) {
         this.constructor = constructor;
     }
 
@@ -223,8 +223,8 @@ abstract class FunctionalMap<K, V, M extends FunctionalMap<K, V, M>> implements 
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof FunctionalMap) {
-            FunctionalMap<?, ?, ?> fMap = Util.cast(obj);
+        if (obj instanceof FMap) {
+            FMap<?, ?, ?> fMap = Util.cast(obj);
             obj = fMap.map();
         }
         return map().equals(obj);

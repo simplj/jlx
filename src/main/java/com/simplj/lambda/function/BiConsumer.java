@@ -40,6 +40,12 @@ public interface BiConsumer<A, B> {
             return b;
         };
     }
+    default BiFunction<A, B, Void> toFunction() {
+        return (a, b) -> {
+            consume(a, b);
+            return null;
+        };
+    }
 
     static <T, U> BiConsumer<T, U> of(BiConsumer<T, U> f) {
         return f;

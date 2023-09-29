@@ -7,9 +7,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class FunctorMonadTest {
-    private final Function<Integer, Functor<Integer>> unitF = Functor::arg;
-    private final Executable<Integer, Functor<Integer>> incrF = x -> unitF.apply(x + 1);
-    private final Executable<Integer, Functor<Integer>> doubleF = x -> unitF.apply(x + x);
+    private final Function<Integer, Thunk<Integer>> unitF = Thunk::init;
+    private final Executable<Integer, Thunk<Integer>> incrF = x -> unitF.apply(x + 1);
+    private final Executable<Integer, Thunk<Integer>> doubleF = x -> unitF.apply(x + x);
 
     /*
     Monad Law 1: Left Identity
@@ -28,7 +28,7 @@ public class FunctorMonadTest {
      */
     @Test
     public void testRightIdentity() throws Exception {
-        Functor<Integer> m = unitF.apply(0);
+        Thunk<Integer> m = unitF.apply(0);
         assertEquals(m.result().right(), m.flatmap(unitF::apply).result().right());
     }
 
@@ -39,7 +39,7 @@ public class FunctorMonadTest {
      */
     @Test
     public void testAssociativity() throws Exception {
-        Functor<Integer> m = unitF.apply(0);
+        Thunk<Integer> m = unitF.apply(0);
         assertEquals(m.flatmap(incrF.andThen(v -> v.flatmap(doubleF))).result().right(), m.flatmap(incrF).flatmap(doubleF).result().right());
     }
 }

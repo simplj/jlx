@@ -5,7 +5,7 @@ import com.simplj.lambda.executable.Executable;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface Function<I, O> {
+public interface Function<I, O> extends java.util.function.Function<I, O> {
     O apply(I input);
 
     /**

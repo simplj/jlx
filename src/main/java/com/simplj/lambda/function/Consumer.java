@@ -1,12 +1,14 @@
 package com.simplj.lambda.function;
 
-import com.simplj.lambda.executable.Executable;
-
 import java.util.Objects;
 
 @FunctionalInterface
-public interface Consumer<A> {
+public interface Consumer<A> extends java.util.function.Consumer<A> {
     void consume(A input);
+
+    default void accept(A a) {
+        consume(a);
+    }
 
     /**
      * Applies the Consumer partially (that is why the name `cons` depicting partial `consume`-ing)

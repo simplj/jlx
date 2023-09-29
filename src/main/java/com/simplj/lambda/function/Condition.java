@@ -1,10 +1,15 @@
 package com.simplj.lambda.function;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 
 @FunctionalInterface
-public interface Condition<A> {
+public interface Condition<A> extends Predicate<A> {
     boolean evaluate(A input);
+
+    default boolean test(A a) {
+        return evaluate(a);
+    }
 
     default Condition<A> negate() {
         return a -> !evaluate(a);

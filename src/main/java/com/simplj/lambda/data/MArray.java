@@ -5,72 +5,72 @@ import com.simplj.lambda.function.Function;
 
 import java.util.LinkedList;
 
-public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArray<E>> {
-    final E[] arr;
+public abstract class MArray<E> extends FArray<E, MArray<E>> {
+    volatile E[] arr;
 
-    private ImmutableArray(E[] arr) {
+    private MArray(E[] arr) {
         super();
         this.arr = arr;
     }
 
-    public static <A> ImmutableArray<A> of(int size) {
+    public static <A> MArray<A> of(int size) {
         A[] arr = Util.cast(new Object[size]);
         return of(arr);
     }
-    public static <A> ImmutableArray<A> of(A[] arr) {
+    public static <A> MArray<A> of(A[] arr) {
         return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
     }
 
-    public static ImmutableArray<Integer> of(int...arr) {
+    public static MArray<Integer> of(int...arr) {
         Integer[] a = new Integer[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Byte> of(byte...arr) {
+    public static MArray<Byte> of(byte...arr) {
         Byte[] a = new Byte[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Short> of(short...arr) {
+    public static MArray<Short> of(short...arr) {
         Short[] a = new Short[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Long> of(long...arr) {
+    public static MArray<Long> of(long...arr) {
         Long[] a = new Long[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Float> of(float...arr) {
+    public static MArray<Float> of(float...arr) {
         Float[] a = new Float[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Double> of(double...arr) {
+    public static MArray<Double> of(double...arr) {
         Double[] a = new Double[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Boolean> of(boolean...arr) {
+    public static MArray<Boolean> of(boolean...arr) {
         Boolean[] a = new Boolean[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static ImmutableArray<Character> of(char...arr) {
+    public static MArray<Character> of(char...arr) {
         Character[] a = new Character[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
@@ -79,25 +79,27 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
     }
 
     @Override
-    public ImmutableArray<E> set(int idx, E val) {
-        ImmutableArray<E> res = applied();
-        res.arr[idx] = val;
-        return res;
+    public MArray<E> set(int idx, E val) {
+        apply();
+        arr[idx] = val;
+        return this;
     }
 
     @Override
     public E get(int idx) {
-        return applied().arr[idx];
+        apply();
+        return arr[idx];
     }
 
     @Override
     public E[] array() {
-        return applied().arr;
+        apply();
+        return arr;
     }
 
-    public abstract <T> ImmutableArray<T> map(Function<E, T> f);
+    public abstract <T> MArray<T> map(Function<E, T> f);
 
-    public abstract <R> ImmutableArray<R> flatmap(Function<E, ? extends R[]> f);
+    public abstract <R> MArray<R> flatmap(Function<E, ? extends R[]> f);
 
     /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
@@ -106,7 +108,20 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
         return arr != null;
     }
 
-    private static final class ArrayFunctor<A, T> extends ImmutableArray<T> implements Functor<A, T> {
+    public MArray<E> applied() {
+        apply();
+        return this;
+    }
+
+    private void apply() {
+        if (!isApplied()) {
+            arr = appliedArray().arr;
+        }
+    }
+
+    public abstract MArray<E> appliedArray();
+
+    private static final class ArrayFunctor<A, T> extends MArray<T> implements Functor<A, T> {
         private final A[] src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -117,26 +132,26 @@ public abstract class ImmutableArray<E> extends FunctionalArray<E, ImmutableArra
         }
 
         @Override
-        ImmutableArray<T> unit(T[] arr) {
+        MArray<T> unit(T[] arr) {
             return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
         }
 
         @Override
-        public <R> ImmutableArray<R> map(Function<T, R> f) {
+        public <R> MArray<R> map(Function<T, R> f) {
             return new ArrayFunctor<>(src, map(func, f), null);
         }
 
         @Override
-        public <R> ImmutableArray<R> flatmap(Function<T, ? extends R[]> f) {
+        public <R> MArray<R> flatmap(Function<T, ? extends R[]> f) {
             return new ArrayFunctor<>(src, fmap(func, f), null);
         }
 
         @Override
-        public ImmutableArray<T> filter(Condition<T> c) {
+        public MArray<T> filter(Condition<T> c) {
             return new ArrayFunctor<>(src, filter(func, c), null);
         }
 
-        public final ArrayFunctor<T, T> applied() {
+        public final ArrayFunctor<T, T> appliedArray() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);

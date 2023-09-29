@@ -10,32 +10,32 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> implements List<T> {
+public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     volatile List<T> list;
 
-    MutableList(List<T> list, Producer<List<?>> constructor) {
+    MList(List<T> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
     }
 
-    public static <E> MutableList<E> unit() {
+    public static <E> MList<E> unit() {
         return unit(LinkedList::new);
     }
 
-    public static <E> MutableList<E> unit(Producer<List<?>> constructor) {
+    public static <E> MList<E> unit(Producer<List<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <E> MutableList<E> of(E...elems) {
+    public static <E> MList<E> of(E...elems) {
         return of(Arrays.asList(elems));
     }
 
-    public static <E> MutableList<E> of(List<E> list) {
+    public static <E> MList<E> of(List<E> list) {
         return of(list, LinkedList::new);
     }
 
-    public static <E> MutableList<E> of(List<E> list, Producer<List<?>> constructor) {
+    public static <E> MList<E> of(List<E> list, Producer<List<?>> constructor) {
         return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
     }
 
@@ -49,7 +49,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> MutableList<R> map(Function<T, R> f);
+    public abstract <R> MList<R> map(Function<T, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened list. Function application is <i>lazy</i><br>
@@ -60,7 +60,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> MutableList<R> flatmap(Function<T, ? extends List<R>> f);
+    public abstract <R> MList<R> flatmap(Function<T, ? extends List<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
@@ -75,13 +75,13 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> applied() {
+    public MList<T> applied() {
         apply();
         return this;
     }
 
-    public MutableList<Couple<Integer, T>> indexed() {
-        return foldl(Tuple.of(0, MutableList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
+    public MList<Couple<Integer, T>> indexed() {
+        return foldl(Tuple.of(0, MList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
@@ -97,7 +97,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> append(T val) {
+    public MList<T> append(T val) {
         add(val);
         return this;
     }
@@ -109,7 +109,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> insert(int index, T val) {
+    public MList<T> insert(int index, T val) {
         add(index, val);
         return this;
     }
@@ -121,7 +121,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> replace(int index, T val) {
+    public MList<T> replace(int index, T val) {
         set(index, val);
         return this;
     }
@@ -133,7 +133,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> delete(int index) {
+    public MList<T> delete(int index) {
         remove(index);
         return this;
     }
@@ -145,7 +145,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> delete(T val) {
+    public MList<T> delete(T val) {
         remove(val);
         return this;
     }
@@ -157,7 +157,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> append(Collection<? extends T> c) {
+    public MList<T> append(Collection<? extends T> c) {
         addAll(c);
         return this;
     }
@@ -169,7 +169,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> insert(int index, Collection<? extends T> c) {
+    public MList<T> insert(int index, Collection<? extends T> c) {
         addAll(index, c);
         return this;
     }
@@ -181,7 +181,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> delete(Collection<? extends T> val) {
+    public MList<T> delete(Collection<? extends T> val) {
         removeAll(val);
         return this;
     }
@@ -193,7 +193,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> preserve(Collection<? extends T> c) {
+    public MList<T> preserve(Collection<? extends T> c) {
         retainAll(c);
         return this;
     }
@@ -205,7 +205,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
     }
 
     @Override
-    public MutableList<T> empty() {
+    public MList<T> empty() {
         clear();
         return this;
     }
@@ -216,7 +216,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         list.sort(c);
     }
 
-    public MutableList<T> sorted(Comparator<? super T> c) {
+    public MList<T> sorted(Comparator<? super T> c) {
         sort(c);
         return this;
     }
@@ -227,7 +227,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         list.replaceAll(operator);
     }
 
-    public MutableList<T> replacingAll(UnaryOperator<T> operator) {
+    public MList<T> replacingAll(UnaryOperator<T> operator) {
         replaceAll(operator);
         return this;
     }
@@ -238,7 +238,7 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         return list.removeIf(filter);
     }
 
-    public MutableList<T> deleteIf(Condition<? super T> c) {
+    public MList<T> deleteIf(Condition<? super T> c) {
         removeIf(c::evaluate);
         return this;
     }
@@ -249,9 +249,9 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         }
     }
 
-    abstract MutableList<T> appliedList();
+    abstract MList<T> appliedList();
 
-    private static final class ListFunctor<A, T> extends MutableList<T> implements Functor<A, T> {
+    private static final class ListFunctor<A, T> extends MList<T> implements Functor<A, T> {
         private final List<A> src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -262,22 +262,22 @@ public abstract class MutableList<T> extends FunctionalList<T, MutableList<T>> i
         }
 
         @Override
-        MutableList<T> instantiate(Producer<List<?>> constructor) {
+        MList<T> instantiate(Producer<List<?>> constructor) {
             return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
         }
 
         @Override
-        public <R> MutableList<R> map(Function<T, R> f) {
+        public <R> MList<R> map(Function<T, R> f) {
             return new ListFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <R> MutableList<R> flatmap(Function<T, ? extends List<R>> f) {
+        public <R> MList<R> flatmap(Function<T, ? extends List<R>> f) {
             return new ListFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
         @Override
-        public MutableList<T> filter(Condition<T> c) {
+        public MList<T> filter(Condition<T> c) {
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 

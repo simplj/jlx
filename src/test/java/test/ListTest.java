@@ -1,7 +1,7 @@
 package test;
 
-import com.simplj.lambda.data.ImmutableList;
-import com.simplj.lambda.data.MutableList;
+import com.simplj.lambda.data.IList;
+import com.simplj.lambda.data.MList;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -29,7 +29,7 @@ public class ListTest {
     }
 
     private static void testMutableList(int count) {
-        MutableList<Integer> mList = MutableList.unit(LinkedList::new);
+        MList<Integer> mList = MList.unit(LinkedList::new);
         for (int i = 0; i < count; i++) {
             mList.add(i);
         }
@@ -45,7 +45,7 @@ public class ListTest {
         for (int i = 0; i < count; i++) {
             list.add(i);
         }
-        ImmutableList<Integer> iList = ImmutableList.of(list, LinkedList::new);
+        IList<Integer> iList = IList.of(list, LinkedList::new);
 
         long s = System.currentTimeMillis();
         long c = iList.map(x -> x + 1).flatmap(x -> Arrays.asList(-x, x)).filter(x -> x > 0).applied().size();
