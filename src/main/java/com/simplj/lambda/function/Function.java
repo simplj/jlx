@@ -1,7 +1,5 @@
 package com.simplj.lambda.function;
 
-import com.simplj.lambda.executable.Executable;
-
 import java.util.Objects;
 
 @FunctionalInterface
@@ -30,7 +28,7 @@ public interface Function<I, O> extends java.util.function.Function<I, O> {
         return t -> t;
     }
 
-    static <T, R> Executable<T, R> of(Executable<T, R> f) {
+    static <T, R> Function<T, R> of(Function<T, R> f) {
         return f;
     }
 }
