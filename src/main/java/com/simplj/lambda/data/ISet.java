@@ -6,32 +6,32 @@ import com.simplj.lambda.function.Producer;
 
 import java.util.*;
 
-public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> {
+public abstract class ISet<T> extends FSet<T, ISet<T>> {
     final Set<T> set;
 
-    public ImmutableSet(Set<T> set, Producer<Set<?>> constructor) {
+    public ISet(Set<T> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
     }
 
-    public static <E> ImmutableSet<E> unit() {
+    public static <E> ISet<E> unit() {
         return unit(HashSet::new);
     }
 
-    public static <E> ImmutableSet<E> unit(Producer<Set<?>> constructor) {
+    public static <E> ISet<E> unit(Producer<Set<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <E> ImmutableSet<E> of(E...elems) {
+    public static <E> ISet<E> of(E...elems) {
         return of(Util.asSet(elems));
     }
 
-    public static <E> ImmutableSet<E> of(Set<E> set) {
+    public static <E> ISet<E> of(Set<E> set) {
         return of(set, HashSet::new);
     }
 
-    public static <E> ImmutableSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
+    public static <E> ISet<E> of(Set<E> set, Producer<Set<?>> constructor) {
         return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
@@ -54,7 +54,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> ImmutableSet<R> map(Function<T, R> f);
+    public abstract <R> ISet<R> map(Function<T, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; set&lt;R&gt;)</i> to all the elements in the set and returns the resultant flattened set. Function application is <i>lazy</i><br>
@@ -65,7 +65,7 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> ImmutableSet<R> flatmap(Function<T, ? extends Set<R>> f);
+    public abstract <R> ISet<R> flatmap(Function<T, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -77,52 +77,52 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
     }
 
     @Override
-    public ImmutableSet<T> include(T val) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> include(T val) {
+        ISet<T> res = applied();
         res.set.add(val);
         return res;
     }
 
     @Override
-    public ImmutableSet<T> include(Collection<? extends T> c) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> include(Collection<? extends T> c) {
+        ISet<T> res = applied();
         res.set.addAll(c);
         return this;
     }
 
     @Override
-    public ImmutableSet<T> delete(T val) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> delete(T val) {
+        ISet<T> res = applied();
         res.set.remove(val);
         return this;
     }
 
     @Override
-    public ImmutableSet<T> delete(Collection<? extends T> c) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> delete(Collection<? extends T> c) {
+        ISet<T> res = applied();
         res.set.removeAll(c);
         return this;
     }
 
     @Override
-    public ImmutableSet<T> preserve(Collection<? extends T> c) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> preserve(Collection<? extends T> c) {
+        ISet<T> res = applied();
         res.set.retainAll(c);
         return this;
     }
 
     @Override
-    public ImmutableSet<T> empty() {
+    public ISet<T> empty() {
         return unit(constructor);
     }
 
-    public ImmutableSet<T> deleteIf(Condition<? super T> c) {
-        ImmutableSet<T> res = applied();
+    public ISet<T> deleteIf(Condition<? super T> c) {
+        ISet<T> res = applied();
         res.set.removeIf(c::evaluate);
         return res;
     }
 
-    private static final class SetFunctor<A, T> extends ImmutableSet<T> implements Functor<A, T> {
+    private static final class SetFunctor<A, T> extends ISet<T> implements Functor<A, T> {
         private final Set<A> src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -133,22 +133,22 @@ public abstract class ImmutableSet<T> extends FunctionalSet<T, ImmutableSet<T>> 
         }
 
         @Override
-        ImmutableSet<T> instantiate(Producer<Set<?>> constructor) {
+        ISet<T> instantiate(Producer<Set<?>> constructor) {
             return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
         }
 
         @Override
-        public <R> ImmutableSet<R> map(Function<T, R> f) {
+        public <R> ISet<R> map(Function<T, R> f) {
             return new SetFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <R> ImmutableSet<R> flatmap(Function<T, ? extends Set<R>> f) {
+        public <R> ISet<R> flatmap(Function<T, ? extends Set<R>> f) {
             return new SetFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
         @Override
-        public ImmutableSet<T> filter(Condition<T> c) {
+        public ISet<T> filter(Condition<T> c) {
             return new SetFunctor<>(src, constructor, filter(func, c), null);
         }
 

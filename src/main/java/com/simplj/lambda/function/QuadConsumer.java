@@ -55,6 +55,13 @@ public interface QuadConsumer<A, B, C, D> {
         };
     }
 
+    default QuadFunction<A, B, C, D, Void> toFunction() {
+        return (a, b, c, d) -> {
+            consume(a, b, c, d);
+            return null;
+        };
+    }
+
     static <T, U, V, W> QuadConsumer<T, U, V, W> of(QuadConsumer<T, U, V, W> f) {
         return f;
     }

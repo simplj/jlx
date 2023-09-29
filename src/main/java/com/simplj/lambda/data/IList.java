@@ -9,32 +9,32 @@ import com.simplj.lambda.tuples.Tuple;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T>> {
+public abstract class IList<T> extends FList<T, IList<T>> {
     final List<T> list;
 
-    ImmutableList(List<T> list, Producer<List<?>> constructor) {
+    IList(List<T> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
     }
 
-    public static <E> ImmutableList<E> unit() {
+    public static <E> IList<E> unit() {
         return unit(LinkedList::new);
     }
 
-    public static <E> ImmutableList<E> unit(Producer<List<?>> constructor) {
+    public static <E> IList<E> unit(Producer<List<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <E> ImmutableList<E> of(E...elems) {
+    public static <E> IList<E> of(E...elems) {
         return of(Arrays.asList(elems));
     }
 
-    public static <E> ImmutableList<E> of(List<E> list) {
+    public static <E> IList<E> of(List<E> list) {
         return of(list, LinkedList::new);
     }
 
-    public static <E> ImmutableList<E> of(List<E> list, Producer<List<?>> constructor) {
+    public static <E> IList<E> of(List<E> list, Producer<List<?>> constructor) {
         return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
     }
 
@@ -48,7 +48,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> ImmutableList<R> map(Function<T, R> f);
+    public abstract <R> IList<R> map(Function<T, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened applied(). Function application is <i>lazy</i><br>
@@ -59,7 +59,7 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f);
+    public abstract <R> IList<R> flatmap(Function<T, ? extends List<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
@@ -72,100 +72,100 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
         return list != null;
     }
 
-    public ImmutableList<Couple<Integer, T>> indexed() {
-        return foldl(Tuple.of(0, ImmutableList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
+    public IList<Couple<Integer, T>> indexed() {
+        return foldl(Tuple.of(0, IList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
-    public ImmutableList<T> append(T val) {
-        ImmutableList<T> res = applied();
+    public IList<T> append(T val) {
+        IList<T> res = applied();
         res.list.add(val);
         return res;
     }
 
     @Override
-    public ImmutableList<T> append(Collection<? extends T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> append(Collection<? extends T> c) {
+        IList<T> res = applied();
         res.list.addAll(c);
         return res;
     }
 
     @Override
-    public ImmutableList<T> insert(int index, T val) {
-        ImmutableList<T> res = applied();
+    public IList<T> insert(int index, T val) {
+        IList<T> res = applied();
         res.list.add(index, val);
         return res;
     }
 
     @Override
-    public ImmutableList<T> insert(int index, Collection<? extends T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> insert(int index, Collection<? extends T> c) {
+        IList<T> res = applied();
         res.list.addAll(index, c);
         return res;
     }
 
     @Override
-    public ImmutableList<T> replace(int index, T val) {
-        ImmutableList<T> res = applied();
+    public IList<T> replace(int index, T val) {
+        IList<T> res = applied();
         res.list.set(index, val);
         return res;
     }
 
     @Override
-    public ImmutableList<T> delete(int index) {
-        ImmutableList<T> res = applied();
+    public IList<T> delete(int index) {
+        IList<T> res = applied();
         res.list.remove(index);
         return res;
     }
 
     @Override
-    public ImmutableList<T> delete(T val) {
-        ImmutableList<T> res = applied();
+    public IList<T> delete(T val) {
+        IList<T> res = applied();
         res.list.remove(val);
         return res;
     }
 
     @Override
-    public ImmutableList<T> delete(Collection<? extends T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> delete(Collection<? extends T> c) {
+        IList<T> res = applied();
         res.list.removeAll(c);
         return res;
     }
 
     @Override
-    public ImmutableList<T> preserve(Collection<? extends T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> preserve(Collection<? extends T> c) {
+        IList<T> res = applied();
         res.list.retainAll(c);
         return res;
     }
 
     @Override
-    public ImmutableList<T> empty() {
+    public IList<T> empty() {
         return unit(constructor);
     }
 
     @Override
-    public ImmutableList<T> sorted(Comparator<? super T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> sorted(Comparator<? super T> c) {
+        IList<T> res = applied();
         res.list.sort(c);
         return res;
     }
 
     @Override
-    public ImmutableList<T> replacingAll(UnaryOperator<T> operator) {
-        ImmutableList<T> res = applied();
+    public IList<T> replacingAll(UnaryOperator<T> operator) {
+        IList<T> res = applied();
         res.list.replaceAll(operator);
         return res;
     }
 
     @Override
-    public ImmutableList<T> deleteIf(Condition<? super T> c) {
-        ImmutableList<T> res = applied();
+    public IList<T> deleteIf(Condition<? super T> c) {
+        IList<T> res = applied();
         res.list.removeIf(c::evaluate);
         return res;
     }
 
-    private static final class ListFunctor<A, T> extends ImmutableList<T> implements Functor<A, T> {
+    private static final class ListFunctor<A, T> extends IList<T> implements Functor<A, T> {
         private final List<A> src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -176,22 +176,22 @@ public abstract class ImmutableList<T> extends FunctionalList<T, ImmutableList<T
         }
 
         @Override
-        ImmutableList<T> instantiate(Producer<List<?>> constructor) {
+        IList<T> instantiate(Producer<List<?>> constructor) {
             return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
         }
 
         @Override
-        public <R> ImmutableList<R> map(Function<T, R> f) {
+        public <R> IList<R> map(Function<T, R> f) {
             return new ListFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <R> ImmutableList<R> flatmap(Function<T, ? extends List<R>> f) {
+        public <R> IList<R> flatmap(Function<T, ? extends List<R>> f) {
             return new ListFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
         @Override
-        public ImmutableList<T> filter(Condition<T> c) {
+        public IList<T> filter(Condition<T> c) {
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 

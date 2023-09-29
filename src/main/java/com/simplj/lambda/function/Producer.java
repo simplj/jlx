@@ -1,10 +1,15 @@
 package com.simplj.lambda.function;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface Producer<R> {
+public interface Producer<R> extends Supplier<R> {
     R produce();
+
+    default R get() {
+        return produce();
+    }
 
     default <A> Producer<A> andThen(Function<R, A> after) {
         Objects.requireNonNull(after);

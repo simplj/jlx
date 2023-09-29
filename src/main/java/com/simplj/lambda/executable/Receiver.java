@@ -38,6 +38,7 @@ public interface Receiver<A> {
             return a;
         };
     }
+
     default Executable<A, Void> toExecutable() {
         return a -> {
             receive(a);

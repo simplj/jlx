@@ -51,6 +51,13 @@ public interface TriConsumer<A, B, C> {
         };
     }
 
+    default TriFunction<A, B, C, Void> toFunction() {
+        return (a, b, c) -> {
+            consume(a, b, c);
+            return null;
+        };
+    }
+
     static <T, U, V> TriConsumer<T, U, V> of(TriConsumer<T, U, V> f) {
         return f;
     }

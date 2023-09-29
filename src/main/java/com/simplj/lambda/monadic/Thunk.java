@@ -9,20 +9,27 @@ import com.simplj.lambda.monadic.exception.FilteredOutException;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.Try;
 
-public class Functor<A> {
+/**
+ * Applying functions lazily on a Producer (or an initial value)
+ * @param <A> Type of the resultant value
+ */
+public class Thunk<A> {
     private final Producer<Either<Exception, A>> func;
     private final Either<Exception, A> result;
 
-    private Functor(Producer<Either<Exception, A>> func, Either<Exception, A> r) {
+    private Thunk(Producer<Either<Exception, A>> func, Either<Exception, A> r) {
         this.func = func;
         this.result = r;
     }
 
-    public static <T> Functor<T> arg(T val) {
-        return new Functor<>(Producer.defer(Either.right(val)), null);
+    public static <T> Thunk<T> init(T val) {
+        return of(Producer.defer(val));
+    }
+    public static <T> Thunk<T> of(Producer<T> f) {
+        return new Thunk<>(f.andThen(Either::right), null);
     }
 
-    public <R> Functor<R> map(Executable<A, R> f) {
+    public <R> Thunk<R> map(Executable<A, R> f) {
         Producer<Either<Exception, R>> next = func.andThen(e -> {
             Either<Exception, R> res;
             if (e.isRight()) {
@@ -32,23 +39,23 @@ public class Functor<A> {
             }
             return res;
         });
-        return new Functor<>(next, null);
+        return new Thunk<>(next, null);
     }
 
-    public <R> Functor<R> flatmap(Executable<A, Functor<R>> f) {
+    public <R> Thunk<R> flatmap(Executable<A, Thunk<R>> f) {
         Producer<Either<Exception, R>> next = func.andThen(e -> {
             Either<Exception, R> res;
             if (e.isRight()) {
-                res = Try.execute(() -> f.execute(e.right())).result().flatmap(Functor::result);
+                res = Try.execute(() -> f.execute(e.right())).result().flatmap(Thunk::result);
             } else {
                 res = Either.left(e.left());
             }
             return res;
         });
-        return new Functor<>(next, null);
+        return new Thunk<>(next, null);
     }
 
-    public Functor<A> filter(Condition<A> f) {
+    public Thunk<A> filter(Condition<A> f) {
         Producer<Either<Exception, A>> next = func.andThen(e -> {
             Either<Exception, A> res;
             if (e.isRight() && !f.evaluate(e.right())) {
@@ -58,26 +65,26 @@ public class Functor<A> {
             }
             return res;
         });
-        return new Functor<>(next, null);
+        return new Thunk<>(next, null);
     }
 
-    public Functor<A> record(Receiver<A> r) {
+    public Thunk<A> record(Receiver<A> r) {
         return map(r.yield());
     }
 
-    public Functor<A> recover(Function<Exception, A> recovery) {
+    public Thunk<A> recover(Function<Exception, A> recovery) {
         Producer<Either<Exception, A>> recoveryF = func.andThen(e -> e.isLeft() ? Either.right(recovery.apply(e.left())) : e);
-        return new Functor<>(recoveryF, null);
+        return new Thunk<>(recoveryF, null);
     }
 
     public Either<Exception, A> result() {
         return applied().result;
     }
 
-    public Functor<A> applied() {
+    public Thunk<A> applied() {
         if (result == null) {
             Either<Exception, A> e = func.produce();
-            return new Functor<>(e.isRight() ? Producer.defer(e) : func, e);
+            return new Thunk<>(e.isRight() ? Producer.defer(e) : func, e);
         }
         return this;
     }
@@ -95,7 +102,7 @@ public class Functor<A> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Functor<?> that = (Functor<?>) o;
+        Thunk<?> that = (Thunk<?>) o;
         return this.result.equals(that.result);
     }
 
