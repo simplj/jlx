@@ -11,32 +11,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K, V>> implements Map<K, V> {
+public abstract class MMap<K, V> extends FMap<K, V, MMap<K, V>> implements Map<K, V> {
     Map<K, V> map;
 
-    private MutableMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
+    private MMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
         super(constructor);
         this.map = map;
     }
 
-    public static <A, B> MutableMap<A, B> unit() {
+    public static <A, B> MMap<A, B> unit() {
         return unit(HashMap::new);
     }
 
-    public static <A, B> MutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
+    public static <A, B> MMap<A, B> unit(Producer<Map<?, ?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <A, B> MutableMap<A, B> of(Couple<A, B>...elems) {
+    public static <A, B> MMap<A, B> of(Couple<A, B>...elems) {
         return of(Util.asMap(elems));
     }
 
-    public static <A, B> MutableMap<A, B> of(Map<A, B> map) {
+    public static <A, B> MMap<A, B> of(Map<A, B> map) {
         return of(map, HashMap::new);
     }
 
-    public static <A, B> MutableMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
+    public static <A, B> MMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
         return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
@@ -61,9 +61,9 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
      * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
-    public abstract <A, B> MutableMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
-    public abstract <R> MutableMap<R, V> mapK(Function<K, R> f);
-    public abstract <R> MutableMap<K, R> mapV(Function<V, R> f);
+    public abstract <A, B> MMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
+    public abstract <R> MMap<R, V> mapK(Function<K, R> f);
+    public abstract <R> MMap<K, R> mapV(Function<V, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; map&lt;R&gt;)</i> to all the elements in the map and returns the resultant flattened map. Function application is <i>lazy</i><br>
@@ -75,8 +75,8 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
      * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
-    public abstract <A, B> MutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
-    public abstract <R> MutableMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
+    public abstract <A, B> MMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
+    public abstract <R> MMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -88,7 +88,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> applied() {
+    public MMap<K, V> applied() {
         apply();
         return this;
     }
@@ -100,7 +100,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> include(K key, V val) {
+    public MMap<K, V> include(K key, V val) {
         put(key, val);
         return this;
     }
@@ -112,7 +112,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> includeIfAbsent(K key, V val) {
+    public MMap<K, V> includeIfAbsent(K key, V val) {
         putIfAbsent(key, val);
         return this;
     }
@@ -124,7 +124,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> include(Map<K, V> that) {
+    public MMap<K, V> include(Map<K, V> that) {
         putAll(that);
         return this;
     }
@@ -136,7 +136,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> delete(K key) {
+    public MMap<K, V> delete(K key) {
         remove(key);
         return this;
     }
@@ -148,7 +148,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> delete(K key, V value) {
+    public MMap<K, V> delete(K key, V value) {
         remove(key, value);
         return this;
     }
@@ -160,7 +160,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> replacing(K key, V value) {
+    public MMap<K, V> replacing(K key, V value) {
         replace(key, value);
         return this;
     }
@@ -172,7 +172,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> replacing(K key, V oldValue, V newValue) {
+    public MMap<K, V> replacing(K key, V oldValue, V newValue) {
         replace(key, oldValue, newValue);
         return this;
     }
@@ -184,7 +184,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> empty() {
+    public MMap<K, V> empty() {
         clear();
         return this;
     }
@@ -196,7 +196,7 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
     }
 
     @Override
-    public MutableMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
+    public MMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
         replaceAll(function);
         return this;
     }
@@ -213,14 +213,14 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
         }
     }
 
-    abstract MutableMap<K, V> appliedMap();
+    abstract MMap<K, V> appliedMap();
 
-    public static <A, B> MutableMap<A, B> newInstance(Producer<Map<?, ?>> constructor) {
+    public static <A, B> MMap<A, B> newInstance(Producer<Map<?, ?>> constructor) {
         Map<A, B> map = Util.cast(constructor.produce());
         return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
-    private static final class MapFunctor<T, R, A, B> extends MutableMap<A, B> implements BiFunctor<T, R, A, B> {
+    private static final class MapFunctor<T, R, A, B> extends MMap<A, B> implements BiFunctor<T, R, A, B> {
         private final Map<T, R> src;
         private final BiFunction<T, R, LinkedPair<A, B>> func;
 
@@ -231,34 +231,34 @@ public abstract class MutableMap<K, V> extends FunctionalMap<K, V, MutableMap<K,
         }
 
         @Override
-        MutableMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
+        MMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
             return new MapFunctor<>(map, constructor, LinkedPair::new, map);
         }
 
-        public <C, D> MutableMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
+        public <C, D> MMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
             return new MapFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <C> MutableMap<C, B> mapK(Function<A, C> f) {
+        public <C> MMap<C, B> mapK(Function<A, C> f) {
             return new MapFunctor<>(src, constructor, mapK(func, f), null);
         }
 
         @Override
-        public <D> MutableMap<A, D> mapV(Function<B, D> f) {
+        public <D> MMap<A, D> mapV(Function<B, D> f) {
             return new MapFunctor<>(src, constructor, mapV(func, f), null);
         }
 
-        public <C, D> MutableMap<C, D> flatmap(BiFunction<A, B, ? extends Map<C, D>> f) {
+        public <C, D> MMap<C, D> flatmap(BiFunction<A, B, ? extends Map<C, D>> f) {
             return new MapFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
-        public MutableMap<A, B> filter(BiFunction<A, B, Boolean> c) {
+        public MMap<A, B> filter(BiFunction<A, B, Boolean> c) {
             return new MapFunctor<>(src, constructor, filter(func, c), null);
         }
 
         @Override
-        public <C> MutableMap<C, B> flatmapK(Function<A, ? extends Set<C>> f) {
+        public <C> MMap<C, B> flatmapK(Function<A, ? extends Set<C>> f) {
             return new MapFunctor<>(src, constructor, flatmapK(func, f), null);
         }
 

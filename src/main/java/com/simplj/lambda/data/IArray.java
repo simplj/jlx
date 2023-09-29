@@ -5,72 +5,72 @@ import com.simplj.lambda.function.Function;
 
 import java.util.LinkedList;
 
-public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>> {
-    volatile E[] arr;
+public abstract class IArray<E> extends FArray<E, IArray<E>> {
+    final E[] arr;
 
-    private MutableArray(E[] arr) {
+    private IArray(E[] arr) {
         super();
         this.arr = arr;
     }
 
-    public static <A> MutableArray<A> of(int size) {
+    public static <A> IArray<A> of(int size) {
         A[] arr = Util.cast(new Object[size]);
         return of(arr);
     }
-    public static <A> MutableArray<A> of(A[] arr) {
+    public static <A> IArray<A> of(A[] arr) {
         return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
     }
 
-    public static MutableArray<Integer> of(int...arr) {
+    public static IArray<Integer> of(int...arr) {
         Integer[] a = new Integer[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Byte> of(byte...arr) {
+    public static IArray<Byte> of(byte...arr) {
         Byte[] a = new Byte[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Short> of(short...arr) {
+    public static IArray<Short> of(short...arr) {
         Short[] a = new Short[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Long> of(long...arr) {
+    public static IArray<Long> of(long...arr) {
         Long[] a = new Long[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Float> of(float...arr) {
+    public static IArray<Float> of(float...arr) {
         Float[] a = new Float[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Double> of(double...arr) {
+    public static IArray<Double> of(double...arr) {
         Double[] a = new Double[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Boolean> of(boolean...arr) {
+    public static IArray<Boolean> of(boolean...arr) {
         Boolean[] a = new Boolean[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
         }
         return of(a);
     }
-    public static MutableArray<Character> of(char...arr) {
+    public static IArray<Character> of(char...arr) {
         Character[] a = new Character[arr.length];
         for (int i = 0; i < arr.length; i++) {
             a[i] = arr[i];
@@ -79,27 +79,25 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
     }
 
     @Override
-    public MutableArray<E> set(int idx, E val) {
-        apply();
-        arr[idx] = val;
-        return this;
+    public IArray<E> set(int idx, E val) {
+        IArray<E> res = applied();
+        res.arr[idx] = val;
+        return res;
     }
 
     @Override
     public E get(int idx) {
-        apply();
-        return arr[idx];
+        return applied().arr[idx];
     }
 
     @Override
     public E[] array() {
-        apply();
-        return arr;
+        return applied().arr;
     }
 
-    public abstract <T> MutableArray<T> map(Function<E, T> f);
+    public abstract <T> IArray<T> map(Function<E, T> f);
 
-    public abstract <R> MutableArray<R> flatmap(Function<E, ? extends R[]> f);
+    public abstract <R> IArray<R> flatmap(Function<E, ? extends R[]> f);
 
     /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
@@ -108,20 +106,7 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
         return arr != null;
     }
 
-    public MutableArray<E> applied() {
-        apply();
-        return this;
-    }
-
-    private void apply() {
-        if (!isApplied()) {
-            arr = appliedArray().arr;
-        }
-    }
-
-    public abstract MutableArray<E> appliedArray();
-
-    private static final class ArrayFunctor<A, T> extends MutableArray<T> implements Functor<A, T> {
+    private static final class ArrayFunctor<A, T> extends IArray<T> implements Functor<A, T> {
         private final A[] src;
         private final Function<A, LinkedUnit<T>> func;
 
@@ -132,26 +117,26 @@ public abstract class MutableArray<E> extends FunctionalArray<E, MutableArray<E>
         }
 
         @Override
-        MutableArray<T> unit(T[] arr) {
+        IArray<T> unit(T[] arr) {
             return new ArrayFunctor<>(arr, LinkedUnit::new, arr);
         }
 
         @Override
-        public <R> MutableArray<R> map(Function<T, R> f) {
+        public <R> IArray<R> map(Function<T, R> f) {
             return new ArrayFunctor<>(src, map(func, f), null);
         }
 
         @Override
-        public <R> MutableArray<R> flatmap(Function<T, ? extends R[]> f) {
+        public <R> IArray<R> flatmap(Function<T, ? extends R[]> f) {
             return new ArrayFunctor<>(src, fmap(func, f), null);
         }
 
         @Override
-        public MutableArray<T> filter(Condition<T> c) {
+        public IArray<T> filter(Condition<T> c) {
             return new ArrayFunctor<>(src, filter(func, c), null);
         }
 
-        public final ArrayFunctor<T, T> appliedArray() {
+        public final ArrayFunctor<T, T> applied() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);

@@ -1,7 +1,7 @@
 package test;
 
-import com.simplj.lambda.data.ImmutableSet;
-import com.simplj.lambda.data.MutableSet;
+import com.simplj.lambda.data.ISet;
+import com.simplj.lambda.data.MSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class SetTest {
     }
 
     private static void testMutableSet(int count) {
-        MutableSet<Integer> mSet = MutableSet.unit(HashSet::new);
+        MSet<Integer> mSet = MSet.unit(HashSet::new);
         for (int i = 0; i < count; i++) {
             mSet.add(i);
         }
@@ -44,7 +44,7 @@ public class SetTest {
         for (int i = 0; i < count; i++) {
             set.add(i);
         }
-        ImmutableSet<Integer> iSet = ImmutableSet.of(set, HashSet::new);
+        ISet<Integer> iSet = ISet.of(set, HashSet::new);
 
         long s = System.currentTimeMillis();
         long c = iSet.map(x -> x + 1).flatmap(x -> set(-x, x)).filter(x -> x > 0).applied().size();

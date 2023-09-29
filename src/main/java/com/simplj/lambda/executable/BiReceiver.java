@@ -52,6 +52,7 @@ public interface BiReceiver<A, B> {
             return b;
         };
     }
+    
     default BiExecutable<A, B, Void> toExecutable() {
         return (a, b) -> {
             receive(a, b);

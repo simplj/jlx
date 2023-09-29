@@ -13,10 +13,10 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterable<T> {
+abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
     final Producer<Set<?>> constructor;
 
-    FunctionalSet(Producer<Set<?>> constructor) {
+    FSet(Producer<Set<?>> constructor) {
         this.constructor = constructor;
     }
 
@@ -169,8 +169,8 @@ abstract class FunctionalSet<T, S extends FunctionalSet<T, S>> implements Iterab
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof FunctionalSet) {
-            FunctionalSet<?, ?> fSet = Util.cast(obj);
+        if (obj instanceof FSet) {
+            FSet<?, ?> fSet = Util.cast(obj);
             obj = fSet.set();
         }
         return set().equals(obj);

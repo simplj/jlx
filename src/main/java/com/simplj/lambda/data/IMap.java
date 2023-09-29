@@ -6,38 +6,38 @@ import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple2;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMap<K, V>> {
+public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
     final Map<K, V> map;
 
-    public ImmutableMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
+    public IMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
         super(constructor);
         this.map = map;
     }
 
-    public static <A, B> ImmutableMap<A, B> unit() {
+    public static <A, B> IMap<A, B> unit() {
         return unit(HashMap::new);
     }
 
-    public static <A, B> ImmutableMap<A, B> unit(Producer<Map<?, ?>> constructor) {
+    public static <A, B> IMap<A, B> unit(Producer<Map<?, ?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <A, B> ImmutableMap<A, B> of(Couple<A, B>...elems) {
+    public static <A, B> IMap<A, B> of(Couple<A, B>...elems) {
         return of(Util.asMap(elems));
     }
 
-    public static <A, B> ImmutableMap<A, B> of(Map<A, B> map) {
+    public static <A, B> IMap<A, B> of(Map<A, B> map) {
         return of(map, HashMap::new);
     }
 
-    public static <A, B> ImmutableMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
+    public static <A, B> IMap<A, B> of(Map<A, B> map, Producer<Map<?, ?>> constructor) {
         return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
@@ -61,9 +61,9 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
      * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
-    public abstract <A, B> ImmutableMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
-    public abstract <R> ImmutableMap<R, V> mapK(Function<K, R> f);
-    public abstract <R> ImmutableMap<K, R> mapV(Function<V, R> f);
+    public abstract <A, B> IMap<A, B> map(BiFunction<K, V, Tuple2<A, B>> f);
+    public abstract <R> IMap<R, V> mapK(Function<K, R> f);
+    public abstract <R> IMap<K, R> mapV(Function<V, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; map&lt;R&gt;)</i> to all the elements in the map and returns the resultant flattened map. Function application is <i>lazy</i><br>
@@ -75,9 +75,12 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
      * @param <B> Type of the resultant value
      * @return resultant map after applying `f` to all the map elements
      */
-    public abstract <A, B> ImmutableMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
-    public abstract <R> ImmutableMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
+    public abstract <A, B> IMap<A, B> flatmap(BiFunction<K, V, ? extends Map<A, B>> f);
+    public abstract <R> IMap<R, V> flatmapK(Function<K, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
+
+    public abstract <E> ISet<E> merge(BiFunction<K, V, E> f);
+    public abstract <E> ISet<E> flatMerge(BiFunction<K, V, ? extends Collection<E>> f);
 
     /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
@@ -88,61 +91,61 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
     }
 
     @Override
-    public ImmutableMap<K, V> include(K key, V val) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> include(K key, V val) {
+        IMap<K, V> res = applied();
         res.map.put(key, val);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> includeIfAbsent(K key, V val) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> includeIfAbsent(K key, V val) {
+        IMap<K, V> res = applied();
         res.map.putIfAbsent(key, val);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> include(Map<K, V> that) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> include(Map<K, V> that) {
+        IMap<K, V> res = applied();
         res.map.putAll(that);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> delete(K key) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> delete(K key) {
+        IMap<K, V> res = applied();
         res.map.remove(key);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> delete(K key, V value) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> delete(K key, V value) {
+        IMap<K, V> res = applied();
         res.map.remove(key, value);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> replacing(K key, V value) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> replacing(K key, V value) {
+        IMap<K, V> res = applied();
         res.map.replace(key, value);
         return res;
     }
 
     @Override
-    public ImmutableMap<K, V> replacing(K key, V oldValue, V newValue) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> replacing(K key, V oldValue, V newValue) {
+        IMap<K, V> res = applied();
         res.map.replace(key, oldValue, newValue);
         return res;
     }
 
-    public ImmutableMap<K, V> empty() {
+    public IMap<K, V> empty() {
         return unit(constructor);
     }
 
     @Override
-    public ImmutableMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
-        ImmutableMap<K, V> res = applied();
+    public IMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
+        IMap<K, V> res = applied();
         res.map.replaceAll(function);
         return res;
     }
@@ -152,7 +155,7 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
         super.forEach(action);
     }
 
-    private static final class MapFunctor<T, R, A, B> extends ImmutableMap<A, B> implements BiFunctor<T, R, A, B> {
+    private static final class MapFunctor<T, R, A, B> extends IMap<A, B> implements BiFunctor<T, R, A, B> {
         private final Map<T, R> src;
         private final BiFunction<T, R, LinkedPair<A, B>> func;
 
@@ -163,35 +166,46 @@ public abstract class ImmutableMap<K, V> extends FunctionalMap<K, V, ImmutableMa
         }
 
         @Override
-        ImmutableMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
+        IMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
             return new MapFunctor<>(map, constructor, LinkedPair::new, map);
         }
 
-        public <C, D> ImmutableMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
+        public <C, D> IMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
             return new MapFunctor<>(src, constructor, map(func, f), null);
         }
 
         @Override
-        public <C> ImmutableMap<C, B> mapK(Function<A, C> f) {
+        public <C> IMap<C, B> mapK(Function<A, C> f) {
             return new MapFunctor<>(src, constructor, mapK(func, f), null);
         }
 
         @Override
-        public <D> ImmutableMap<A, D> mapV(Function<B, D> f) {
+        public <D> IMap<A, D> mapV(Function<B, D> f) {
             return new MapFunctor<>(src, constructor, mapV(func, f), null);
         }
 
-        public <C, D> ImmutableMap<C, D> flatmap(BiFunction<A, B, ? extends Map<C, D>> f) {
+        public <C, D> IMap<C, D> flatmap(BiFunction<A, B, ? extends Map<C, D>> f) {
             return new MapFunctor<>(src, constructor, flatmap(func, f), null);
         }
 
-        public ImmutableMap<A, B> filter(BiFunction<A, B, Boolean> c) {
-            return new MapFunctor<>(src, constructor, filter(func, c), null);
+        @Override
+        public <C> IMap<C, B> flatmapK(Function<A, ? extends Set<C>> f) {
+            return new MapFunctor<>(src, constructor, flatmapK(func, f), null);
         }
 
         @Override
-        public <C> ImmutableMap<C, B> flatmapK(Function<A, ? extends Set<C>> f) {
-            return new MapFunctor<>(src, constructor, flatmapK(func, f), null);
+        public <E> ISet<E> merge(BiFunction<A, B, E> f) {
+            return null;
+        }
+
+        @Override
+        public <E> ISet<E> flatMerge(BiFunction<A, B, ? extends Collection<E>> f) {
+
+            return null;
+        }
+
+        public IMap<A, B> filter(BiFunction<A, B, Boolean> c) {
+            return new MapFunctor<>(src, constructor, filter(func, c), null);
         }
 
         public final MapFunctor<A, B, A, B> applied() {

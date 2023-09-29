@@ -3,7 +3,7 @@ package com.simplj.lambda.function;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface BiFunction<A, B, O> {
+public interface BiFunction<A, B, O> extends java.util.function.BiFunction<A, B, O> {
     O apply(A inpA, B inpB);
 
     /**

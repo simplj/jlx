@@ -8,10 +8,10 @@ import com.simplj.lambda.tuples.Tuple;
 import java.util.*;
 import java.util.stream.Stream;
 
-abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements Iterable<E> {
+abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
     final E[] newArray;
 
-    FunctionalArray() {
+    FArray() {
         newArray = Util.cast(new Object[0]);
     }
 
@@ -201,8 +201,8 @@ abstract class FunctionalArray<E, A extends FunctionalArray<E, A>> implements It
         if (obj == null) {
             res = null == array();
         } else {
-            if (obj instanceof FunctionalArray) {
-                FunctionalArray<?, ?> fList = Util.cast(obj);
+            if (obj instanceof FArray) {
+                FArray<?, ?> fList = Util.cast(obj);
                 res = Arrays.equals(array(), fList.array());
             } else if (obj.getClass().isArray()) {
                 if (obj.getClass().getComponentType().isPrimitive()) {
