@@ -1,7 +1,5 @@
 package com.simplj.lambda.function;
 
-import com.simplj.lambda.executable.TriExecutable;
-
 import java.util.Objects;
 
 @FunctionalInterface
