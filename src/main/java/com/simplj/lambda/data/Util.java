@@ -29,6 +29,19 @@ public final class Util {
         return res;
     }
 
+    /**
+     * casts to specific type if the following holds true:
+     * <br><code>o instanceof R</code>
+     * <br>This is a syntactic sugar for <code>(R) o</code> that avoids using <code>@SuppressWarnings("unchecked")</code>
+     * <br><br>It is the developer's responsibility to use this api wisely.
+     * <br>For example, the following will work:
+     * <br><code>E e = cast(obj)</code> given that `obj` is an instance of `E`
+     * <br>but, the following will produce a `java.lang.ClassCastException`:
+     * <br><code>String s = cast(obj)</code> when `obj` is NOT an instance of `String`
+     * @param o   value to cast
+     * @param <R> Resultant Type
+     * @return the type cast-ed value
+     */
     @SuppressWarnings("unchecked")
     public static <R> R cast(Object o) {
         return (R) o;
