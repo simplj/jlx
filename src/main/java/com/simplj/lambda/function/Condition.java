@@ -1,5 +1,7 @@
 package com.simplj.lambda.function;
 
+import com.simplj.lambda.data.IArray;
+
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -56,5 +58,21 @@ public interface Condition<A> extends Predicate<A> {
     }
     static <T extends Comparable<T>> Condition<T> greaterOrEqual(T n) {
         return x -> x.compareTo(n) >= 0;
+    }
+
+    /**
+     * Constructs a condition which evaluates the between condition
+     * @param from floor value (inclusive) of the range to evaluate `between`
+     * @param to   ceil value (inclusive) of the range to evaluate `between`
+     * @param <T>  Type of the values
+     * @return A condition which evaluates the between condition
+     */
+    static <T extends Comparable<T>> Condition<T> between(T from, T to) {
+        return n -> n.compareTo(from) >= 0 && n.compareTo(to) <= 0;
+    }
+
+    @SafeVarargs
+    static <T> Condition<T> in(T...values) {
+        return v -> IArray.of(values).any(val -> Objects.equals(v, val));
     }
 }
