@@ -2,15 +2,11 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;
-import com.simplj.lambda.function.Function;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
-import com.simplj.lambda.util.Expr;
 
 import java.util.*;
 import java.util.stream.Stream;
-
-import static com.simplj.lambda.util.Expr.let;
 
 abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
     final E[] newArray;

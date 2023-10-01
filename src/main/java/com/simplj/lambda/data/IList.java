@@ -1,6 +1,5 @@
 package com.simplj.lambda.data;
 
-import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;

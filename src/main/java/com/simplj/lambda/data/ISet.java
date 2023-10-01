@@ -3,10 +3,10 @@ package com.simplj.lambda.data;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
-import com.simplj.lambda.tuples.Couple;
-import com.simplj.lambda.tuples.Tuple;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class ISet<E> extends FSet<E, ISet<E>> {
     final Set<E> set;
