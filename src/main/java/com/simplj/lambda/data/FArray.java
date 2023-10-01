@@ -2,11 +2,15 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.function.Function;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
+import com.simplj.lambda.util.Expr;
 
 import java.util.*;
 import java.util.stream.Stream;
+
+import static com.simplj.lambda.util.Expr.let;
 
 abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
     final E[] newArray;
@@ -43,15 +47,6 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
         E[] a = Util.cast(new Object[match.size()]);
         E[] b = Util.cast(new Object[rest.size()]);
         return Tuple.of(unit(match.toArray(a)), unit(rest.toArray(b)));
-    }
-
-    public Couple<Integer, E>[] indexed() {
-        E[] arr = array();
-        Couple<Integer, E>[] res = Util.cast(new Couple[arr.length]);
-        for (int i = 0; i < arr.length; i++) {
-            res[i] = Tuple.of(i, arr[i]);
-        }
-        return res;
     }
 
     public int size() {
