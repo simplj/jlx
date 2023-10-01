@@ -2,6 +2,8 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.tuples.Couple;
+import com.simplj.lambda.tuples.Tuple;
 
 import java.util.LinkedList;
 
@@ -99,12 +101,28 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
 
     public abstract <R> IArray<R> flatmap(Function<E, ? extends R[]> f);
 
+    public IArray<Couple<Integer, E>> indexed() {
+        return foldl(Tuple.of(0, IArray.<Couple<Integer, E>>of(arr.length)), (c, v) -> Tuple.of(c.first() + 1, c.second().set(c.first(), Tuple.of(c.first(), v)))).second();
+    }
+
     /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
      */
     public boolean isApplied() {
         return arr != null;
     }
+
+    public final IArray<E> applied() {
+        IArray<E> res;
+        if (isApplied()) {
+            res = this;
+        } else {
+            res = appliedArray();
+        }
+        return res;
+    }
+
+    public abstract IArray<E> appliedArray();
 
     private static final class ArrayFunctor<A, T> extends IArray<T> implements Functor<A, T> {
         private final A[] src;
@@ -136,7 +154,7 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
             return new ArrayFunctor<>(src, filter(func, c), null);
         }
 
-        public final ArrayFunctor<T, T> applied() {
+        public final ArrayFunctor<T, T> appliedArray() {
             ArrayFunctor<T, T> res;
             if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);

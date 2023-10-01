@@ -45,15 +45,6 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
         return Tuple.of(unit(match.toArray(a)), unit(rest.toArray(b)));
     }
 
-    public Couple<Integer, E>[] indexed() {
-        E[] arr = array();
-        Couple<Integer, E>[] res = Util.cast(new Couple[arr.length]);
-        for (int i = 0; i < arr.length; i++) {
-            res[i] = Tuple.of(i, arr[i]);
-        }
-        return res;
-    }
-
     public int size() {
         return array().length;
     }

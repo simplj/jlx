@@ -2,6 +2,8 @@ package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.tuples.Couple;
+import com.simplj.lambda.tuples.Tuple;
 
 import java.util.LinkedList;
 
@@ -100,6 +102,10 @@ public abstract class MArray<E> extends FArray<E, MArray<E>> {
     public abstract <T> MArray<T> map(Function<E, T> f);
 
     public abstract <R> MArray<R> flatmap(Function<E, ? extends R[]> f);
+
+    public MArray<Couple<Integer, E>> indexed() {
+        return foldl(Tuple.of(0, MArray.<Couple<Integer, E>>of(arr.length)), (c, v) -> Tuple.of(c.first() + 1, c.second().set(c.first(), Tuple.of(c.first(), v)))).second();
+    }
 
     /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
