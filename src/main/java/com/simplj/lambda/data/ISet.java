@@ -4,12 +4,14 @@ import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-public abstract class ISet<T> extends FSet<T, ISet<T>> {
-    final Set<T> set;
+public abstract class ISet<E> extends FSet<E, ISet<E>> {
+    final Set<E> set;
 
-    public ISet(Set<T> set, Producer<Set<?>> constructor) {
+    public ISet(Set<E> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
     }
@@ -40,7 +42,7 @@ public abstract class ISet<T> extends FSet<T, ISet<T>> {
      * @return the underlying <code>set</code> with all the lazy functions (if any) applied
      */
     @Override
-    public final Set<T> set() {
+    public final Set<E> set() {
         return applied().set;
     }
 
@@ -54,7 +56,7 @@ public abstract class ISet<T> extends FSet<T, ISet<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> ISet<R> map(Function<T, R> f);
+    public abstract <R> ISet<R> map(Function<E, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; set&lt;R&gt;)</i> to all the elements in the set and returns the resultant flattened set. Function application is <i>lazy</i><br>
@@ -65,7 +67,7 @@ public abstract class ISet<T> extends FSet<T, ISet<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> ISet<R> flatmap(Function<T, ? extends Set<R>> f);
+    public abstract <R> ISet<R> flatmap(Function<E, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -76,51 +78,63 @@ public abstract class ISet<T> extends FSet<T, ISet<T>> {
         return set != null;
     }
 
+    public final ISet<E> applied() {
+        ISet<E> res;
+        if (isApplied()) {
+            res = this;
+        } else {
+            res = appliedSet();
+        }
+        return res;
+    }
+
     @Override
-    public ISet<T> include(T val) {
-        ISet<T> res = applied();
+    public ISet<E> include(E val) {
+        ISet<E> res = applied();
         res.set.add(val);
         return res;
     }
 
     @Override
-    public ISet<T> include(Collection<? extends T> c) {
-        ISet<T> res = applied();
+    public ISet<E> include(Collection<? extends E> c) {
+        ISet<E> res = applied();
         res.set.addAll(c);
         return this;
     }
 
     @Override
-    public ISet<T> delete(T val) {
-        ISet<T> res = applied();
+    public ISet<E> delete(E val) {
+        ISet<E> res = applied();
         res.set.remove(val);
         return this;
     }
 
     @Override
-    public ISet<T> delete(Collection<? extends T> c) {
-        ISet<T> res = applied();
+    public ISet<E> delete(Collection<? extends E> c) {
+        ISet<E> res = applied();
         res.set.removeAll(c);
         return this;
     }
 
     @Override
-    public ISet<T> preserve(Collection<? extends T> c) {
-        ISet<T> res = applied();
+    public ISet<E> preserve(Collection<? extends E> c) {
+        ISet<E> res = applied();
         res.set.retainAll(c);
         return this;
     }
 
     @Override
-    public ISet<T> empty() {
+    public ISet<E> empty() {
         return unit(constructor);
     }
 
-    public ISet<T> deleteIf(Condition<? super T> c) {
-        ISet<T> res = applied();
+    public ISet<E> deleteIf(Condition<? super E> c) {
+        ISet<E> res = applied();
         res.set.removeIf(c::evaluate);
         return res;
     }
+
+    abstract ISet<E> appliedSet();
 
     private static final class SetFunctor<A, T> extends ISet<T> implements Functor<A, T> {
         private final Set<A> src;
@@ -152,7 +166,7 @@ public abstract class ISet<T> extends FSet<T, ISet<T>> {
             return new SetFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final SetFunctor<T, T> applied() {
+        public final SetFunctor<T, T> appliedSet() {
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));

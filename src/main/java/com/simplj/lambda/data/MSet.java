@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
-    Set<T> set;
+public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
+    Set<E> set;
 
-    private MSet(Set<T> set, Producer<Set<?>> constructor) {
+    private MSet(Set<E> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
     }
@@ -43,7 +43,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
      * @return the underlying <code>set</code> with all the lazy functions (if any) applied
      */
     @Override
-    public final Set<T> set() {
+    public final Set<E> set() {
         apply();
         return set;
     }
@@ -58,7 +58,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> MSet<R> map(Function<T, R> f);
+    public abstract <R> MSet<R> map(Function<E, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; set&lt;R&gt;)</i> to all the elements in the set and returns the resultant flattened set. Function application is <i>lazy</i><br>
@@ -69,7 +69,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
      * @param <R> type returned by the function `f` application
      * @return resultant set after applying `f` to all the set elements
      */
-    public abstract <R> MSet<R> flatmap(Function<T, ? extends Set<R>> f);
+    public abstract <R> MSet<R> flatmap(Function<E, ? extends Set<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     /**
@@ -81,31 +81,31 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     }
 
     @Override
-    public MSet<T> applied() {
+    public MSet<E> applied() {
         apply();
         return this;
     }
 
     @Override
-    public boolean add(T t) {
+    public boolean add(E t) {
         apply();
         return set.add(t);
     }
 
     @Override
-    public MSet<T> include(T val) {
+    public MSet<E> include(E val) {
         add(val);
         return this;
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends E> c) {
         apply();
         return set.addAll(c);
     }
 
     @Override
-    public MSet<T> include(Collection<? extends T> c) {
+    public MSet<E> include(Collection<? extends E> c) {
         addAll(c);
         return this;
     }
@@ -117,7 +117,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     }
 
     @Override
-    public MSet<T> delete(T val) {
+    public MSet<E> delete(E val) {
         remove(val);
         return this;
     }
@@ -129,7 +129,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     }
 
     @Override
-    public MSet<T> delete(Collection<? extends T> c) {
+    public MSet<E> delete(Collection<? extends E> c) {
         removeAll(c);
         return this;
     }
@@ -141,7 +141,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     }
 
     @Override
-    public MSet<T> preserve(Collection<? extends T> c) {
+    public MSet<E> preserve(Collection<? extends E> c) {
         retainAll(c);
         return this;
     }
@@ -153,18 +153,18 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
     }
 
     @Override
-    public MSet<T> empty() {
+    public MSet<E> empty() {
         clear();
         return this;
     }
 
     @Override
-    public boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(Predicate<? super E> filter) {
         apply();
         return set.removeIf(filter);
     }
 
-    public MSet<T> deleteIf(Condition<? super T> c) {
+    public MSet<E> deleteIf(Condition<? super E> c) {
         removeIf(c::evaluate);
         return this;
     }
@@ -175,7 +175,7 @@ public abstract class MSet<T> extends FSet<T, MSet<T>> implements Set<T> {
         }
     }
 
-    abstract MSet<T> appliedSet();
+    abstract MSet<E> appliedSet();
 
     private static final class SetFunctor<A, T> extends MSet<T> implements Functor<A, T> {
         private final Set<A> src;

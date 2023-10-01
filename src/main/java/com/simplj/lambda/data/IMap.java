@@ -90,6 +90,16 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
         return map != null;
     }
 
+    public final IMap<K, V> applied() {
+        IMap<K, V> res;
+        if (isApplied()) {
+            res = this;
+        } else {
+            res = appliedMap();
+        }
+        return res;
+    }
+
     @Override
     public IMap<K, V> include(K key, V val) {
         IMap<K, V> res = applied();
@@ -155,6 +165,8 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
         super.forEach(action);
     }
 
+    abstract IMap<K, V> appliedMap();
+
     private static final class MapFunctor<T, R, A, B> extends IMap<A, B> implements BiFunctor<T, R, A, B> {
         private final Map<T, R> src;
         private final BiFunction<T, R, LinkedPair<A, B>> func;
@@ -208,7 +220,7 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
             return new MapFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final MapFunctor<A, B, A, B> applied() {
+        public final MapFunctor<A, B, A, B> appliedMap() {
             MapFunctor<A, B, A, B> res;
             if (map == null) {
                 Map<A, B> r = apply(src, func, Util.cast(constructor.produce()));

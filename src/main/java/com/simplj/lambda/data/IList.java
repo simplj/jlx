@@ -9,10 +9,10 @@ import com.simplj.lambda.tuples.Tuple;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-public abstract class IList<T> extends FList<T, IList<T>> {
-    final List<T> list;
+public abstract class IList<E> extends FList<E, IList<E>> {
+    final List<E> list;
 
-    IList(List<T> list, Producer<List<?>> constructor) {
+    IList(List<E> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
     }
@@ -48,7 +48,7 @@ public abstract class IList<T> extends FList<T, IList<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> IList<R> map(Function<T, R> f);
+    public abstract <R> IList<R> map(Function<E, R> f);
 
     /**
      * Applies the function `f` of type <i>(T -&gt; List&lt;R&gt;)</i> to all the elements in the list and returns the resultant flattened applied(). Function application is <i>lazy</i><br>
@@ -59,11 +59,11 @@ public abstract class IList<T> extends FList<T, IList<T>> {
      * @param <R> type returned by the function `f` application
      * @return resultant list after applying `f` to all the list elements
      */
-    public abstract <R> IList<R> flatmap(Function<T, ? extends List<R>> f);
+    public abstract <R> IList<R> flatmap(Function<E, ? extends List<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
     @Override
-    public final List<T> list() {
+    public final List<E> list() {
         return applied().list;
     }
 
@@ -72,98 +72,110 @@ public abstract class IList<T> extends FList<T, IList<T>> {
         return list != null;
     }
 
-    public IList<Couple<Integer, T>> indexed() {
-        return foldl(Tuple.of(0, IList.<Couple<Integer, T>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
+    public final IList<E> applied() {
+        IList<E> res;
+        if (isApplied()) {
+            res = this;
+        } else {
+            res = appliedList();
+        }
+        return res;
+    }
+
+    public IList<Couple<Integer, E>> indexed() {
+        return foldl(Tuple.of(0, IList.<Couple<Integer, E>>unit(constructor)), (c, v) -> Tuple.of(c.first() + 1, c.second().append(Tuple.of(c.first(), v)))).second();
     }
 
     @Override
-    public IList<T> append(T val) {
-        IList<T> res = applied();
+    public IList<E> append(E val) {
+        IList<E> res = applied();
         res.list.add(val);
         return res;
     }
 
     @Override
-    public IList<T> append(Collection<? extends T> c) {
-        IList<T> res = applied();
+    public IList<E> append(Collection<? extends E> c) {
+        IList<E> res = applied();
         res.list.addAll(c);
         return res;
     }
 
     @Override
-    public IList<T> insert(int index, T val) {
-        IList<T> res = applied();
+    public IList<E> insert(int index, E val) {
+        IList<E> res = applied();
         res.list.add(index, val);
         return res;
     }
 
     @Override
-    public IList<T> insert(int index, Collection<? extends T> c) {
-        IList<T> res = applied();
+    public IList<E> insert(int index, Collection<? extends E> c) {
+        IList<E> res = applied();
         res.list.addAll(index, c);
         return res;
     }
 
     @Override
-    public IList<T> replace(int index, T val) {
-        IList<T> res = applied();
+    public IList<E> replace(int index, E val) {
+        IList<E> res = applied();
         res.list.set(index, val);
         return res;
     }
 
     @Override
-    public IList<T> delete(int index) {
-        IList<T> res = applied();
+    public IList<E> delete(int index) {
+        IList<E> res = applied();
         res.list.remove(index);
         return res;
     }
 
     @Override
-    public IList<T> delete(T val) {
-        IList<T> res = applied();
+    public IList<E> delete(E val) {
+        IList<E> res = applied();
         res.list.remove(val);
         return res;
     }
 
     @Override
-    public IList<T> delete(Collection<? extends T> c) {
-        IList<T> res = applied();
+    public IList<E> delete(Collection<? extends E> c) {
+        IList<E> res = applied();
         res.list.removeAll(c);
         return res;
     }
 
     @Override
-    public IList<T> preserve(Collection<? extends T> c) {
-        IList<T> res = applied();
+    public IList<E> preserve(Collection<? extends E> c) {
+        IList<E> res = applied();
         res.list.retainAll(c);
         return res;
     }
 
     @Override
-    public IList<T> empty() {
+    public IList<E> empty() {
         return unit(constructor);
     }
 
     @Override
-    public IList<T> sorted(Comparator<? super T> c) {
-        IList<T> res = applied();
+    public IList<E> sorted(Comparator<? super E> c) {
+        IList<E> res = applied();
         res.list.sort(c);
         return res;
     }
 
     @Override
-    public IList<T> replacingAll(UnaryOperator<T> operator) {
-        IList<T> res = applied();
+    public IList<E> replacingAll(UnaryOperator<E> operator) {
+        IList<E> res = applied();
         res.list.replaceAll(operator);
         return res;
     }
 
     @Override
-    public IList<T> deleteIf(Condition<? super T> c) {
-        IList<T> res = applied();
+    public IList<E> deleteIf(Condition<? super E> c) {
+        IList<E> res = applied();
         res.list.removeIf(c::evaluate);
         return res;
     }
+
+    abstract IList<E> appliedList();
 
     private static final class ListFunctor<A, T> extends IList<T> implements Functor<A, T> {
         private final List<A> src;
@@ -195,7 +207,7 @@ public abstract class IList<T> extends FList<T, IList<T>> {
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final ListFunctor<T, T> applied() {
+        public final ListFunctor<T, T> appliedList() {
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));
