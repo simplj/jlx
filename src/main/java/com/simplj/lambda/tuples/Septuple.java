@@ -1,5 +1,7 @@
 package com.simplj.lambda.tuples;
 
+import java.util.Objects;
+
 public final class Septuple<A, B, C, D, E, F, G> implements Tuple7<A, B, C, D, E, F, G> {
     private final A first;
     private final B second;
@@ -77,6 +79,31 @@ public final class Septuple<A, B, C, D, E, F, G> implements Tuple7<A, B, C, D, E
 
     public final <V> Septuple<A, B, C, D, E, F, V> modifySeventh(V newVal) {
         return new Septuple<>(first, second, third, fourth, fifth, sixth, newVal);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Septuple<?, ?, ?, ?, ?, ?, ?> that = (Septuple<?, ?, ?, ?, ?, ?, ?>) o;
+
+        return Objects.equals(this.first, that.first) && Objects.equals(this.second, that.second)
+                && Objects.equals(this.third, that.third) && Objects.equals(this.fourth, that.fourth)
+                && Objects.equals(this.fifth, that.fifth) && Objects.equals(this.sixth, that.sixth)
+                && Objects.equals(this.seventh, that.seventh);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = first == null ? 0 : first.hashCode();
+        result = 31 * result + (second == null ? 0 : second.hashCode());
+        result = 31 * result + (third == null ? 0 : third.hashCode());
+        result = 31 * result + (fourth == null ? 0 : fourth.hashCode());
+        result = 31 * result + (fifth == null ? 0 : fifth.hashCode());
+        result = 31 * result + (sixth == null ? 0 : sixth.hashCode());
+        result = 31 * result + (seventh == null ? 0 : seventh.hashCode());
+        return result;
     }
 
     @Override
