@@ -148,7 +148,8 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
 
         @Override
         ISet<T> instantiate(Producer<Set<?>> constructor) {
-            return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
+            Set<T> s = Util.cast(constructor.produce());
+            return new SetFunctor<>(s, constructor, LinkedUnit::new, s);
         }
 
         @Override

@@ -263,7 +263,8 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
 
         @Override
         MList<T> instantiate(Producer<List<?>> constructor) {
-            return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
+            List<T> l = Util.cast(constructor.produce());
+            return new ListFunctor<>(l, constructor, LinkedUnit::new, l);
         }
 
         @Override
