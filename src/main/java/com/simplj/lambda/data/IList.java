@@ -189,7 +189,8 @@ public abstract class IList<E> extends FList<E, IList<E>> {
 
         @Override
         IList<T> instantiate(Producer<List<?>> constructor) {
-            return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
+            List<T> l = Util.cast(constructor.produce());
+            return new ListFunctor<>(l, constructor, LinkedUnit::new, l);
         }
 
         @Override
