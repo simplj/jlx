@@ -179,7 +179,8 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
 
         @Override
         IMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
-            return new MapFunctor<>(map, constructor, LinkedPair::new, map);
+            Map<A, B> m = Util.cast(constructor.produce());
+            return new MapFunctor<>(m, constructor, LinkedPair::new, m);
         }
 
         public <C, D> IMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
