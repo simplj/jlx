@@ -62,4 +62,8 @@ public interface Executable<I, O> {
     static <T> Executable<T, T> id() {
         return t -> t;
     }
+
+    static <T, R> Executable<T, R> returning(R r) {
+        return x -> r;
+    }
 }
