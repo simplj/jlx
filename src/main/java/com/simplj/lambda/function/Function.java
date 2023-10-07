@@ -31,4 +31,8 @@ public interface Function<I, O> extends java.util.function.Function<I, O> {
     static <T, R> Function<T, R> of(Function<T, R> f) {
         return f;
     }
+
+    static <T, R> Function<T, R> returning(R r) {
+        return x -> r;
+    }
 }
