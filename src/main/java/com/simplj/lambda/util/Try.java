@@ -21,18 +21,16 @@ import java.util.*;
  * @param <A> Type of the resultant value
  */
 public class Try<A> {
-    private Executable<AutoCloseableMarker, Either<Exception, A>> func;
+    private final Executable<AutoCloseableMarker, A> func;
     private Consumer<Exception> logger;
     private Function<Exception, Either<Exception, A>> recovery;
-    private Function<Exception, Exception> exF;
     private Excerpt finalizeF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
-    Try(Executable<AutoCloseableMarker, Either<Exception, A>> f, Consumer<Exception> logger, Function<Exception, Exception> exF, Excerpt finalizeF) {
+    Try(Executable<AutoCloseableMarker, A> f, Consumer<Exception> logger, Excerpt finalizeF) {
         this.func = f;
         this.logger = logger;
         this.recovery = Either::<Exception, A>left;
-        this.exF = exF;
         this.finalizeF = finalizeF;
         this.handlers = new HashMap<>();
     }
@@ -98,7 +96,7 @@ public class Try<A> {
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> execute(Executable<AutoCloseableMarker, R> f) {
-        return flatExecute(f.andThen(Either::right));
+        return new Try<>(f, Consumer.noOp(), Excerpt.numb());
     }
 
     /**
@@ -111,7 +109,12 @@ public class Try<A> {
      * @return An instance of Try with the Executable set for execution
      */
     public static <R> Try<R> flatExecute(Executable<AutoCloseableMarker, Either<Exception, R>> f) {
-        return new Try<>(f, Consumer.noOp(), Function.id(), Excerpt.numb());
+        return execute(f.andThen(e -> {
+            if (e.isLeft()) {
+                throw e.left();
+            }
+            return e.right();
+        }));
     }
 
     /**
@@ -122,16 +125,7 @@ public class Try<A> {
      * @return A new Try instance having the provided Executable composed with the existing one
      */
     public <R> Try<R> map(Executable<A, R> f) {
-        Executable<AutoCloseableMarker, Either<Exception, R>> next = func.andThen(e -> {
-            Either<Exception, R> res;
-            if (e.isRight()) {
-                res = f.andThen(Either::<Exception, R>right).execute(e.right());
-            } else {
-                res = Either.left(e.left());
-            }
-            return res;
-        });
-        return new Try<>(next, logger, exF, finalizeF);
+        return new Try<>(func.andThen(f), logger, finalizeF);
     }
 
     /**
@@ -142,39 +136,21 @@ public class Try<A> {
      * @return A new Try instance having the provided Executable composed with the existing one
      */
     public <R> Try<R> flatmap(Executable<A, Try<R>> f) {
-        Executable<AutoCloseableMarker, Either<Exception, R>> next = func.andThen(e -> {
-            Either<Exception, R> res;
-            if (e.isRight()) {
-                res = f.andThen(Try::result).execute(e.right());
-            } else {
-                res = Either.left(e.left());
-            }
-            return res;
-        });
-        return new Try<>(next, logger, exF, finalizeF);
+        return new Try<>(func.andThen(f).andThen(Try::resultOrThrow), logger, finalizeF);
     }
 
     public Try<A> filter(Condition<A> condition) {
-        this.func = func.andThen(e -> {
-            Either<Exception, A> res;
-            if (e.isRight() && !condition.evaluate(e.right())) {
-                res = Either.left(new FilteredOutException(e.right()));
-            } else {
-                res = e;
+        Executable<AutoCloseableMarker, A> next = func.andThen(r -> {
+            if (!condition.evaluate(r)) {
+                throw new FilteredOutException(r);
             }
-            return res;
+            return r;
         });
-        return this;
+        return new Try<>(next, logger, finalizeF);
     }
 
     public Try<A> record(Consumer<A> consumer) {
-        this.func = func.andThen(e -> {
-            if (e.isRight()) {
-                consumer.consume(e.right());
-            }
-            return e;
-        });
-        return this;
+        return new Try<>(func.andThen(Receiver.of(consumer::consume).yield()), logger, finalizeF);
     }
 
     /**
@@ -183,8 +159,7 @@ public class Try<A> {
      * @return Current instance of Try.
      */
     public Try<A> retry(RetryContext ctx) {
-        this.func = func.withRetry(ctx.resettableContext(AutoCloseableMarker::reset));
-        return this;
+        return new Try<>(func.withRetry(ctx.resettableContext(AutoCloseableMarker::reset)), logger, finalizeF);
     }
 
     /**
@@ -195,8 +170,7 @@ public class Try<A> {
      * @return Current instance of Try.
      */
     public Try<A> retry(long initialDelay, double multiplier, int maxAttempts) {
-        this.func = func.withRetry(RetryContext.times(initialDelay, l -> (long) (l * multiplier), maxAttempts).build().resettableContext(AutoCloseableMarker::reset));
-        return this;
+        return new Try<>(func.withRetry(RetryContext.times(initialDelay, l -> (long) (l * multiplier), maxAttempts).build().resettableContext(AutoCloseableMarker::reset)), logger, finalizeF);
     }
 
     /**
@@ -217,8 +191,14 @@ public class Try<A> {
      */
     public Try<A> mapException(Function<Exception, Exception> f) {
         Objects.requireNonNull(f);
-        this.exF = f;
-        return this;
+        Executable<AutoCloseableMarker, A> next = a -> {
+            try {
+                return func.execute(a);
+            } catch (Exception ex) {
+                throw f.apply(ex);
+            }
+        };
+        return new Try<>(next, logger, finalizeF);
     }
 
     /**
@@ -271,9 +251,8 @@ public class Try<A> {
         Either<Exception, A> res = null;
         AutoCloseableMarker m = new AutoCloseableMarker();
         try {
-            res = func.execute(m);
+            res = Either.right(func.execute(m));
         } catch (Exception ex) {
-            ex = exF.apply(ex);
             logger.consume(ex);
             res = handleException(ex);
         } finally {

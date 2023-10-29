@@ -149,6 +149,38 @@ public class TestTry {
         assertTrue(r.left() instanceof IllegalStateException);
         assertEquals("needs retry!", r.left().getMessage());
         assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
+        l.clear();
+        m.set(0);
+        r = Try.execute(() -> retry(5, m, re)).mapException(e -> new RuntimeException(e.getMessage()))
+                .retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), true).build()).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof RuntimeException);
+        assertEquals("needs retry!", r.left().getMessage());
+        assertEquals(0, l.stream().filter(s -> s.startsWith("Retrying ")).count());
+        l.clear();
+        m.set(0);
+        r = Try.execute(() -> retry(5, m, re)).mapException(e -> new IllegalStateException(e.getMessage()))
+                .retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), true).build()).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof IllegalStateException);
+        assertEquals("needs retry!", r.left().getMessage());
+        assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
+        l.clear();
+        m.set(0);
+        r = Try.execute(() -> retry(5, m, re)).retry(retryCtxBuilder.exceptions(Collections.singleton(RuntimeException.class), true).build())
+                .mapException(e -> new IllegalStateException(e.getMessage())).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof IllegalStateException);
+        assertEquals("needs retry!", r.left().getMessage());
+        assertEquals(3, l.stream().filter(s -> s.startsWith("Retrying ")).count());
+        l.clear();
+        m.set(0);
+        r = Try.execute(() -> retry(5, m, re)).retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), true).build())
+                .mapException(e -> new IllegalStateException(e.getMessage())).result();
+        assertTrue(r.isLeft());
+        assertTrue(r.left() instanceof IllegalStateException);
+        assertEquals("needs retry!", r.left().getMessage());
+        assertEquals(0, l.stream().filter(s -> s.startsWith("Retrying ")).count());
     }
 
     @Test

@@ -69,6 +69,19 @@ public class State<A> {
         return value;
     }
 
+    /**
+     * Returns result if succeeds or throws Exception if occurred during execution.
+     * @return Resultant value if succeeds
+     * @throws Exception if occurred during the execution
+     */
+    public A resultOrThrow() throws Exception {
+        Either<Exception, A> res = result();
+        if (res.isLeft()) {
+            throw res.left();
+        }
+        return res.right();
+    }
+
     @Override
     public String toString() {
         return String.valueOf(value);
