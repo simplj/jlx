@@ -81,6 +81,19 @@ public class Thunk<A> {
         return applied().result;
     }
 
+    /**
+     * Executes the thunk (attempting retry if provided) and returns result if succeeds or throws Exception if occurred during the execution.
+     * @return Resultant value if succeeds
+     * @throws Exception if occurred during the execution
+     */
+    public A resultOrThrow() throws Exception {
+        Either<Exception, A> res = result();
+        if (res.isLeft()) {
+            throw res.left();
+        }
+        return res.right();
+    }
+
     public Thunk<A> applied() {
         if (result == null) {
             Either<Exception, A> e = func.produce();
