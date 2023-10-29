@@ -26,8 +26,8 @@ class Retry<A> {
         if (res) {
             count.mutate(n -> n + 1);
             long currDelay = delay.get();
-            logger.consume(String.format("Retrying %s after delay of %s ms...", count, currDelay));
             delay.mutate(this::sleep);
+            logger.consume(String.format("Retrying %s after delay of %s ms...", count, currDelay));
         }
         return res;
     }
