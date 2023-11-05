@@ -94,7 +94,7 @@ public abstract class MArray<E> extends FArray<E, MArray<E>> {
     }
 
     @Override
-    public E[] array() {
+    E[] array() {
         apply();
         return arr;
     }

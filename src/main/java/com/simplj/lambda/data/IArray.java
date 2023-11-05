@@ -93,7 +93,7 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
     }
 
     @Override
-    public E[] array() {
+    E[] array() {
         return applied().arr;
     }
 
