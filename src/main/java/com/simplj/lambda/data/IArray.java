@@ -93,8 +93,9 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
     }
 
     @Override
-    public E[] array() {
-        return applied().arr;
+    E[] array() {
+        IArray<E> r = applied();
+        return r.arr;
     }
 
     public abstract <T> IArray<T> map(Function<E, T> f);
