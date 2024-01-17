@@ -1,5 +1,6 @@
 package com.simplj.lambda.util.retry;
 
+import com.simplj.lambda.executable.Excerpt;
 import com.simplj.lambda.executable.Provider;
 import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
@@ -47,17 +48,22 @@ public final class CustomRetryContext<R> extends Retryable<R> {
         return res.right();
     }
 
+    /**
+     * Builder class for {@link CustomRetryContext}
+     */
     public static class CustomRetryContextBuilder<T> {
         private final RetryCondition<T> condition;
         private long initialDelay;
         private Function<Long, Long> delayF;
         private Consumer<String> logger;
+        private Excerpt preRetryHook;
 
         public CustomRetryContextBuilder(RetryCondition<T> condition) {
             this.condition = condition;
             this.initialDelay = 0;
             this.delayF = Function.id();
             this.logger = Retry.DEFAULT_LOGGER;
+            this.preRetryHook = Excerpt.numb();
         }
 
         public CustomRetryContextBuilder<T> delay(long initialDelay, Function<Long, Long> delayCalculator) {
@@ -69,7 +75,7 @@ public final class CustomRetryContext<R> extends Retryable<R> {
         /**
          * Sets the application logger to log retry attempts. Default is `System.out.println()`.
          * @param f logger function
-         * @return Current instance of {@link RetryContext.RetryContextBuilder}
+         * @return Current instance of {@link CustomRetryContextBuilder}
          */
         public CustomRetryContextBuilder<T> logger(Consumer<String> f) {
             if (f != null) {
@@ -78,8 +84,20 @@ public final class CustomRetryContext<R> extends Retryable<R> {
             return this;
         }
 
+        /**
+         * Sets an excerpt which gets executed before each retry.
+         * @param hook excerpt which will be executed before each retry
+         * @return Current instance of {@link CustomRetryContextBuilder}
+         */
+        public CustomRetryContextBuilder<T> registerPreRetryHook(Excerpt hook) {
+            if (hook != null) {
+                this.preRetryHook = hook;
+            }
+            return this;
+        }
+
         public CustomRetryContext<T> build() {
-            return new CustomRetryContext<>(new Retry<>(initialDelay, delayF, condition, logger));
+            return new CustomRetryContext<>(new Retry<>(initialDelay, delayF, condition, preRetryHook, logger));
         }
     }
 }

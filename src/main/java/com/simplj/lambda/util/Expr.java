@@ -1,5 +1,6 @@
 package com.simplj.lambda.util;
 
+import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
@@ -19,6 +20,9 @@ public class Expr<A> {
 
     public <B> B in(Function<A, B> f) {
         return f.apply(val);
+    }
+    public <B> B execute(Executable<A, B> f) throws Exception {
+        return f.execute(val);
     }
 
     public <T> Expr<T> map(Function<A, T> f) {

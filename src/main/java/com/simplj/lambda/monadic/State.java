@@ -65,6 +65,13 @@ public class State<A> {
         return value.isLeft() ? recovery.andThen(State::arg).apply(value.left()) : this;
     }
 
+    public State<A> recoverWhen(Condition<Exception> condition, Function<Exception, A> recovery) {
+        return value.isLeft() && condition.evaluate(value.left()) ? recovery.andThen(State::arg).apply(value.left()) : this;
+    }
+    public State<A> recoverOn(Class<? extends Exception> clazz, Function<Exception, A> recovery) {
+        return value.isLeft() && clazz.isAssignableFrom(value.left().getClass()) ? recovery.andThen(State::arg).apply(value.left()) : this;
+    }
+
     public Either<Exception, A> result() {
         return value;
     }

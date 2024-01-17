@@ -24,7 +24,7 @@ import java.util.Set;
 public class RetryContext extends Retryable<Object> {
 
     private RetryContext(RetryContextBuilder builder) {
-        super(new Retry<>(builder.initialDelay, builder.delayF, buildRetryCondition(builder), builder.logger));
+        super(new Retry<>(builder.initialDelay, builder.delayF, buildRetryCondition(builder), builder.preRetryHook, builder.logger));
     }
 
     /**
@@ -168,6 +168,7 @@ public class RetryContext extends Retryable<Object> {
         private Set<Class<? extends Exception>> exceptions;
         private boolean isInclusive;
         private int spec;//attempt=1;duration=2;exception=4;
+        private Excerpt preRetryHook;
 
         private RetryContextBuilder(long initialDelay, Function<Long, Long> delayF, int maxAttempt, long maxDuration, int spec) {
             this.initialDelay = initialDelay;
@@ -176,6 +177,7 @@ public class RetryContext extends Retryable<Object> {
             this.maxDuration = maxDuration;
             this.spec = spec;
             this.logger = Retry.DEFAULT_LOGGER;
+            this.preRetryHook = Excerpt.numb();
         }
 
         /**
@@ -186,6 +188,18 @@ public class RetryContext extends Retryable<Object> {
         public RetryContextBuilder logger(Consumer<String> f) {
             if (f != null) {
                 this.logger = f;
+            }
+            return this;
+        }
+
+        /**
+         * Sets an excerpt which gets executed before each retry.
+         * @param hook excerpt which will be executed before each retry
+         * @return Current instance of {@link RetryContextBuilder}
+         */
+        public RetryContextBuilder registerPreRetryHook(Excerpt hook) {
+            if (hook != null) {
+                this.preRetryHook = hook;
             }
             return this;
         }

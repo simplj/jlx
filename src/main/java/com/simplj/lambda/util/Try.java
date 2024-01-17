@@ -8,6 +8,8 @@ import com.simplj.lambda.executable.Excerpt;
 import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.function.Producer;
+import com.simplj.lambda.monadic.Thunk;
 import com.simplj.lambda.monadic.exception.FilteredOutException;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple;
@@ -208,6 +210,15 @@ public class Try<A> {
      */
     public Try<A> recover(Function<Exception, A> f) {
         this.recovery = f.andThen(Either::right);
+        return this;
+    }
+
+    public Try<A> recoverWhen(Condition<Exception> condition, Function<Exception, A> recovery) {
+        this.recovery = e -> condition.evaluate(e) ? Either.right(recovery.apply(e)) : Either.left(e);
+        return this;
+    }
+    public Try<A> recoverOn(Class<? extends Exception> clazz, Function<Exception, A> recovery) {
+        this.recovery = e -> clazz.isAssignableFrom(e.getClass()) ? Either.right(recovery.apply(e)) : Either.left(e);
         return this;
     }
 
