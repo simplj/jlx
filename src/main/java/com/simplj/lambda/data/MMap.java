@@ -231,9 +231,8 @@ public abstract class MMap<K, V> extends FMap<K, V, MMap<K, V>> implements Map<K
         }
 
         @Override
-        MMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
-            Map<A, B> m = Util.cast(constructor.produce());
-            return new MapFunctor<>(m, constructor, LinkedPair::new, m);
+        MMap<A, B> instantiate(Producer<Map<?, ?>> constructor, Map<A, B> mapVal) {
+            return new MapFunctor<>(mapVal, constructor, LinkedPair::new, mapVal);
         }
 
         public <C, D> MMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {

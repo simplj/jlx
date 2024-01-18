@@ -13,7 +13,7 @@ abstract class FMap<K, V, M extends FMap<K, V, M>> implements Iterable<Map.Entry
         this.constructor = constructor;
     }
 
-    abstract M instantiate(Producer<Map<?, ?>> constructor);
+    abstract M instantiate(Producer<Map<?, ?>> constructor, Map<K, V> mapVal);
 
     public abstract Map<K, V> map();
 
@@ -59,17 +59,17 @@ abstract class FMap<K, V, M extends FMap<K, V, M>> implements Iterable<Map.Entry
      * @return <code>Couple</code> of <code>ImmutableMap</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      */
     public Couple<M, M> split(BiFunction<K, V, Boolean> c) {
-        M match = instantiate(constructor);
-        M rest = instantiate(constructor);
+        Map<K, V> match = Util.cast(constructor.produce());
+        Map<K, V> rest = Util.cast(constructor.produce());
         Map<K, V> map = map();
         for (Map.Entry<K, V> t : map.entrySet()) {
             if (c.apply(t.getKey(), t.getValue())) {
-                match.include(t.getKey(), t.getValue());
+                match.put(t.getKey(), t.getValue());
             } else {
-                rest.include(t.getKey(), t.getValue());
+                rest.put(t.getKey(), t.getValue());
             }
         }
-        return Tuple.of(match, rest);
+        return Tuple.of(instantiate(constructor, match), instantiate(constructor, rest));
     }
     public int size() {
         return map().size();
@@ -231,8 +231,8 @@ abstract class FMap<K, V, M extends FMap<K, V, M>> implements Iterable<Map.Entry
     }
 
     public M copy() {
-        M r = instantiate(constructor);
-        r.include(map());
-        return r;
+        Map<K, V> r = Util.cast(constructor.produce());
+        r.putAll(map());
+        return instantiate(constructor, r);
     }
 }

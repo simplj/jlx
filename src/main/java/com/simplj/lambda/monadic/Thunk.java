@@ -77,6 +77,15 @@ public class Thunk<A> {
         return new Thunk<>(recoveryF, null);
     }
 
+    public Thunk<A> recoverWhen(Condition<Exception> condition, Function<Exception, A> recovery) {
+        Producer<Either<Exception, A>> recoveryF = func.andThen(e -> e.isLeft() && condition.evaluate(e.left()) ? Either.right(recovery.apply(e.left())) : e);
+        return new Thunk<>(recoveryF, null);
+    }
+    public Thunk<A> recoverOn(Class<? extends Exception> clazz, Function<Exception, A> recovery) {
+        Producer<Either<Exception, A>> recoveryF = func.andThen(e -> e.isLeft() && clazz.isAssignableFrom(e.left().getClass()) ? Either.right(recovery.apply(e.left())) : e);
+        return new Thunk<>(recoveryF, null);
+    }
+
     public Either<Exception, A> result() {
         return applied().result;
     }

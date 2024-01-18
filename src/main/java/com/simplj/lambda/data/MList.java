@@ -9,6 +9,8 @@ import com.simplj.lambda.tuples.Tuple;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     volatile List<T> list;
@@ -28,7 +30,7 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
 
     @SafeVarargs
     public static <E> MList<E> of(E...elems) {
-        return of(Arrays.asList(elems));
+        return of(Stream.of(elems).collect(Collectors.toList()));
     }
 
     public static <E> MList<E> of(List<E> list) {
@@ -262,9 +264,8 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
         }
 
         @Override
-        MList<T> instantiate(Producer<List<?>> constructor) {
-            List<T> l = Util.cast(constructor.produce());
-            return new ListFunctor<>(l, constructor, LinkedUnit::new, l);
+        MList<T> instantiate(Producer<List<?>> constructor, List<T> listVal) {
+            return new ListFunctor<>(listVal, constructor, LinkedUnit::new, listVal);
         }
 
         @Override

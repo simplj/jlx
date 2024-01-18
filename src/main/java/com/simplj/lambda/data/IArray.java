@@ -82,7 +82,7 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
 
     @Override
     public IArray<E> set(int idx, E val) {
-        IArray<E> res = applied();
+        IArray<E> res = appliedArray(true);
         res.arr[idx] = val;
         return res;
     }
@@ -117,12 +117,12 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
         if (isApplied()) {
             res = this;
         } else {
-            res = appliedArray();
+            res = appliedArray(false);
         }
         return res;
     }
 
-    public abstract IArray<E> appliedArray();
+    public abstract IArray<E> appliedArray(boolean copy);
 
     private static final class ArrayFunctor<A, T> extends IArray<T> implements Functor<A, T> {
         private final A[] src;
@@ -154,9 +154,12 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
             return new ArrayFunctor<>(src, filter(func, c), null);
         }
 
-        public final ArrayFunctor<T, T> appliedArray() {
+        public final ArrayFunctor<T, T> appliedArray(boolean copy) {
             ArrayFunctor<T, T> res;
             if (arr == null) {
+                T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
+                res = new ArrayFunctor<>(r, LinkedUnit::new, r);
+            } else if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
                 res = new ArrayFunctor<>(r, LinkedUnit::new, r);
             } else {
