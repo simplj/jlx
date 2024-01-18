@@ -79,46 +79,40 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
     }
 
     public final ISet<E> applied() {
-        ISet<E> res;
-        if (isApplied()) {
-            res = this;
-        } else {
-            res = appliedSet();
-        }
-        return res;
+        return appliedSet(false);
     }
 
     @Override
     public ISet<E> include(E val) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.add(val);
         return res;
     }
 
     @Override
     public ISet<E> include(Collection<? extends E> c) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.addAll(c);
         return this;
     }
 
     @Override
     public ISet<E> delete(E val) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.remove(val);
         return this;
     }
 
     @Override
     public ISet<E> delete(Collection<? extends E> c) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.removeAll(c);
         return this;
     }
 
     @Override
     public ISet<E> preserve(Collection<? extends E> c) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.retainAll(c);
         return this;
     }
@@ -129,12 +123,12 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
     }
 
     public ISet<E> deleteIf(Condition<? super E> c) {
-        ISet<E> res = applied();
+        ISet<E> res = appliedSet(true);
         res.set.removeIf(c::evaluate);
         return res;
     }
 
-    abstract ISet<E> appliedSet();
+    abstract ISet<E> appliedSet(boolean copy);
 
     private static final class SetFunctor<A, T> extends ISet<T> implements Functor<A, T> {
         private final Set<A> src;
@@ -147,8 +141,7 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
         }
 
         @Override
-        ISet<T> instantiate(Producer<Set<?>> constructor) {
-            Set<T> s = Util.cast(constructor.produce());
+        ISet<T> instantiate(Producer<Set<?>> constructor, Set<T> s) {
             return new SetFunctor<>(s, constructor, LinkedUnit::new, s);
         }
 
@@ -167,10 +160,14 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
             return new SetFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final SetFunctor<T, T> appliedSet() {
+        public final SetFunctor<T, T> appliedSet(boolean copy) {
             SetFunctor<T, T> res;
             if (set == null) {
                 Set<T> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new SetFunctor<>(r, constructor, LinkedUnit::new, r);
+            } else if (copy) {
+                Set<T> r = Util.cast(constructor.produce());
+                r.addAll(set);
                 res = new SetFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
                 res = new SetFunctor<>(set, constructor, LinkedUnit::new, set);

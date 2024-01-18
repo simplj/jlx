@@ -3,7 +3,6 @@ package com.simplj.lambda.monadic;
 import com.simplj.lambda.TestUtil;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.util.Mutable;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -29,7 +28,7 @@ public class TestState {
     @Test
     public void testExecute() throws Exception {
         Mutable<Integer> m = Mutable.of(0);
-        State.arg(1).execute(m::set);
+        State.arg(1).record(m::set);
         assertEquals(1, m.get().intValue());
     }
 }

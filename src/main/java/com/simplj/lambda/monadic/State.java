@@ -55,7 +55,7 @@ public class State<A> {
         return res;
     }
 
-    public void execute(Receiver<A> r) throws Exception {
+    public void record(Receiver<A> r) throws Exception {
         if (value.isRight()) {
             r.receive(value.right());
         }

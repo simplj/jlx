@@ -191,7 +191,7 @@ public class Try<A> {
      * @param f Function which converts one exception to another
      * @return Current instance of Try
      */
-    public Try<A> mapException(Function<Exception, Exception> f) {
+    public <E extends Exception> TypedTry<E, A> mapException(Function<Exception, E> f) {
         Objects.requireNonNull(f);
         Executable<AutoCloseableMarker, A> next = a -> {
             try {
@@ -200,7 +200,7 @@ public class Try<A> {
                 throw f.apply(ex);
             }
         };
-        return new Try<>(next, logger, finalizeF);
+        return new TypedTry<>(next, logger, finalizeF);
     }
 
     /**
@@ -326,6 +326,22 @@ public class Try<A> {
             finalizeF.execute();
         } catch (Exception e) {
             logger.consume(new FinalizingException(e));
+        }
+    }
+
+    public static class TypedTry<E extends Exception, R> extends Try<R> {
+        public TypedTry(Executable<AutoCloseableMarker, R> func, Consumer<Exception> logger, Excerpt finalizeF) {
+            super(func, logger, finalizeF);
+        }
+
+        @Override
+        public R resultOrThrow() throws E {
+            Either<Exception, R> r = result();
+            if (r.isLeft()) {
+                E x = Util.tryCastOrThrow(r.left(), e -> new IllegalStateException("`E` in TypedTry is not comprehensive enough to handle " + r.left().getClass().getName(), e));
+                throw x;
+            }
+            return r.right();
         }
     }
 

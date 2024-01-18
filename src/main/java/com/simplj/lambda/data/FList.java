@@ -65,7 +65,7 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
     public Couple<L, L> split(Condition<T> c) {
         List<T> match = Util.cast(constructor.produce());
         List<T> rest = Util.cast(constructor.produce());
-        L l = applied();
+        List<T> l = list();
         for (T t : l) {
             if (c.evaluate(t)) {
                 match.add(t);

@@ -91,60 +91,54 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
     }
 
     public final IMap<K, V> applied() {
-        IMap<K, V> res;
-        if (isApplied()) {
-            res = this;
-        } else {
-            res = appliedMap();
-        }
-        return res;
+        return appliedMap(false);
     }
 
     @Override
     public IMap<K, V> include(K key, V val) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.put(key, val);
         return res;
     }
 
     @Override
     public IMap<K, V> includeIfAbsent(K key, V val) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.putIfAbsent(key, val);
         return res;
     }
 
     @Override
     public IMap<K, V> include(Map<K, V> that) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.putAll(that);
         return res;
     }
 
     @Override
     public IMap<K, V> delete(K key) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.remove(key);
         return res;
     }
 
     @Override
     public IMap<K, V> delete(K key, V value) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.remove(key, value);
         return res;
     }
 
     @Override
     public IMap<K, V> replacing(K key, V value) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.replace(key, value);
         return res;
     }
 
     @Override
     public IMap<K, V> replacing(K key, V oldValue, V newValue) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.replace(key, oldValue, newValue);
         return res;
     }
@@ -155,7 +149,7 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
 
     @Override
     public IMap<K, V> replacingAll(java.util.function.BiFunction<? super K, ? super V, ? extends V> function) {
-        IMap<K, V> res = applied();
+        IMap<K, V> res = appliedMap(true);
         res.map.replaceAll(function);
         return res;
     }
@@ -165,7 +159,7 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
         super.forEach(action);
     }
 
-    abstract IMap<K, V> appliedMap();
+    abstract IMap<K, V> appliedMap(boolean copy);
 
     private static final class MapFunctor<T, R, A, B> extends IMap<A, B> implements BiFunctor<T, R, A, B> {
         private final Map<T, R> src;
@@ -178,9 +172,8 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
         }
 
         @Override
-        IMap<A, B> instantiate(Producer<Map<?, ?>> constructor) {
-            Map<A, B> m = Util.cast(constructor.produce());
-            return new MapFunctor<>(m, constructor, LinkedPair::new, m);
+        IMap<A, B> instantiate(Producer<Map<?, ?>> constructor, Map<A, B> mapVal) {
+            return new MapFunctor<>(mapVal, constructor, LinkedPair::new, mapVal);
         }
 
         public <C, D> IMap<C, D> map(BiFunction<A, B, Tuple2<C, D>> f) {
@@ -221,10 +214,14 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
             return new MapFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final MapFunctor<A, B, A, B> appliedMap() {
+        public final MapFunctor<A, B, A, B> appliedMap(boolean copy) {
             MapFunctor<A, B, A, B> res;
             if (map == null) {
                 Map<A, B> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new MapFunctor<>(r, constructor, LinkedPair::new, r);
+            } else if (copy) {
+                Map<A, B> r = Util.cast(constructor.produce());
+                r.putAll(map);
                 res = new MapFunctor<>(r, constructor, LinkedPair::new, r);
             } else {
                 res = new MapFunctor<>(map, constructor, LinkedPair::new, map);
