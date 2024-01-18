@@ -23,6 +23,7 @@ public final class CustomResettableRetryContext<T, R> extends Retryable<R> {
      * Executes the Executable f with input T and attempts retry if needed as per the current RetryContext when an exception is occurred during execution.
      * <br>While retrying, it applies the resetting function `retryInputResetF` on `input` to reset the value before passing to the executable again.
      * @param e     Executable to execute (and retry if needed)).
+     * @param input input value of the `Executable`
      * @return The resultant value (of type R) if the execution succeeded.
      * @throws Exception when the retry exceeds, throws the exception occurred during execution.
      */
