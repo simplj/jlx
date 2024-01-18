@@ -20,7 +20,7 @@ abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
         this.constructor = constructor;
     }
 
-    abstract S instantiate(Producer<Set<?>> constructor, Set<T> s);
+    abstract S instantiate(Producer<Set<?>> constructor, Set<T> setVal);
 
     public abstract Set<T> set();
 
