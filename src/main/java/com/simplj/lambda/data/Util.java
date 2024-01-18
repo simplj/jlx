@@ -1,6 +1,7 @@
 package com.simplj.lambda.data;
 
 import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.function.Function;
 import com.simplj.lambda.tuples.Couple;
 
 import java.util.*;
@@ -45,6 +46,14 @@ public final class Util {
     @SuppressWarnings("unchecked")
     public static <R> R cast(Object o) {
         return (R) o;
+    }
+    @SuppressWarnings("unchecked")
+    public static <E extends Exception, R> R tryCastOrThrow(Object o, Function<Exception, E> fX) throws E {
+        try {
+            return (R) o;
+        } catch (Exception ex) {
+            throw fX.apply(ex);
+        }
     }
 
     @SafeVarargs

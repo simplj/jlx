@@ -18,7 +18,7 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
         this.constructor = constructor;
     }
 
-    abstract L instantiate(Producer<List<?>> constructor);
+    abstract L instantiate(Producer<List<?>> constructor, List<T> listVal);
 
     /**
      * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to list elements
@@ -63,17 +63,41 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
      * @throws IllegalStateException if not {@link #applied() applied}
      */
     public Couple<L, L> split(Condition<T> c) {
-        L match = instantiate(constructor);
-        L rest = instantiate(constructor);
-        L l = applied();
+        List<T> match = Util.cast(constructor.produce());
+        List<T> rest = Util.cast(constructor.produce());
+        List<T> l = list();
         for (T t : l) {
             if (c.evaluate(t)) {
-                match.append(t);
+                match.add(t);
             } else {
-                rest.append(t);
+                rest.add(t);
             }
         }
-        return Tuple.of(match, rest);
+        return Tuple.of(instantiate(constructor, match), instantiate(constructor, rest));
+    }
+
+    /**
+     * Returns the first element from the current list or throws `IndexOutOfBoundsException` if empty.
+     * @return the first element from the current list or throws `IndexOutOfBoundsException` if empty.
+     */
+    public T first() {
+        List<T> l = list();
+        if (l.isEmpty()) {
+            throw new IndexOutOfBoundsException("List is empty!");
+        }
+        return l.get(0);
+    }
+
+    /**
+     * Returns the last element from the current list or throws `IndexOutOfBoundsException` if empty.
+     * @return the last element from the current list or throws `IndexOutOfBoundsException` if empty.
+     */
+    public T last() {
+        List<T> l = list();
+        if (l.isEmpty()) {
+            throw new IndexOutOfBoundsException("List is empty!");
+        }
+        return l.get(l.size() - 1);
     }
 
     public int size() {
@@ -238,8 +262,8 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
     }
 
     public L copy() {
-        L r = instantiate(constructor);
-        r.append(list());
-        return r;
+        List<T> r = Util.cast(constructor.produce());
+        r.addAll(list());
+        return instantiate(constructor, r);
     }
 }

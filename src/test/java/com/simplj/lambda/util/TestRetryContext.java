@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -24,11 +25,13 @@ public class TestRetryContext {
     public void testTimeBoxedRetry() {
         Mutable<Integer> m = Mutable.of(0);
         List<String> l = new LinkedList<>();
-        RetryContext ctx = RetryContext.duration(100, d -> (long) (d * 1.5), 200L).logger(l::add).build();
+        AtomicInteger ai = new AtomicInteger();
+        RetryContext ctx = RetryContext.duration(100, d -> (long) (d * 1.5), 200L).registerPreRetryHook(ai::incrementAndGet).logger(l::add).build();
         assertThrows(IllegalStateException.class, () -> ctx.retry(() -> {
                     retry(4, m);
                 }));
         assertEquals(2, l.size());
+        assertEquals(2, ai.get());
     }
 
     @Test

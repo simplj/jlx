@@ -2,6 +2,7 @@ package com.simplj.lambda.util;
 
 import com.simplj.lambda.data.IArray;
 import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.tuples.Couple;
 import org.junit.Test;
 
@@ -13,8 +14,9 @@ import static org.junit.Assert.assertThrows;
 
 public class ExprTest {
     @Test
-    public void testExpr() {
+    public void testExpr() throws Exception {
         assertEquals(1, let(0).in(n -> n + 1).intValue());
+        assertEquals(1, let(0).record(Consumer.noOp()).execute(n -> n + 1).intValue());
     }
 
     @Test

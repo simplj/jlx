@@ -73,13 +73,7 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     }
 
     public final IList<E> applied() {
-        IList<E> res;
-        if (isApplied()) {
-            res = this;
-        } else {
-            res = appliedList();
-        }
-        return res;
+        return appliedList(false);
     }
 
     public IList<Couple<Integer, E>> indexed() {
@@ -88,63 +82,63 @@ public abstract class IList<E> extends FList<E, IList<E>> {
 
     @Override
     public IList<E> append(E val) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.add(val);
         return res;
     }
 
     @Override
     public IList<E> append(Collection<? extends E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.addAll(c);
         return res;
     }
 
     @Override
     public IList<E> insert(int index, E val) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.add(index, val);
         return res;
     }
 
     @Override
     public IList<E> insert(int index, Collection<? extends E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.addAll(index, c);
         return res;
     }
 
     @Override
     public IList<E> replace(int index, E val) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.set(index, val);
         return res;
     }
 
     @Override
     public IList<E> delete(int index) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.remove(index);
         return res;
     }
 
     @Override
     public IList<E> delete(E val) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.remove(val);
         return res;
     }
 
     @Override
     public IList<E> delete(Collection<? extends E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.removeAll(c);
         return res;
     }
 
     @Override
     public IList<E> preserve(Collection<? extends E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.retainAll(c);
         return res;
     }
@@ -156,26 +150,26 @@ public abstract class IList<E> extends FList<E, IList<E>> {
 
     @Override
     public IList<E> sorted(Comparator<? super E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.sort(c);
         return res;
     }
 
     @Override
     public IList<E> replacingAll(UnaryOperator<E> operator) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.replaceAll(operator);
         return res;
     }
 
     @Override
     public IList<E> deleteIf(Condition<? super E> c) {
-        IList<E> res = applied();
+        IList<E> res = appliedList(true);
         res.list.removeIf(c::evaluate);
         return res;
     }
 
-    abstract IList<E> appliedList();
+    abstract IList<E> appliedList(boolean copy);
 
     private static final class ListFunctor<A, T> extends IList<T> implements Functor<A, T> {
         private final List<A> src;
@@ -188,9 +182,8 @@ public abstract class IList<E> extends FList<E, IList<E>> {
         }
 
         @Override
-        IList<T> instantiate(Producer<List<?>> constructor) {
-            List<T> l = Util.cast(constructor.produce());
-            return new ListFunctor<>(l, constructor, LinkedUnit::new, l);
+        IList<T> instantiate(Producer<List<?>> constructor, List<T> listVal) {
+            return new ListFunctor<>(listVal, constructor, LinkedUnit::new, listVal);
         }
 
         @Override
@@ -208,10 +201,14 @@ public abstract class IList<E> extends FList<E, IList<E>> {
             return new ListFunctor<>(src, constructor, filter(func, c), null);
         }
 
-        public final ListFunctor<T, T> appliedList() {
+        public final ListFunctor<T, T> appliedList(boolean copy) {
             ListFunctor<T, T> res;
             if (list == null) {
                 List<T> r = apply(src, func, Util.cast(constructor.produce()));
+                res = new ListFunctor<>(r, constructor, LinkedUnit::new, r);
+            } else if (copy) {
+                List<T> r = Util.cast(constructor.produce());
+                r.addAll(list);
                 res = new ListFunctor<>(r, constructor, LinkedUnit::new, r);
             } else {
                 res = new ListFunctor<>(list, constructor, LinkedUnit::new, list);

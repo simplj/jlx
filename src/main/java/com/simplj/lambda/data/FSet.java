@@ -20,7 +20,7 @@ abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
         this.constructor = constructor;
     }
 
-    abstract S instantiate(Producer<Set<?>> constructor);
+    abstract S instantiate(Producer<Set<?>> constructor, Set<T> setVal);
 
     public abstract Set<T> set();
 
@@ -50,17 +50,17 @@ abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
      * @return <code>Couple</code> of <code>ImmutableSet</code>s with satisfying elements in {@link Couple#first() first} and <i>not</i> satisfying elements in {@link Couple#second() second}
      */
     public Couple<S, S> split(Condition<T> c) {
-        S match = instantiate(constructor);
-        S rest = instantiate(constructor);
-        S l = applied();
-        for (T t : l) {
+        Set<T> match = Util.cast(constructor.produce());
+        Set<T> rest = Util.cast(constructor.produce());
+        Set<T> s = set();
+        for (T t : s) {
             if (c.evaluate(t)) {
-                match.include(t);
+                match.add(t);
             } else {
-                rest.include(t);
+                rest.add(t);
             }
         }
-        return Tuple.of(match, rest);
+        return Tuple.of(instantiate(constructor, match), instantiate(constructor, rest));
     }
 
     public int size() {
@@ -177,8 +177,8 @@ abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
     }
 
     public S copy() {
-        S r = instantiate(constructor);
-        r.include(set());
-        return r;
+        Set<T> r = Util.cast(constructor.produce());
+        r.addAll(set());
+        return instantiate(constructor, r);
     }
 }
