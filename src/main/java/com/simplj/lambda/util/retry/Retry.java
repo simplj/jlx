@@ -27,7 +27,6 @@ class Retry<A> {
     }
 
     boolean complementRetry(Mutable<Integer> count, long elapsedMillis, Either<Exception, ? extends A> e, Mutable<Long> delay) throws Exception {
-        System.out.println("Duration: " + elapsedMillis);
         boolean res = retryCondition.isRetryNeeded(count.get(), elapsedMillis, e);
         if (res) {
             count.mutate(n -> n + 1);
