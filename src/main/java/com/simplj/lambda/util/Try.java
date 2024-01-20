@@ -189,6 +189,7 @@ public class Try<A> {
      * Takes a Function f which transforms one exception to another.
      * This function is applied on the exception if occurred during the execution.
      * @param f Function which converts one exception to another
+     * @param <E> Type of `Exception` to be mapped to
      * @return Current instance of Try
      */
     public <E extends Exception> TypedTry<E, A> mapException(Function<Exception, E> f) {
