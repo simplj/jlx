@@ -3,10 +3,8 @@ package com.simplj.lambda.util.retry;
 import com.simplj.lambda.executable.Executable;
 import com.simplj.lambda.executable.Provider;
 import com.simplj.lambda.function.Function;
-import com.simplj.lambda.util.Either;
-import com.simplj.lambda.util.Lazy;
-import com.simplj.lambda.util.Mutable;
-import com.simplj.lambda.util.Try;
+import com.simplj.lambda.util.*;
+import com.simplj.lambda.util.Timed.TimedExecution;
 
 /**
  * Resets the input using the provided reset-er function before attempting for retry.
@@ -33,19 +31,18 @@ public final class ResettableRetryContext<T> extends Retryable<Object> {
         Provider<R> f = e.exec(input);
         Mutable<Integer> count = Mutable.of(0);
         Mutable<Long> delay = Mutable.of(initialDelay());
-        Either<Exception, R> res;
+        TimedExecution<Either<Exception, R>> res;
         boolean flag;
-        long startTs = System.currentTimeMillis();
         do {
-            res = Try.execute(f).result();
-            flag = retry.complementRetry(count, System.currentTimeMillis() - startTs, res, delay);
+            res = Timed.apply(Try.execute(f));
+            flag = retry.complementRetry(count, res.duration(), res.result(), delay);
             if (flag) {
                 input = retryInputResetF.apply(input);
             }
         } while (flag);
-        if (res.isLeft()) {
-            throw res.left();
+        if (res.result().isLeft()) {
+            throw res.result().left();
         }
-        return res.right();
+        return res.result().right();
     }
 }
