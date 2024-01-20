@@ -6,8 +6,6 @@ import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.Mutable;
-import com.simplj.lambda.util.Timed;
-import com.simplj.lambda.util.Timed.TimedExecution;
 import com.simplj.lambda.util.Try;
 
 import java.util.HashSet;
@@ -49,14 +47,15 @@ public class RetryContext extends Retryable<Object> {
     public <R> R retry(Provider<R> f) throws Exception {
         Mutable<Integer> count = Mutable.of(0);
         Mutable<Long> delay = Mutable.of(initialDelay());
-        TimedExecution<Either<Exception, R>> res;
+        long startTs = System.currentTimeMillis();
+        Either<Exception, R> res;
         do {
-            res = Timed.apply(Try.execute(f));
-        } while (retry.complementRetry(count, res.duration(), res.result(), delay));
-        if (res.result().isLeft()) {
-            throw res.result().left();
+            res = Try.execute(f).result();
+        } while (retry.complementRetry(count, System.currentTimeMillis() - startTs, res, delay));
+        if (res.isLeft()) {
+            throw res.left();
         }
-        return res.result().right();
+        return res.right();
     }
 
     /**
