@@ -3,6 +3,9 @@ package com.simplj.lambda.util;
 import com.simplj.lambda.executable.Provider;
 import com.simplj.lambda.function.Producer;
 
+/**
+ * Executes and records time for the execution.
+ */
 public class Timed {
     public static <T> TimedExecution<T> execute(Provider<T> provider) throws Exception {
         long s = System.currentTimeMillis();
