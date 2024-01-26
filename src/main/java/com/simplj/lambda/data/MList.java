@@ -13,11 +13,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
+    private static final MList<?> NONE = MList.unit(Collections::emptyList);
     volatile List<T> list;
 
     MList(List<T> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
+    }
+
+    public static <A> MList<A> none() {
+        return Util.cast(NONE);
     }
 
     public static <E> MList<E> unit() {
@@ -159,8 +164,11 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     }
 
     @Override
-    public MList<T> append(Collection<? extends T> c) {
-        addAll(c);
+    public MList<T> append(Iterable<? extends T> c) {
+        apply();
+        for (T t : c) {
+            list.add(t);
+        }
         return this;
     }
 
@@ -171,8 +179,13 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     }
 
     @Override
-    public MList<T> insert(int index, Collection<? extends T> c) {
-        addAll(index, c);
+    public MList<T> insert(int index, Iterable<? extends T> c) {
+        apply();
+        int i = index;
+        for (T t : c) {
+            list.add(i, t);
+            i++;
+        }
         return this;
     }
 
@@ -183,8 +196,11 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     }
 
     @Override
-    public MList<T> delete(Collection<? extends T> val) {
-        removeAll(val);
+    public MList<T> delete(Iterable<? extends T> val) {
+        apply();
+        for (T t : val) {
+            list.remove(t);
+        }
         return this;
     }
 
@@ -195,8 +211,13 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     }
 
     @Override
-    public MList<T> preserve(Collection<? extends T> c) {
-        retainAll(c);
+    public MList<T> preserve(Iterable<? extends T> c) {
+        apply();
+        for (T t : c) {
+            if (!list.contains(t)) {
+                list.remove(t);
+            }
+        }
         return this;
     }
 

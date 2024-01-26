@@ -119,13 +119,23 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
         return list().toArray(a);
     }
 
+    public boolean hasAll(Iterable<? extends T> c) {
+        List<T> l = list();
+        for (T e : c) {
+            if (!l.contains(e)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public abstract L append(T val);
 
-    public abstract L append(Collection<? extends T> c);
+    public abstract L append(Iterable<? extends T> c);
 
     public abstract L insert(int index, T val);
 
-    public abstract L insert(int index, Collection<? extends T> c);
+    public abstract L insert(int index, Iterable<? extends T> c);
 
     public abstract L replace(int index, T val);
 
@@ -133,9 +143,9 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
 
     public abstract L delete(T val);
 
-    public abstract L delete(Collection<? extends T> c);
+    public abstract L delete(Iterable<? extends T> c);
 
-    public abstract L preserve(Collection<? extends T> c);
+    public abstract L preserve(Iterable<? extends T> c);
 
     public abstract L empty();
 

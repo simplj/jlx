@@ -10,11 +10,16 @@ import java.util.*;
 import java.util.function.UnaryOperator;
 
 public abstract class IList<E> extends FList<E, IList<E>> {
+    private static final IList<?> NONE = IList.unit(Collections::emptyList);
     final List<E> list;
 
     IList(List<E> list, Producer<List<?>> constructor) {
         super(constructor);
         this.list = list;
+    }
+
+    public static <A> IList<A> none() {
+        return Util.cast(NONE);
     }
 
     public static <E> IList<E> unit() {
@@ -88,9 +93,11 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     }
 
     @Override
-    public IList<E> append(Collection<? extends E> c) {
+    public IList<E> append(Iterable<? extends E> c) {
         IList<E> res = appliedList(true);
-        res.list.addAll(c);
+        for (E e : c) {
+            res.list.add(e);
+        }
         return res;
     }
 
@@ -102,9 +109,13 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     }
 
     @Override
-    public IList<E> insert(int index, Collection<? extends E> c) {
+    public IList<E> insert(int index, Iterable<? extends E> c) {
         IList<E> res = appliedList(true);
-        res.list.addAll(index, c);
+        int i = index;
+        for (E e : c) {
+            res.list.add(i, e);
+            i++;
+        }
         return res;
     }
 
@@ -130,16 +141,22 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     }
 
     @Override
-    public IList<E> delete(Collection<? extends E> c) {
+    public IList<E> delete(Iterable<? extends E> c) {
         IList<E> res = appliedList(true);
-        res.list.removeAll(c);
+        for (E e : c) {
+            res.list.remove(e);
+        }
         return res;
     }
 
     @Override
-    public IList<E> preserve(Collection<? extends E> c) {
+    public IList<E> preserve(Iterable<? extends E> c) {
         IList<E> res = appliedList(true);
-        res.list.retainAll(c);
+        for (E e : c) {
+            if (!res.list.contains(e)) {
+                res.list.remove(e);
+            }
+        }
         return res;
     }
 

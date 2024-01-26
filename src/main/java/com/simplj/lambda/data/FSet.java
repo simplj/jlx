@@ -82,15 +82,25 @@ abstract class FSet<T, S extends FSet<T, S>> implements Iterable<T> {
         return set().toArray(a);
     }
 
+    public boolean hasAll(Iterable<? extends T> c) {
+        Set<T> s = set();
+        for (T e : c) {
+            if (!s.contains(e)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public abstract S include(T val);
 
-    public abstract S include(Collection<? extends T> c);
+    public abstract S include(Iterable<? extends T> c);
 
     public abstract S delete(T val);
 
-    public abstract S delete(Collection<? extends T> c);
+    public abstract S delete(Iterable<? extends T> c);
 
-    public abstract S preserve(Collection<? extends T> c);
+    public abstract S preserve(Iterable<? extends T> c);
 
     public abstract S empty();
 
