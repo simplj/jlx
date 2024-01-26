@@ -6,18 +6,20 @@ import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple2;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
+    private static final IMap<?, ?> NONE = IMap.unit(Collections::emptyMap);
     final Map<K, V> map;
 
     public IMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
         super(constructor);
         this.map = map;
+    }
+
+    public static <A, B> IMap<A, B> none() {
+        return Util.cast(NONE);
     }
 
     public static <A, B> IMap<A, B> unit() {

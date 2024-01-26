@@ -6,17 +6,23 @@ import com.simplj.lambda.function.Producer;
 import com.simplj.lambda.tuples.Couple;
 import com.simplj.lambda.tuples.Tuple2;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class MMap<K, V> extends FMap<K, V, MMap<K, V>> implements Map<K, V> {
+    private static final MMap<?, ?> NONE = MMap.unit(Collections::emptyMap);
     Map<K, V> map;
 
     private MMap(Map<K, V> map, Producer<Map<?, ?>> constructor) {
         super(constructor);
         this.map = map;
+    }
+
+    public static <A, B> MMap<A, B> none() {
+        return Util.cast(NONE);
     }
 
     public static <A, B> MMap<A, B> unit() {
