@@ -1,45 +1,36 @@
 package com.simplj.lambda.util;
 
-import com.simplj.lambda.executable.Executable;
-import com.simplj.lambda.executable.Provider;
-import com.simplj.lambda.executable.Receiver;
 import com.simplj.lambda.function.Condition;
+import com.simplj.lambda.function.Consumer;
 import com.simplj.lambda.function.Function;
+import com.simplj.lambda.function.Producer;
 
 import java.util.Objects;
 
-public class Expr<A> {
+public class PureExpr<A> {
     private final A val;
 
-    Expr(A val) {
+    PureExpr(A val) {
         this.val = val;
     }
 
-    public static <T> Expr<T> let(T val) {
-        return new Expr<>(val);
+    public <B> B in(Function<A, B> f) {
+        return f.apply(val);
     }
-
-    public PureExpr<A> pure() {
-        return new PureExpr<>(val);
-    }
-
-    public <B> B in(Executable<A, B> f) throws Exception {
-        return f.execute(val);
-    }
-    public <B> B yield(Provider<B> p) throws Exception {
-        return p.provide();
+    public <B> B yield(Producer<B> p) {
+        return p.produce();
     }
     public <B> B returning(B r) {
         return r;
     }
 
-    public Expr<A> record(Receiver<A> consumer) throws Exception {
-        consumer.receive(val);
+    public PureExpr<A> record(Consumer<A> consumer) {
+        consumer.consume(val);
         return this;
     }
 
-    public <T> Expr<T> map(Executable<A, T> f) throws Exception {
-        return new Expr<>(f.execute(val));
+    public <T> PureExpr<T> map(Function<A, T> f) {
+        return new PureExpr<>(f.apply(val));
     }
 
     public When<A> when(A match) {
@@ -73,22 +64,22 @@ public class Expr<A> {
             this.flag = condition.evaluate(val) ? 1 : 0;
         }
 
-        public <R> Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public <R> Then<T, R> then(R r) {
+            return then(Producer.defer(r));
         }
-        public <R> Then<T, R> then(Provider<R> f) throws Exception {
+        public <R> Then<T, R> then(Producer<R> f) {
             Then<T, R> res;
             if (flag == 1) {
-                res = new Then<>(val, flag + 1, f.provide());
+                res = new Then<>(val, flag + 1, f.produce());
             } else {
                 res = new Then<>(val, flag, null);
             }
             return res;
         }
-        public <R> Then<T, R> then(Executable<T, R> f) throws Exception {
+        public <R> Then<T, R> then(Function<T, R> f) {
             Then<T, R> res;
             if (flag == 1) {
-                res = new Then<>(val, flag + 1, f.execute(val));
+                res = new Then<>(val, flag + 1, f.apply(val));
             } else {
                 res = new Then<>(val, flag, null);
             }
@@ -118,22 +109,22 @@ public class Expr<A> {
             this.r = r;
         }
 
-        public Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public Then<T, R> then(R r) {
+            return then(Producer.defer(r));
         }
-        public Then<T, R> then(Provider<R> f) throws Exception {
+        public Then<T, R> then(Producer<R> f) {
             Then<T, R> res;
             if (flag == 1) {
-                res = new Then<>(val, flag + 1, f.provide());
+                res = new Then<>(val, flag + 1, f.produce());
             } else {
                 res = new Then<>(val, flag, r);
             }
             return res;
         }
-        public Then<T, R> then(Executable<T, R> f) throws Exception {
+        public Then<T, R> then(Function<T, R> f) {
             Then<T, R> res;
             if (flag == 1) {
-                res = new Then<>(val, flag + 1, f.execute(val));
+                res = new Then<>(val, flag + 1, f.apply(val));
             } else {
                 res = new Then<>(val, flag, r);
             }
@@ -176,11 +167,11 @@ public class Expr<A> {
             return r;
         }
 
-        public R otherwise(Provider<R> f) throws Exception {
-            return otherwise(f.provide());
+        public R otherwise(Producer<R> f) {
+            return otherwise(f.produce());
         }
-        public R otherwise(Executable<T, R> f) throws Exception {
-            return otherwise(f.execute(val));
+        public R otherwise(Function<T, R> f) {
+            return otherwise(f.apply(val));
         }
         public R otherwise(R val) {
             R r;
@@ -191,7 +182,7 @@ public class Expr<A> {
             }
             return r;
         }
-        public R otherwiseNull() throws Exception {
+        public R otherwiseNull() {
             return otherwise(x -> null);
         }
         public R otherwiseErr(Function<T, ? extends Exception> ef) throws Exception {

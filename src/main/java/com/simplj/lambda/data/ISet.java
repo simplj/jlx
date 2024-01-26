@@ -4,16 +4,21 @@ import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public abstract class ISet<E> extends FSet<E, ISet<E>> {
+    private static final ISet<?> NONE = ISet.unit(Collections::emptySet);
     final Set<E> set;
 
     public ISet(Set<E> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
+    }
+
+    public static <A> ISet<A> none() {
+        return Util.cast(NONE);
     }
 
     public static <E> ISet<E> unit() {
@@ -90,31 +95,39 @@ public abstract class ISet<E> extends FSet<E, ISet<E>> {
     }
 
     @Override
-    public ISet<E> include(Collection<? extends E> c) {
+    public ISet<E> include(Iterable<? extends E> c) {
         ISet<E> res = appliedSet(true);
-        res.set.addAll(c);
-        return this;
+        for (E e : c) {
+            res.set.add(e);
+        }
+        return res;
     }
 
     @Override
     public ISet<E> delete(E val) {
         ISet<E> res = appliedSet(true);
         res.set.remove(val);
-        return this;
+        return res;
     }
 
     @Override
-    public ISet<E> delete(Collection<? extends E> c) {
+    public ISet<E> delete(Iterable<? extends E> c) {
         ISet<E> res = appliedSet(true);
-        res.set.removeAll(c);
-        return this;
+        for (E e : c) {
+            res.set.remove(e);
+        }
+        return res;
     }
 
     @Override
-    public ISet<E> preserve(Collection<? extends E> c) {
+    public ISet<E> preserve(Iterable<? extends E> c) {
         ISet<E> res = appliedSet(true);
-        res.set.retainAll(c);
-        return this;
+        for (E e : c) {
+            if (!res.set.contains(e)) {
+                res.set.remove(e);
+            }
+        }
+        return res;
     }
 
     @Override

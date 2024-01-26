@@ -5,16 +5,22 @@ import com.simplj.lambda.function.Function;
 import com.simplj.lambda.function.Producer;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
 public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
+    private static final MSet<?> NONE = MSet.unit(Collections::emptySet);
     Set<E> set;
 
     private MSet(Set<E> set, Producer<Set<?>> constructor) {
         super(constructor);
         this.set = set;
+    }
+
+    public static <A> MSet<A> none() {
+        return Util.cast(NONE);
     }
 
     public static <E> MSet<E> unit() {
@@ -105,8 +111,11 @@ public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
     }
 
     @Override
-    public MSet<E> include(Collection<? extends E> c) {
-        addAll(c);
+    public MSet<E> include(Iterable<? extends E> c) {
+        apply();
+        for (E e : c) {
+            set.add(e);
+        }
         return this;
     }
 
@@ -129,8 +138,11 @@ public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
     }
 
     @Override
-    public MSet<E> delete(Collection<? extends E> c) {
-        removeAll(c);
+    public MSet<E> delete(Iterable<? extends E> c) {
+        apply();
+        for (E e : c) {
+            set.remove(e);
+        }
         return this;
     }
 
@@ -141,8 +153,13 @@ public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
     }
 
     @Override
-    public MSet<E> preserve(Collection<? extends E> c) {
-        retainAll(c);
+    public MSet<E> preserve(Iterable<? extends E> c) {
+        apply();
+        for (E e : c) {
+            if (!set.contains(e)) {
+                set.remove(e);
+            }
+        }
         return this;
     }
 
