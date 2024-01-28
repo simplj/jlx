@@ -22,11 +22,11 @@ public interface Condition<A> extends Predicate<A> {
         return r -> evaluate(f.apply(r));
     }
 
-    default Condition<A> and(Condition<A> c) {
-        return a -> evaluate(a) && c.evaluate(a);
+    default <B> BiCondition<A, B> and(Condition<B> c) {
+        return BiCondition.both(this, c);
     }
-    default Condition<A> or(Condition<A> c) {
-        return a -> evaluate(a) || c.evaluate(a);
+    default <B> BiCondition<A, B> or(Condition<B> c) {
+        return BiCondition.any(this, c);
     }
 
     static <T> Condition<T> of(Condition<T> c) {
