@@ -30,15 +30,15 @@ public interface BiCondition<A, B> {
         return (a, t) -> evaluate(a, f.apply(t));
     }
 
-    default BiCondition<A, B> and(BiCondition<A, B> c) {
-        return (a, b) -> evaluate(a, b) && c.evaluate(a, b);
-    }
-    default BiCondition<A, B> or(BiCondition<A, B> c) {
-        return (a, b) -> evaluate(a, b) || c.evaluate(a, b);
-    }
-
     static <T, R> BiCondition<T, R> of(BiCondition<T, R> c) {
         return c;
+    }
+
+    static <T, R> BiCondition<T, R> ofFirst(Condition<T> c) {
+        return (a, x) -> c.evaluate(a);
+    }
+    static <T, R> BiCondition<T, R> ofSecond(Condition<R> c) {
+        return (x, b) -> c.evaluate(b);
     }
 
     static <T, R> BiCondition<T, R> negate(BiCondition<T, R> c) {
@@ -50,5 +50,12 @@ public interface BiCondition<A, B> {
     }
     static <T, R> BiCondition<T, R> never() {
         return (a, b) -> false;
+    }
+
+    static <T, R> BiCondition<T, R> any(Condition<T> c1, Condition<R> c2) {
+        return (a, b) -> c1.evaluate(a) || c2.evaluate(b);
+    }
+    static <T, R> BiCondition<T, R> both(Condition<T> c1, Condition<R> c2) {
+        return (a, b) -> c1.evaluate(a) && c2.evaluate(b);
     }
 }
