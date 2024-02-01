@@ -73,8 +73,14 @@ public class Expr<A> {
             this.flag = condition.evaluate(val) ? 1 : 0;
         }
 
-        public <R> Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public <R> Then<T, R> then(R r) {
+            Then<T, R> res;
+            if (flag == 1) {
+                res = new Then<>(val, flag + 1, r);
+            } else {
+                res = new Then<>(val, flag, null);
+            }
+            return res;
         }
         public <R> Then<T, R> then(Provider<R> f) throws Exception {
             Then<T, R> res;
@@ -118,8 +124,14 @@ public class Expr<A> {
             this.r = r;
         }
 
-        public Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public Then<T, R> then(R v) {
+            Then<T, R> res;
+            if (flag == 1) {
+                res = new Then<>(val, flag + 1, v);
+            } else {
+                res = new Then<>(val, flag, r);
+            }
+            return res;
         }
         public Then<T, R> then(Provider<R> f) throws Exception {
             Then<T, R> res;
