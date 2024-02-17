@@ -55,7 +55,8 @@ public class ExprTest {
                 .when(4).then(DayOfWeek.THURSDAY)
                 .when(5).then(DayOfWeek.FRIDAY)
                 .when(6).then(DayOfWeek.SATURDAY)
-                .otherwise(DayOfWeek.SUNDAY);
+                .when(7).then(DayOfWeek.SUNDAY)
+                .otherwiseNull();
     }
     private DayOfWeek toDayOfWeek2(int i) throws Exception {
         return let(i).when(Condition.negate(Condition.between(1, 7))).<DayOfWeek>err(x -> new Exception("Invalid number " + x))
@@ -65,6 +66,7 @@ public class ExprTest {
                 .when(4).then(DayOfWeek.THURSDAY)
                 .when(5).then(DayOfWeek.FRIDAY)
                 .when(6).then(DayOfWeek.SATURDAY)
-                .otherwise(DayOfWeek.SUNDAY);
+                .when(7).then(DayOfWeek.SUNDAY)
+                .otherwiseErr(n -> new IllegalArgumentException("Invalid index #" + n + "for day  of week!"));
     }
 }
