@@ -7,6 +7,7 @@ import com.simplj.lambda.function.Function;
 import com.simplj.lambda.util.Either;
 import com.simplj.lambda.util.Mutable;
 import com.simplj.lambda.util.Try;
+import com.simplj.lambda.util.retry.CustomRetryContext.CustomRetryContextBuilder;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -107,8 +108,8 @@ public class RetryContext extends Retryable<Object> {
      * @param <T>       Type of resultant value of the retry operation
      * @return CustomRetryContextBuilder
      */
-    public static <T> CustomRetryContext.CustomRetryContextBuilder<T> custom(RetryCondition<T> condition) {
-        return new CustomRetryContext.CustomRetryContextBuilder<>(condition);
+    public static <T> CustomRetryContextBuilder<T> custom(RetryCondition<T> condition) {
+        return new CustomRetryContextBuilder<>(condition);
     }
 
     /**

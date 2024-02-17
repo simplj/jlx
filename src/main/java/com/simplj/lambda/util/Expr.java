@@ -37,9 +37,18 @@ public class Expr<A> {
         consumer.receive(val);
         return this;
     }
+    public Expr<A> recordIf(Condition<A> condition, Receiver<A> consumer) throws Exception {
+        if (condition.evaluate(val)) {
+            consumer.receive(val);
+        }
+        return this;
+    }
 
     public <T> Expr<T> map(Executable<A, T> f) throws Exception {
         return new Expr<>(f.execute(val));
+    }
+    public Expr<A> mapIf(Condition<A> c, Executable<A, A> f) throws Exception {
+        return new Expr<>(c.evaluate(val) ? f.execute(val) : val);
     }
 
     public When<A> when(A match) {
@@ -73,8 +82,14 @@ public class Expr<A> {
             this.flag = condition.evaluate(val) ? 1 : 0;
         }
 
-        public <R> Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public <R> Then<T, R> then(R r) {
+            Then<T, R> res;
+            if (flag == 1) {
+                res = new Then<>(val, flag + 1, r);
+            } else {
+                res = new Then<>(val, flag, null);
+            }
+            return res;
         }
         public <R> Then<T, R> then(Provider<R> f) throws Exception {
             Then<T, R> res;
@@ -118,8 +133,14 @@ public class Expr<A> {
             this.r = r;
         }
 
-        public Then<T, R> then(R r) throws Exception {
-            return then(Provider.defer(r));
+        public Then<T, R> then(R v) {
+            Then<T, R> res;
+            if (flag == 1) {
+                res = new Then<>(val, flag + 1, v);
+            } else {
+                res = new Then<>(val, flag, r);
+            }
+            return res;
         }
         public Then<T, R> then(Provider<R> f) throws Exception {
             Then<T, R> res;
@@ -177,28 +198,40 @@ public class Expr<A> {
         }
 
         public R otherwise(Provider<R> f) throws Exception {
-            return otherwise(f.provide());
-        }
-        public R otherwise(Executable<T, R> f) throws Exception {
-            return otherwise(f.execute(val));
-        }
-        public R otherwise(R val) {
             R r;
             if (flag == 2) {
                 r = res;
             } else {
-                r = val;
+                r = f.provide();
             }
             return r;
         }
-        public R otherwiseNull() throws Exception {
-            return otherwise(x -> null);
+        public R otherwise(Executable<T, R> f) throws Exception {
+            return otherwise(f.exec(val));
+        }
+        public R otherwise(R defVal) {
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                r = defVal;
+            }
+            return r;
+        }
+        public R otherwiseNull() {
+            return otherwise((R) null);
         }
         public R otherwiseErr(Function<T, ? extends Exception> ef) throws Exception {
             return otherwiseErr(ef.apply(val));
         }
         public R otherwiseErr(Exception ex) throws Exception {
-            throw ex;
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                throw ex;
+            }
+            return r;
         }
     }
 }

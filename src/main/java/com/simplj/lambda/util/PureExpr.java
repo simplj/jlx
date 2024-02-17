@@ -28,9 +28,18 @@ public class PureExpr<A> {
         consumer.consume(val);
         return this;
     }
+    public PureExpr<A> recordIf(Condition<A> condition, Consumer<A> consumer) {
+        if (condition.evaluate(val)) {
+            consumer.consume(val);
+        }
+        return this;
+    }
 
     public <T> PureExpr<T> map(Function<A, T> f) {
         return new PureExpr<>(f.apply(val));
+    }
+    public PureExpr<A> mapIf(Condition<A> c, Function<A, A> f) {
+        return new PureExpr<>(c.evaluate(val) ? f.apply(val) : val);
     }
 
     public When<A> when(A match) {
@@ -168,19 +177,19 @@ public class PureExpr<A> {
         }
 
         public R otherwise(Producer<R> f) {
-            return otherwise(f.produce());
-        }
-        public R otherwise(Function<T, R> f) {
-            return otherwise(f.apply(val));
-        }
-        public R otherwise(R val) {
             R r;
             if (flag == 2) {
                 r = res;
             } else {
-                r = val;
+                r = f.produce();
             }
             return r;
+        }
+        public R otherwise(Function<T, R> f) {
+            return otherwise(f.ap(val));
+        }
+        public R otherwise(R defVal) {
+            return otherwise(Producer.defer(defVal));
         }
         public R otherwiseNull() {
             return otherwise(x -> null);
@@ -189,7 +198,13 @@ public class PureExpr<A> {
             return otherwiseErr(ef.apply(val));
         }
         public R otherwiseErr(Exception ex) throws Exception {
-            throw ex;
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                throw ex;
+            }
+            return r;
         }
     }
 }
