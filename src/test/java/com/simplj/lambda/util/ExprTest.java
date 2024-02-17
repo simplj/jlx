@@ -49,24 +49,24 @@ public class ExprTest {
 
     private DayOfWeek toDayOfWeek1(int i) throws Exception {
         return let(i).pure().when(Condition.negate(Condition.between(1, 7))).<DayOfWeek>err(x -> new Exception("Invalid number " + x))
+                .when(0).then(DayOfWeek.SUNDAY)
                 .when(1).then(DayOfWeek.MONDAY)
                 .when(2).then(DayOfWeek.TUESDAY)
                 .when(3).then(DayOfWeek.WEDNESDAY)
                 .when(4).then(DayOfWeek.THURSDAY)
                 .when(5).then(DayOfWeek.FRIDAY)
                 .when(6).then(DayOfWeek.SATURDAY)
-                .when(7).then(DayOfWeek.SUNDAY)
                 .otherwiseNull();
     }
     private DayOfWeek toDayOfWeek2(int i) throws Exception {
         return let(i).when(Condition.negate(Condition.between(1, 7))).<DayOfWeek>err(x -> new Exception("Invalid number " + x))
+                .when(0).then(DayOfWeek.SUNDAY)
                 .when(1).then(DayOfWeek.MONDAY)
                 .when(2).then(DayOfWeek.TUESDAY)
                 .when(3).then(DayOfWeek.WEDNESDAY)
                 .when(4).then(DayOfWeek.THURSDAY)
                 .when(5).then(DayOfWeek.FRIDAY)
                 .when(6).then(DayOfWeek.SATURDAY)
-                .when(7).then(DayOfWeek.SUNDAY)
                 .otherwiseErr(n -> new IllegalArgumentException("Invalid index #" + n + "for day  of week!"));
     }
 }
