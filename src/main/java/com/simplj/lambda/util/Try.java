@@ -339,8 +339,7 @@ public class Try<A> {
         public R resultOrThrow() throws E {
             Either<Exception, R> r = result();
             if (r.isLeft()) {
-                E x = Util.tryCastOrThrow(r.left(), e -> new IllegalStateException("`E` in TypedTry is not comprehensive enough to handle " + r.left().getClass().getName(), e));
-                throw x;
+                throw Util.<IllegalStateException, E>tryCastOrThrow(r.left(), e -> new IllegalStateException("`E` in TypedTry is not comprehensive enough to handle " + r.left().getClass().getName(), e));
             }
             return r.right();
         }
