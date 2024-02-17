@@ -20,8 +20,10 @@ import static org.junit.Assert.assertThrows;
 public class ExprTest {
     @Test
     public void testExpr() throws Exception {
-        assertEquals(1, let(0).pure().record(Consumer.noOp()).map(Function.id()).in(n -> n + 1).intValue());
-        assertEquals(1, let(0).record(Receiver.noOp()).map(Executable.id()).in(n -> n + 1).intValue());
+        assertEquals(1, let(0).pure().record(Consumer.noOp()).recordIf(Condition.always(), Consumer.noOp()).recordIf(Condition.never(), Consumer.noOp())
+                .map(Function.id()).mapIf(Condition.always(), Function.id()).mapIf(Condition.never(), n -> n + 10).in(n -> n + 1).intValue());
+        assertEquals(1, let(0).record(Receiver.noOp()).recordIf(Condition.always(), Receiver.noOp()).recordIf(Condition.never(), Receiver.noOp())
+                .map(Executable.id()).mapIf(Condition.always(), Executable.id()).mapIf(Condition.never(), n -> n + 10).in(n -> n + 1).intValue());
         Set<Integer> set = new HashSet<>();
         assertEquals(1, let(set.add(1)).pure().yield(() -> set).size());
         assertEquals(1, let(set.add(1)).pure().returning(set).size());

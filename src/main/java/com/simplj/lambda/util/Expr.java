@@ -37,9 +37,18 @@ public class Expr<A> {
         consumer.receive(val);
         return this;
     }
+    public Expr<A> recordIf(Condition<A> condition, Receiver<A> consumer) throws Exception {
+        if (condition.evaluate(val)) {
+            consumer.receive(val);
+        }
+        return this;
+    }
 
     public <T> Expr<T> map(Executable<A, T> f) throws Exception {
         return new Expr<>(f.execute(val));
+    }
+    public Expr<A> mapIf(Condition<A> c, Executable<A, A> f) throws Exception {
+        return new Expr<>(c.evaluate(val) ? f.execute(val) : val);
     }
 
     public When<A> when(A match) {

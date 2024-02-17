@@ -28,9 +28,18 @@ public class PureExpr<A> {
         consumer.consume(val);
         return this;
     }
+    public PureExpr<A> recordIf(Condition<A> condition, Consumer<A> consumer) {
+        if (condition.evaluate(val)) {
+            consumer.consume(val);
+        }
+        return this;
+    }
 
     public <T> PureExpr<T> map(Function<A, T> f) {
         return new PureExpr<>(f.apply(val));
+    }
+    public PureExpr<A> mapIf(Condition<A> c, Function<A, A> f) {
+        return new PureExpr<>(c.evaluate(val) ? f.apply(val) : val);
     }
 
     public When<A> when(A match) {
