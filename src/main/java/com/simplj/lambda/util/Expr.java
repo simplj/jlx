@@ -198,28 +198,40 @@ public class Expr<A> {
         }
 
         public R otherwise(Provider<R> f) throws Exception {
-            return otherwise(f.provide());
-        }
-        public R otherwise(Executable<T, R> f) throws Exception {
-            return otherwise(f.execute(val));
-        }
-        public R otherwise(R val) {
             R r;
             if (flag == 2) {
                 r = res;
             } else {
-                r = val;
+                r = f.provide();
             }
             return r;
         }
-        public R otherwiseNull() throws Exception {
-            return otherwise(x -> null);
+        public R otherwise(Executable<T, R> f) throws Exception {
+            return otherwise(f.exec(val));
+        }
+        public R otherwise(R defVal) {
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                r = defVal;
+            }
+            return r;
+        }
+        public R otherwiseNull() {
+            return otherwise((R) null);
         }
         public R otherwiseErr(Function<T, ? extends Exception> ef) throws Exception {
             return otherwiseErr(ef.apply(val));
         }
         public R otherwiseErr(Exception ex) throws Exception {
-            throw ex;
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                throw ex;
+            }
+            return r;
         }
     }
 }

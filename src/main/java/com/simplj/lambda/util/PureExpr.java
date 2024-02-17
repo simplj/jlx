@@ -177,19 +177,19 @@ public class PureExpr<A> {
         }
 
         public R otherwise(Producer<R> f) {
-            return otherwise(f.produce());
-        }
-        public R otherwise(Function<T, R> f) {
-            return otherwise(f.apply(val));
-        }
-        public R otherwise(R val) {
             R r;
             if (flag == 2) {
                 r = res;
             } else {
-                r = val;
+                r = f.produce();
             }
             return r;
+        }
+        public R otherwise(Function<T, R> f) {
+            return otherwise(f.ap(val));
+        }
+        public R otherwise(R defVal) {
+            return otherwise(Producer.defer(defVal));
         }
         public R otherwiseNull() {
             return otherwise(x -> null);
@@ -198,7 +198,13 @@ public class PureExpr<A> {
             return otherwiseErr(ef.apply(val));
         }
         public R otherwiseErr(Exception ex) throws Exception {
-            throw ex;
+            R r;
+            if (flag == 2) {
+                r = res;
+            } else {
+                throw ex;
+            }
+            return r;
         }
     }
 }
