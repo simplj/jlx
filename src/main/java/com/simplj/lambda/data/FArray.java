@@ -21,7 +21,7 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
 
     public abstract E get(int idx);
 
-    abstract E[] array();
+    public abstract E[] array();
 
     public abstract A filter(Condition<E> c);
 

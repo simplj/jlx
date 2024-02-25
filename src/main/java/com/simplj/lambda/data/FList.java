@@ -89,6 +89,18 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
     }
 
     /**
+     * Returns the middle element from the current list or throws `IndexOutOfBoundsException` if empty.
+     * @return the middle element from the current list or throws `IndexOutOfBoundsException` if empty.
+     */
+    public T mid() {
+        List<T> l = list();
+        if (l.isEmpty()) {
+            throw new IndexOutOfBoundsException("List is empty!");
+        }
+        return l.get(size() / 2);
+    }
+
+    /**
      * Returns the last element from the current list or throws `IndexOutOfBoundsException` if empty.
      * @return the last element from the current list or throws `IndexOutOfBoundsException` if empty.
      */
@@ -152,6 +164,25 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
     public T get(int index) {
         return list().get(index);
     }
+
+    public L take(int n) {
+        List<T> res = Util.cast(constructor.produce());
+        List<T> l = list();
+        for (int i = 0; i < n && i < l.size(); i++) {
+            res.add(l.get(i));
+        }
+        return instantiate(constructor, res);
+    }
+
+    public L skip(int n) {
+        List<T> res = Util.cast(constructor.produce());
+        List<T> l = list();
+        for (int i = n; i < l.size(); i++) {
+            res.add(l.get(i));
+        }
+        return instantiate(constructor, res);
+    }
+
     public int indexOf(Object o) {
         return list().indexOf(o);
     }

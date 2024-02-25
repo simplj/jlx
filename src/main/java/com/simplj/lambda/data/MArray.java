@@ -93,8 +93,12 @@ public abstract class MArray<E> extends FArray<E, MArray<E>> {
         return arr[idx];
     }
 
+    public final IArray<E> immutable() {
+        return IArray.of(array());
+    }
+
     @Override
-    E[] array() {
+    public final E[] array() {
         apply();
         return arr;
     }

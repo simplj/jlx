@@ -32,6 +32,9 @@ public class Expr<A> {
     public <B> B returning(B r) {
         return r;
     }
+    public <E extends Exception> void err(Function<A, E> f) throws E {
+        throw f.apply(val);
+    }
 
     public Expr<A> record(Receiver<A> consumer) throws Exception {
         consumer.receive(val);

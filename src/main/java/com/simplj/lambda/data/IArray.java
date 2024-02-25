@@ -92,8 +92,12 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
         return applied().arr[idx];
     }
 
+    public final MArray<E> mutable() {
+        return MArray.of(array());
+    }
+
     @Override
-    E[] array() {
+    public final E[] array() {
         return applied().arr;
     }
 

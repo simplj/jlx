@@ -1,5 +1,6 @@
 package com.simplj.lambda.util;
 
+import com.simplj.lambda.function.Condition;
 import com.simplj.lambda.function.Function;
 
 import java.util.Objects;
@@ -42,6 +43,17 @@ public class Mutable<A> {
         this.value = val;
         return this;
     }
+    /**
+     * Sets a new value of type A
+     * @param val value which will replace the existing value
+     * @return Mutable Instance with the new value
+     */
+    public Mutable<A> set(Condition<A> condition, A val) {
+        if (condition.evaluate(value)) {
+            set(val);
+        }
+        return this;
+    }
 
     /**
      * Applies the Function f to the underlying value.
@@ -51,6 +63,15 @@ public class Mutable<A> {
      */
     public Mutable<A> mutate(Function<A, A> f) {
         return set(f.apply(value));
+    }
+    /**
+     * Applies the Function f to the underlying value.
+     * API is eager i.e. Function f is applied as soon as this API is called.
+     * @param f Function to be applied to the underlying value
+     * @return Mutable instance with the resultant value of function application
+     */
+    public Mutable<A> mutate(Condition<A> condition, Function<A, A> f) {
+        return set(condition, f.apply(value));
     }
 
     /**

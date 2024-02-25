@@ -43,6 +43,10 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
         return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
+    public final MMap<K, V> mutable() {
+        return MMap.of(map());
+    }
+
     /**
      * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to map elements
      * @return the underlying <code>map</code> with all the lazy functions (if any) applied

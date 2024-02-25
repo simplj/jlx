@@ -67,6 +67,10 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     public abstract <R> IList<R> flatmap(Function<E, ? extends List<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
 
+    public final MList<E> mutable() {
+        return MList.of(list());
+    }
+
     @Override
     public final List<E> list() {
         return applied().list;

@@ -23,25 +23,29 @@ public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
         return Util.cast(NONE);
     }
 
-    public static <E> MSet<E> unit() {
+    public static <A> MSet<A> unit() {
         return unit(HashSet::new);
     }
 
-    public static <E> MSet<E> unit(Producer<Set<?>> constructor) {
+    public static <A> MSet<A> unit(Producer<Set<?>> constructor) {
         return of(Util.cast(constructor.produce()), constructor);
     }
 
     @SafeVarargs
-    public static <E> MSet<E> of(E...elems) {
+    public static <A> MSet<A> of(A...elems) {
         return of(Util.asSet(elems));
     }
 
-    public static <E> MSet<E> of(Set<E> set) {
+    public static <A> MSet<A> of(Set<A> set) {
         return of(set, HashSet::new);
     }
 
-    public static <E> MSet<E> of(Set<E> set, Producer<Set<?>> constructor) {
+    public static <A> MSet<A> of(Set<A> set, Producer<Set<?>> constructor) {
         return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
+    }
+
+    public final ISet<E> immutable() {
+        return ISet.of(set());
     }
 
     /**
