@@ -133,6 +133,12 @@ public class SlidingWindow<T> implements Iterable<T> {
         return window.iterator();
     }
 
+    public SlidingWindow<T> copy() {
+        SlidingWindow<T> res = new SlidingWindow<>(limit);
+        window.forEach(res::add);
+        return res;
+    }
+
     @Override
     public String toString() {
         return window.toString();
