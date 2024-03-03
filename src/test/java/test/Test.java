@@ -3,6 +3,7 @@ package test;
 import com.simplj.lambda.data.IArray;
 import com.simplj.lambda.data.IList;
 import com.simplj.lambda.data.MArray;
+import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.Function;
 import com.simplj.lambda.util.Expr;
 import com.simplj.lambda.util.Try;
@@ -38,9 +39,21 @@ public class Test {
 //                .otherwise(Function.returning("invalid"));
 
 
-        Function<Object, String> dummy = Function.returning("dummy");
-        Stream.of(1, 2, 3).map(dummy).collect(Collectors.toList()).forEach(System.out::println);
+//        Function<Object, String> dummy = Function.returning("dummy");
+//        Stream.of(1, 2, 3).map(dummy).collect(Collectors.toList()).forEach(System.out::println);
 
 //        Try.execute(() -> Thread.sleep(5)).log(System.out::println).mapException(RuntimeException::new).resultOrThrow();
+
+        BiFunction<Integer, Integer, Integer> div = (a,b) -> a/b;
+
+        Function<Integer, Integer> half = div.flip().ap(2);
+        System.out.println(half.apply(6));
+
+//        Function<Integer, Integer> partial = div.ap(6);
+//        Integer partialRes = partial.apply(2);
+//        System.out.println(partialRes);
+
+//        Integer res = div.flip().apply(2, 4);
+//        System.out.println(res);
     }
 }
