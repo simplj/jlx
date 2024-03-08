@@ -85,6 +85,10 @@ public class Mutable<A> {
         return new Mutable<>(f.apply(value));
     }
 
+    public Mutable<A> copy() {
+        return Mutable.of(value);
+    }
+
     @Override
     public String toString() {
         return String.valueOf(value);
