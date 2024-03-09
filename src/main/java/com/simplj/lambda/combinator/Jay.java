@@ -3,10 +3,11 @@ package com.simplj.lambda.combinator;
 import com.simplj.lambda.function.BiFunction;
 import com.simplj.lambda.function.QuadFunction;
 
-// TODO: Implement this
+// TODO: validate this implementation
+// Jay is defined as: λabcd.ab(adc) which can be interpreted as: a => b => c => d => a(b)(a(d)(c))
 
-public interface Jay<A,B,C,R,O> {
-//    default QuadFunction<BiFunction<A,B,R>,C,A,B,O> build() {
-//        return (f,a,b,c) -> f.apply(a,f.apply(b,c));
-//    }
+public interface Jay<I,O> {
+    default QuadFunction<BiFunction<I,O,O>, I, O, I, O> build() {
+        return (a,b,c,d) -> a.apply(b, a.apply(d,c));
+    }
 }
