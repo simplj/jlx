@@ -13,8 +13,8 @@ import com.simplj.lambda.function.QuadFunction;
  * @param <O>
  */
 
-public interface Blackbird<A,B,C,O> {
-    default QuadFunction<Function<C,O>, BiFunction<A,B,C>, A, B, O> build() {
+public interface Blackbird<A,B,O> {
+    default <C> QuadFunction<Function<C,O>, BiFunction<A,B,C>, A, B, O> build() {
         return (f,g,a,b) -> f.apply(g.apply(a,b));
     }
 }

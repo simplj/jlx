@@ -12,8 +12,8 @@ import com.simplj.lambda.function.TriFunction;
  * @param <O>
  */
 
-public interface Bluebird<I,R,O> {
-    default TriFunction<Function<R,O>,Function<I,R>,I,O> build() {
+public interface Bluebird<I,O> {
+    default <R> TriFunction<Function<R,O>,Function<I,R>,I,O> build() {
         return (f,g,a) -> f.apply(g.apply(a));
     }
 }

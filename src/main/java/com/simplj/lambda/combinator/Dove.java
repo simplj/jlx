@@ -13,8 +13,8 @@ import com.simplj.lambda.function.QuadFunction;
  * @param <O>
  */
 
-public interface Dove<A,B,C,O> {
-    default QuadFunction<BiFunction<A,C,O>, A, Function<B,C>, B, O> build() {
+public interface Dove<A,B,O> {
+    default <C> QuadFunction<BiFunction<A,C,O>, A, Function<B,C>, B, O> build() {
         return (f,a,g,b) -> f.apply(a, g.apply(b));
     }
 }
