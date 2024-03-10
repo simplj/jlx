@@ -1,9 +1,6 @@
 package com.simplj.lambda.combinator;
 
-import com.simplj.lambda.function.BiFunction;
-import com.simplj.lambda.function.Function;
-import com.simplj.lambda.function.QuadFunction;
-import com.simplj.lambda.function.TriFunction;
+import com.simplj.lambda.function.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,6 +58,15 @@ public class CombinatorTest {
     }
 
     @Test
+    public void eagleTest() {
+        PentaFunction<BiFunction<Integer, Integer, Integer>, Integer, BiFunction<Integer, Integer, Integer>, Integer, Integer, Integer> eagle = new EagleImpl().build();
+        int res = eagle.apply(sum, 2, sub, 3, 1);
+        Assert.assertEquals(res, 4);
+
+        System.out.println("✅ eagleTest Passed");
+    }
+
+    @Test
     public void finchTest() {
         TriFunction<Integer, Integer, BiFunction<Integer, Integer, Integer>, Integer> finch = new FinchImpl().build();
         int res = finch.apply(2,3,sum);
@@ -94,6 +100,15 @@ public class CombinatorTest {
         Assert.assertEquals(res, 2);
 
         System.out.println("✅ idiotTest Passed");
+    }
+
+    @Test
+    public void jayTest() {
+        QuadFunction<BiFunction<Integer, Integer, Integer>, Integer, Integer, Integer, Integer> jay = new JayImpl().build();
+        int res = jay.apply(sum, 2, 2, 2);
+        Assert.assertEquals(res, 6);
+
+        System.out.println("✅ jayTest Passed");
     }
 
     @Test
@@ -146,10 +161,12 @@ class BlackbirdImpl implements Blackbird<Integer, Integer, Integer> {}
 class BluebirdImpl implements Bluebird<Integer, Integer> {}
 class CardinalImpl implements Cardinal<Integer, Integer, Integer> {}
 class DoveImpl implements Dove<Integer, Integer, Integer> {}
+class EagleImpl implements Eagle<Integer, Integer, Integer, Integer, Integer> {}
 class FinchImpl implements Finch<Integer, Integer, Integer> {}
 class GoldFinchImpl implements GoldFinch<Integer, Integer, Integer> {}
 class HummingbirdImpl implements Hummingbird<Integer, Integer, Integer> {}
 class IdiotImpl implements Idiot<Integer> {}
+class JayImpl implements Jay<Integer, Integer> {}
 class KestrelImpl implements Kestrel<Integer, Integer> {}
 class KiteImpl implements Kite<Integer, Integer> {}
 class StarlingImpl implements Starling<Integer, Integer> {}
