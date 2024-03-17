@@ -46,6 +46,10 @@ public abstract class MMap<K, V> extends FMap<K, V, MMap<K, V>> implements Map<K
         return new MapFunctor<>(map, constructor, LinkedPair::new, map);
     }
 
+    public final IMap<K, V> immutable() {
+        return IMap.of(map());
+    }
+
     /**
      * Function application is <i>eager</i> i.e. it applies all the lazy functions (if any) to map elements
      * @return the underlying <code>map</code> with all the lazy functions (if any) applied

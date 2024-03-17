@@ -23,6 +23,9 @@ public class PureExpr<A> {
     public <B> B returning(B r) {
         return r;
     }
+    public <E extends Exception> void err(Function<A, E> f) throws E {
+        throw f.apply(val);
+    }
 
     public PureExpr<A> record(Consumer<A> consumer) {
         consumer.consume(val);

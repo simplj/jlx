@@ -33,6 +33,10 @@ public interface BiFunction<A, B, O> extends java.util.function.BiFunction<A, B,
         return a -> b -> apply(a, b);
     }
 
+    default BiFunction<B, A, O> flip() {
+        return (a,b) -> this.apply(b,a);
+    }
+
     static <T, U, R> BiFunction<T, U, R> of(BiFunction<T, U, R> f) {
         return f;
     }
