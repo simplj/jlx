@@ -43,4 +43,8 @@ public interface BiFunction<A, B, O> extends java.util.function.BiFunction<A, B,
     static <T, R> BiFunction<T, R, R> second() {
         return (a, b) -> b;
     }
+
+    static <X1, X2, R> BiFunction<X1, X2, R> returning(R r) {
+        return (x1, x2) -> r;
+    }
 }
