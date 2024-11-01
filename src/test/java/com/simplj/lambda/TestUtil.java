@@ -1,5 +1,8 @@
 package com.simplj.lambda;
 
+import com.simplj.lambda.function.BiFunction;
+import com.simplj.lambda.function.Function;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
