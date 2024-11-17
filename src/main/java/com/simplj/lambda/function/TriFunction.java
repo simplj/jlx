@@ -51,4 +51,8 @@ public interface TriFunction<A, B, C, R> {
     static <P, Q, R> TriFunction<P, Q, R, R> third() {
         return (a, b, c) -> c;
     }
+
+    static <X1, X2, X3, R> TriFunction<X1, X2, X3, R> returning(R r) {
+        return (x1, x2, x3) -> r;
+    }
 }

@@ -46,6 +46,12 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
         return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
     }
 
+    public static <E> MList<E> from(Iterable<E> iter) {
+        List<E> list = new LinkedList<>();
+        iter.forEach(list::add);
+        return of(list, LinkedList::new);
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the list and returns the resultant list. Function application is <i>lazy</i><br>
@@ -69,6 +75,10 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
      */
     public abstract <R> MList<R> flatmap(Function<T, ? extends List<R>> f);
     /* ------------------- END: Lazy methods ------------------- */
+
+    public IList<T> immutable() {
+        return IList.of(list());
+    }
 
     @Override
     public final List<T> list() {
@@ -225,12 +235,6 @@ public abstract class MList<T> extends FList<T, MList<T>> implements List<T> {
     public void clear() {
         apply();
         list.clear();
-    }
-
-    @Override
-    public MList<T> empty() {
-        clear();
-        return this;
     }
 
     @Override

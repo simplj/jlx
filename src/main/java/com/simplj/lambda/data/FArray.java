@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
+    static final Object[] EMPTY = new Object[0];
     final E[] newArray;
 
     FArray() {
@@ -21,7 +22,7 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
 
     public abstract E get(int idx);
 
-    abstract E[] array();
+    public abstract E[] array();
 
     public abstract A filter(Condition<E> c);
 
@@ -174,6 +175,111 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
     }
 
     /**
+     * drops `n` elements from first (if n is positive) or from last (if n is negative)
+     * @param n elements to drop either from first (if n is positive) or from last (if n is negative)
+     * @return Resultant array with n elements dropped.
+     */
+    public A drop(int n) {
+        E[] arr = array();
+        if (n == 0) {
+            return unit(arr);
+        } else if (n >= arr.length) {
+            return empty();
+        }
+        E[] res;
+        int i = 0;
+        if (n > 0) {
+            res = Util.cast(new Object[arr.length - n]);
+            while (n < arr.length) {
+                res[i++] = arr[n++];
+            }
+        } else {
+            res = Util.cast(new Object[arr.length + n]);
+            while (i < res.length) {
+                res[i] = arr[i++];
+            }
+        }
+        return unit(res);
+    }
+
+    public A dropWhile(Condition<E> c) {
+        if (isEmpty()) {
+            return empty();
+        }
+        int n = 0;
+        E[] arr = array();
+        while (n < arr.length && c.evaluate(arr[n])) {
+            n++;
+        }
+        E[] res = Util.cast(new Object[arr.length - n]);
+        int i = 0;
+        while (n < arr.length) {
+            res[i++] = arr[n++];
+        }
+        return unit(res);
+    }
+
+    public A dropUntil(Condition<E> c) {
+        return dropWhile(c.negate());
+    }
+
+    /**
+     * takes `n` elements from first (if n is positive) or from last (if n is negative)
+     * @param n elements to take either from first (if n is positive) or from last (if n is negative)
+     * @return Resultant array with only n elements taken.
+     */
+    public A take(int n) {
+        E[] arr = array();
+        if (n == 0) {
+            return empty();
+        } else if (n >= arr.length) {
+            return unit(arr);
+        }
+        E[] res = Util.cast(new Object[Math.abs(n)]);
+        int i = 0;
+        if (n > 0) {
+            while (i < n) {
+                res[i] = arr[i++];
+            }
+        } else {
+            n = arr.length + n;
+            while (n < arr.length) {
+                res[i++] = arr[n++];
+            }
+        }
+        return unit(res);
+    }
+
+    public A takeWhile(Condition<E> c) {
+        if (isEmpty()) {
+            return empty();
+        }
+        int i = 0;
+        E[] arr = array();
+        while (i < arr.length && c.evaluate(arr[i])) {
+            i++;
+        }
+        A res;
+        if (i == 0) {
+            res = empty();
+        } else if (i < arr.length) {
+            E[] r = Util.cast(new Object[i]);
+            i = 0;
+            while (i < r.length) {
+                r[i] = arr[i++];
+            }
+            res = unit(r);
+        } else {
+            res = unit(arr);
+        }
+        return res;
+    }
+
+    public A takeUntil(Condition<E> c) {
+        return takeWhile(c.negate());
+    }
+
+    /**
      * @return <code>true</code> if all the lazy functions (if any) are applied otherwise <code>false</code>
      */
     public abstract boolean isApplied();
@@ -222,6 +328,10 @@ abstract class FArray<E, A extends FArray<E, A>> implements Iterable<E> {
     @Override
     public Iterator<E> iterator() {
         return Arrays.asList(array()).iterator();
+    }
+
+    private A empty() {
+        return unit(Util.cast(EMPTY));
     }
 
     /*int, byte, short, long, float, double, boolean and char*/

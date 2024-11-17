@@ -23,6 +23,9 @@ public class PureExpr<A> {
     public <B> B returning(B r) {
         return r;
     }
+    public <E extends Exception> void err(Function<A, E> f) throws E {
+        throw f.apply(val);
+    }
 
     public PureExpr<A> record(Consumer<A> consumer) {
         consumer.consume(val);
@@ -194,17 +197,17 @@ public class PureExpr<A> {
         public R otherwiseNull() {
             return otherwise(x -> null);
         }
-        public R otherwiseErr(Function<T, ? extends Exception> ef) throws Exception {
-            return otherwiseErr(ef.apply(val));
-        }
-        public R otherwiseErr(Exception ex) throws Exception {
+        public <E extends Exception> R otherwiseErr(Function<T, E> ef) throws E {
             R r;
             if (flag == 2) {
                 r = res;
             } else {
-                throw ex;
+                throw ef.apply(val);
             }
             return r;
+        }
+        public <E extends Exception> R otherwiseError(E ex) throws E {
+            return otherwiseErr(x -> ex);
         }
     }
 }

@@ -209,10 +209,9 @@ public class RetryContext extends Retryable<Object> {
          * Sets exceptions (inclusive/exclusive) for which to retry.
          * @param exceptions  exceptions for which to retry
          * @param isInclusive indicates whether the exceptions are inclusive or exclusive i.e. whether to retry if the given exception occur or the given exceptions does not occur
-         * @param <T>         sub type of Exception
          * @return Current instance of {@link RetryContextBuilder}
          */
-        public <T extends Exception> RetryContextBuilder exceptions(Set<Class<T>> exceptions, boolean isInclusive) {
+        public RetryContextBuilder exceptions(Set<Class<? extends Exception>> exceptions, boolean isInclusive) {
             if (exceptions == null || exceptions.isEmpty()) {
                 throw new IllegalArgumentException("Exceptions cannot be null or empty! Got: " + exceptions);
             }
