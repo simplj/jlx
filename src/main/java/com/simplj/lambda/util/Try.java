@@ -274,16 +274,11 @@ public class Try<A> {
      * @return Current instance of Try
      */
     public <E extends Exception> Try<A> handle(Class<E> type, Function<E, A> f) {
-        if (type.isAssignableFrom(Exception.class)) {
-            System.out.println("[WARNING] `Try.handle` is for handling specific exception (sub) types! `Try.recover` can be used for handling generic `Exception`s.");
-            return recover(e -> f.apply(Util.cast(e)));
+        String name = type.getName();
+        if (handlers.containsKey(name)) {
+            System.out.println("[WARNING] Recovery is already set for '" + name + "'! Setting recovery is ignored for Exceptions which already has recovery set.");
         } else {
-            String name = type.getName();
-            if (handlers.containsKey(name)) {
-                System.out.println("[WARNING] Recovery is already set for '" + name + "'! Setting recovery is ignored for Exceptions which already has recovery set.");
-            } else {
-                handlers.put(name, f);
-            }
+            handlers.put(name, f);
         }
         return this;
     }
