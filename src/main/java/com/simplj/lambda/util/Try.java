@@ -25,14 +25,12 @@ import java.util.*;
 public class Try<A> {
     private final Executable<AutoCloseableMarker, A> func;
     private Consumer<Exception> logger;
-    private Function<Exception, Either<Exception, A>> recovery;
     private Excerpt finalizeF;
     private final Map<String, Function<? extends Exception, A>> handlers;
 
     Try(Executable<AutoCloseableMarker, A> f, Consumer<Exception> logger, Excerpt finalizeF) {
         this.func = f;
         this.logger = logger;
-        this.recovery = Either::<Exception, A>left;
         this.finalizeF = finalizeF;
         this.handlers = new HashMap<>();
     }
@@ -150,6 +148,24 @@ public class Try<A> {
         });
         return new Try<>(next, logger, finalizeF);
     }
+    public <X extends Exception> Try<A> filter(Condition<A> condition, Producer<X> exF) throws X {
+        Executable<AutoCloseableMarker, A> next = func.andThen(r -> {
+            if (!condition.evaluate(r)) {
+                throw exF.produce();
+            }
+            return r;
+        });
+        return new Try<>(next, logger, finalizeF);
+    }
+    public <X extends Exception> Try<A> filter(Condition<A> condition, X ex) throws X {
+        Executable<AutoCloseableMarker, A> next = func.andThen(r -> {
+            if (!condition.evaluate(r)) {
+                throw ex;
+            }
+            return r;
+        });
+        return new Try<>(next, logger, finalizeF);
+    }
 
     public Try<A> record(Consumer<A> consumer) {
         return new Try<>(func.andThen(Receiver.of(consumer::consume).yield()), logger, finalizeF);
@@ -198,6 +214,8 @@ public class Try<A> {
             try {
                 return func.execute(a);
             } catch (Exception ex) {
+                logger.consume(ex);
+                logger = Consumer.noOp();
                 throw f.apply(ex);
             }
         };
@@ -210,17 +228,42 @@ public class Try<A> {
      * @return Current instance of Try
      */
     public Try<A> recover(Function<Exception, A> f) {
-        this.recovery = f.andThen(Either::right);
-        return this;
+        Objects.requireNonNull(f);
+        Executable<AutoCloseableMarker, A> next = a -> {
+            A res;
+            try {
+                res = func.execute(a);
+            } catch (Exception ex) {
+                logger.consume(ex);
+                res = f.apply(ex);
+            }
+            return res;
+        };
+        return new Try<>(next, logger, finalizeF);
     }
 
     public Try<A> recoverWhen(Condition<Exception> condition, Function<Exception, A> recovery) {
-        this.recovery = e -> condition.evaluate(e) ? Either.right(recovery.apply(e)) : Either.left(e);
-        return this;
+        Objects.requireNonNull(condition);
+        Objects.requireNonNull(recovery);
+        Executable<AutoCloseableMarker, A> next = a -> {
+            A res;
+            try {
+                res = func.execute(a);
+            } catch (Exception ex) {
+                logger.consume(ex);
+                if (condition.evaluate(ex)) {
+                    res = recovery.apply(ex);
+                } else {
+                    throw ex;
+                }
+            }
+            return res;
+        };
+        return new Try<>(next, logger, finalizeF);
     }
     public Try<A> recoverOn(Class<? extends Exception> clazz, Function<Exception, A> recovery) {
-        this.recovery = e -> clazz.isAssignableFrom(e.getClass()) ? Either.right(recovery.apply(e)) : Either.left(e);
-        return this;
+        Objects.requireNonNull(clazz);
+        return recoverWhen(e -> clazz.isAssignableFrom(e.getClass()), recovery);
     }
 
     /**
@@ -231,16 +274,11 @@ public class Try<A> {
      * @return Current instance of Try
      */
     public <E extends Exception> Try<A> handle(Class<E> type, Function<E, A> f) {
-        if (type.isAssignableFrom(Exception.class)) {
-            System.out.println("[WARNING] `Try.handle` is for handling specific exception (sub) types! `Try.recover` can be used for handling generic `Exception`s.");
-            this.recovery = e -> Either.right(f.apply(Util.cast(e)));
+        String name = type.getName();
+        if (handlers.containsKey(name)) {
+            System.out.println("[WARNING] Recovery is already set for '" + name + "'! Setting recovery is ignored for Exceptions which already has recovery set.");
         } else {
-            String name = type.getName();
-            if (handlers.containsKey(name)) {
-                System.out.println("[WARNING] Recovery is already set for '" + name + "'! Setting recovery is ignored for Exceptions which already has recovery set.");
-            } else {
-                handlers.put(name, f);
-            }
+            handlers.put(name, f);
         }
         return this;
     }
@@ -315,7 +353,7 @@ public class Try<A> {
         Either<Exception, A> res;
         Function<? extends Exception, A> f = handlers.get(ex.getClass().getName());
         if (f == null) {
-            res = recovery.apply(ex);
+            res = Either.left(ex);
         } else {
             res = Either.right(f.apply(Util.cast(ex)));
         }

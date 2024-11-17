@@ -58,4 +58,8 @@ public interface QuadFunction<A, B, C, D, R> {
     static <P, Q, R, S> QuadFunction<P, Q, R, S, S> fourth() {
         return (a, b, c, d) -> d;
     }
+
+    static <X1, X2, X3, X4, R> QuadFunction<X1, X2, X3, X4, R> returning(R r) {
+        return (x1, x2, x3, x4) -> r;
+    }
 }

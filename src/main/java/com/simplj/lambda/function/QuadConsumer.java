@@ -54,6 +54,12 @@ public interface QuadConsumer<A, B, C, D> {
             return c;
         };
     }
+    default QuadFunction<A, B, C, D, D> yieldFourth() {
+        return (a, b, c, d) -> {
+            consume(a, b, c, d);
+            return d;
+        };
+    }
 
     default QuadFunction<A, B, C, D, Void> toFunction() {
         return (a, b, c, d) -> {

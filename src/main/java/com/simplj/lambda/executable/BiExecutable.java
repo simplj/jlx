@@ -66,4 +66,8 @@ public interface BiExecutable<A, B, R> {
     static <T, U> BiExecutable<T, U, U> second() {
         return (a, b) -> b;
     }
+
+    static <X1, X2, R> BiExecutable<X1, X2, R> returning(R r) {
+        return (x1, x2) -> r;
+    }
 }
