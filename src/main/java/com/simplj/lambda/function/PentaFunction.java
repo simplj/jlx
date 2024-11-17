@@ -59,4 +59,8 @@ public interface PentaFunction<A, B, C, D, E, R> {
     static <P, Q, R, S, T> PentaFunction<P, Q, R, S, T, T> fifth() {
         return (a, b, c, d, e) -> e;
     }
+
+    static <X1, X2, X3, X4, X5, R> PentaFunction<X1, X2, X3, X4, X5, R> returning(R r) {
+        return (x1, x2, x3, x4, x5) -> r;
+    }
 }

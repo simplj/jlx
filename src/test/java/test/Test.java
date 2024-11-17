@@ -2,21 +2,32 @@ package test;
 
 import com.simplj.lambda.data.IArray;
 import com.simplj.lambda.data.IList;
-import com.simplj.lambda.data.MArray;
-import com.simplj.lambda.function.BiFunction;
-import com.simplj.lambda.function.Function;
-import com.simplj.lambda.util.Expr;
-import com.simplj.lambda.util.Try;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.simplj.lambda.util.Expr.let;
+import com.simplj.lambda.function.Condition;
 
 public class Test {
     public static void main(String[] args) {
+        /*Mutable<Integer> m = Mutable.of(0, (a, b) -> System.out.println(a + " -> " + b));
+        IntStream.range(0, 5).forEach(x -> m.mutate(i -> i + 1));*/
+        IList<Integer> arr = IList.of(1, 2, 3, 4, 5);
+        System.out.println(arr.drop(3));
+        System.out.println(arr.drop(-3));
+        System.out.println(arr.drop(0));
+        System.out.println(arr.drop(5));
+        System.out.println("----------------");
+        System.out.println(arr.dropWhile(Condition.equal(0)));
+        System.out.println(arr.dropWhile(Condition.never()));
+        System.out.println(arr.dropWhile(Condition.always()));
+        System.out.println(arr.dropWhile(Condition.lesser(3)));
+        System.out.println("=================");
+        System.out.println(arr.take(3));
+        System.out.println(arr.take(-3));
+        System.out.println(arr.take(0));
+        System.out.println(arr.take(5));
+        System.out.println("----------------");
+        System.out.println(arr.takeWhile(Condition.equal(0)));
+        System.out.println(arr.takeWhile(Condition.never()));
+        System.out.println(arr.takeWhile(Condition.always()));
+        System.out.println(arr.takeWhile(Condition.lesser(3)));
 //        String s = "a/b";
 //        List<String> l = IList.of(s.split("/")).map(String::trim).list();
 //        System.out.println(l);
@@ -44,10 +55,10 @@ public class Test {
 
 //        Try.execute(() -> Thread.sleep(5)).log(System.out::println).mapException(RuntimeException::new).resultOrThrow();
 
-        BiFunction<Integer, Integer, Integer> div = (a,b) -> a/b;
-
-        Function<Integer, Integer> half = div.flip().ap(2);
-        System.out.println(half.apply(6));
+//        BiFunction<Integer, Integer, Integer> div = (a,b) -> a/b;
+//
+//        Function<Integer, Integer> half = div.flip().ap(2);
+//        System.out.println(half.apply(6));
 
 //        Function<Integer, Integer> partial = div.ap(6);
 //        Integer partialRes = partial.apply(2);

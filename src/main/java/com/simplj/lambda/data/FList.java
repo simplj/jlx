@@ -159,28 +159,114 @@ abstract class FList<T, L extends FList<T, L>> implements Iterable<T> {
 
     public abstract L preserve(Iterable<? extends T> c);
 
-    public abstract L empty();
+    public L empty() {
+        return instantiate(constructor, Collections.emptyList());
+    }
 
     public T get(int index) {
         return list().get(index);
     }
 
-    public L take(int n) {
+    /**
+     * drops `n` elements from first (if n is positive) or from last (if n is negative)
+     * @param n elements to drop either from first (if n is positive) or from last (if n is negative)
+     * @return Resultant list with n elements dropped.
+     */
+    public L drop(int n) {
+        List<T> list = list();
+        if (n == 0) {
+            return instantiate(constructor, list);
+        } else if (n >= list.size()) {
+            return empty();
+        }
         List<T> res = Util.cast(constructor.produce());
-        List<T> l = list();
-        for (int i = 0; i < n && i < l.size(); i++) {
-            res.add(l.get(i));
+        if (n > 0) {
+            while (n < list.size()) {
+                res.add(list.get(n++));
+            }
+        } else {
+            int l = list.size() + n;
+            for (int i = 0; i < l; i++) {
+                res.add(list.get(i));
+            }
         }
         return instantiate(constructor, res);
     }
 
-    public L skip(int n) {
+    public L dropWhile(Condition<T> c) {
+        if (isEmpty()) {
+            return empty();
+        }
+        int n = 0;
+        List<T> list = list();
+        while (n < list.size() && c.evaluate(list.get(n))) {
+            n++;
+        }
         List<T> res = Util.cast(constructor.produce());
-        List<T> l = list();
-        for (int i = n; i < l.size(); i++) {
-            res.add(l.get(i));
+        while (n < list.size()) {
+            res.add(list.get(n++));
         }
         return instantiate(constructor, res);
+    }
+
+    public L dropUntil(Condition<T> c) {
+        return dropWhile(c.negate());
+    }
+
+    /**
+     * takes `n` elements from first (if n is positive) or from last (if n is negative)
+     * @param n elements to take either from first (if n is positive) or from last (if n is negative)
+     * @return Resultant list with only n elements taken.
+     */
+    public L take(int n) {
+        List<T> list = list();
+        if (n == 0) {
+            return empty();
+        } else if (n >= list.size()) {
+            return instantiate(constructor, list);
+        }
+        List<T> res = Util.cast(constructor.produce());
+        int i = 0;
+        if (n > 0) {
+            while (i < n) {
+                res.add(list.get(i++));
+            }
+        } else {
+            n = list.size() + n;
+            while (n < list.size()) {
+                res.add(list.get(n++));
+            }
+        }
+        return instantiate(constructor, res);
+    }
+
+    public L takeWhile(Condition<T> c) {
+        if (isEmpty()) {
+            return empty();
+        }
+        int n = 0;
+        List<T> list = list();
+        while (n < list.size() && c.evaluate(list.get(n))) {
+            n++;
+        }
+        L res;
+        if (n == 0) {
+            res = empty();
+        } else if (n < list.size()) {
+            List<T> r = Util.cast(constructor.produce());
+            int i = 0;
+            while (i < n) {
+                r.add(list.get(i++));
+            }
+            res = instantiate(constructor, r);
+        } else {
+            res = instantiate(constructor, list);
+        }
+        return res;
+    }
+
+    public L takeUntil(Condition<T> c) {
+        return takeWhile(c.negate());
     }
 
     public int indexOf(Object o) {

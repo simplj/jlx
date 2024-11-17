@@ -7,12 +7,18 @@ import com.simplj.lambda.tuples.Tuple;
 
 import java.util.LinkedList;
 
+import static com.simplj.lambda.util.Expr.let;
+
 public abstract class MArray<E> extends FArray<E, MArray<E>> {
     volatile E[] arr;
 
     private MArray(E[] arr) {
         super();
         this.arr = arr;
+    }
+
+    public static <A> MArray<A> empty() {
+        return let(Util.<A[]>cast(EMPTY)).pure().in(a -> new ArrayFunctor<>(a, LinkedUnit::new, a));
     }
 
     public static <A> MArray<A> of(int size) {

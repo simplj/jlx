@@ -66,6 +66,12 @@ public interface QuadReceiver<A, B, C, D> {
             return c;
         };
     }
+    default QuadExecutable<A, B, C, D, D> yieldFourth() {
+        return (a, b, c, d) -> {
+            receive(a, b, c, d);
+            return d;
+        };
+    }
 
     default QuadExecutable<A, B, C, D, Void> toExecutable() {
         return (a, b, c, d) -> {

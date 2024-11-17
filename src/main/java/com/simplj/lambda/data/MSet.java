@@ -44,6 +44,12 @@ public abstract class MSet<E> extends FSet<E, MSet<E>> implements Set<E> {
         return new SetFunctor<>(set, constructor, LinkedUnit::new, set);
     }
 
+    public static <E> MSet<E> from(Iterable<E> iter) {
+        Set<E> set = new HashSet<>();
+        iter.forEach(set::add);
+        return of(set, HashSet::new);
+    }
+
     public final ISet<E> immutable() {
         return ISet.of(set());
     }

@@ -97,7 +97,7 @@ public abstract class IMap<K, V> extends FMap<K, V, IMap<K, V>> {
     }
 
     public final IMap<K, V> applied() {
-        return appliedMap(false);
+        return isApplied() ? this : appliedMap(false);
     }
 
     @Override

@@ -43,6 +43,12 @@ public abstract class IList<E> extends FList<E, IList<E>> {
         return new ListFunctor<>(list, constructor, LinkedUnit::new, list);
     }
 
+    public static <E> IList<E> from(Iterable<E> iter) {
+        List<E> list = new LinkedList<>();
+        iter.forEach(list::add);
+        return of(list, LinkedList::new);
+    }
+
     /* ------------------- START: Lazy methods ------------------- */
     /**
      * Applies the function `f` of type <i>(T -&gt; R)</i> to all the elements in the list and returns the resultant applied(). Function application is <i>lazy</i><br>
@@ -82,7 +88,7 @@ public abstract class IList<E> extends FList<E, IList<E>> {
     }
 
     public final IList<E> applied() {
-        return appliedList(false);
+        return isApplied() ? this : appliedList(false);
     }
 
     public IList<Couple<Integer, E>> indexed() {
@@ -162,11 +168,6 @@ public abstract class IList<E> extends FList<E, IList<E>> {
             }
         }
         return res;
-    }
-
-    @Override
-    public IList<E> empty() {
-        return unit(constructor);
     }
 
     @Override

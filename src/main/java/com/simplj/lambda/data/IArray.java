@@ -7,12 +7,18 @@ import com.simplj.lambda.tuples.Tuple;
 
 import java.util.LinkedList;
 
+import static com.simplj.lambda.util.Expr.let;
+
 public abstract class IArray<E> extends FArray<E, IArray<E>> {
     final E[] arr;
 
     private IArray(E[] arr) {
         super();
         this.arr = arr;
+    }
+
+    public static <A> IArray<A> empty() {
+        return let(Util.<A[]>cast(EMPTY)).pure().in(a -> new ArrayFunctor<>(a, LinkedUnit::new, a));
     }
 
     public static <A> IArray<A> of(int size) {
@@ -117,13 +123,7 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
     }
 
     public final IArray<E> applied() {
-        IArray<E> res;
-        if (isApplied()) {
-            res = this;
-        } else {
-            res = appliedArray(false);
-        }
-        return res;
+        return isApplied() ? this : appliedArray(false);
     }
 
     public abstract IArray<E> appliedArray(boolean copy);
@@ -161,9 +161,6 @@ public abstract class IArray<E> extends FArray<E, IArray<E>> {
         public final ArrayFunctor<T, T> appliedArray(boolean copy) {
             ArrayFunctor<T, T> res;
             if (arr == null) {
-                T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
-                res = new ArrayFunctor<>(r, LinkedUnit::new, r);
-            } else if (arr == null) {
                 T[] r = apply(src, func, new LinkedList<>()).toArray(newArray);
                 res = new ArrayFunctor<>(r, LinkedUnit::new, r);
             } else {

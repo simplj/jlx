@@ -76,4 +76,8 @@ public interface TriExecutable<A, B, C, R> {
     static <T, U, V> TriExecutable<T, U, V, V> third() {
         return (a, b, c) -> c;
     }
+
+    static <X1, X2, X3, R> TriExecutable<X1, X2, X3, R> returning(R r) {
+        return (x1, x2, x3) -> r;
+    }
 }

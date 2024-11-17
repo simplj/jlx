@@ -10,9 +10,9 @@ import java.util.Objects;
  * @param <A> Type of the underlying value
  */
 public class Mutable<A> {
-    private volatile A value;
+    volatile A value;
 
-    private Mutable(A v) {
+    Mutable(A v) {
         this.value = v;
     }
 
@@ -24,6 +24,17 @@ public class Mutable<A> {
      */
     public static <T> Mutable<T> of(T val) {
         return new Mutable<>(val);
+    }
+
+    /**
+     * Wraps a value of type T in the Mutable instance
+     * @param val The value to be wrapped
+     * @param watcher Associate a watcher implementation which will be notified for every value change
+     * @param <T> Type of the underlying value
+     * @return Mutable instance with the provided value
+     */
+    public static <T> Mutable<T> of(T val, MutableWatcher<T> watcher) {
+        return new WatchMutable<>(val, watcher);
     }
 
     /**
@@ -83,6 +94,18 @@ public class Mutable<A> {
      */
     public <R> Mutable<R> change(Function<A, R> f) {
         return new Mutable<>(f.apply(value));
+    }
+
+    /**
+     * Applies the Function f to the underlying value.
+     * API is eager i.e. Function f is applied as soon as this API is called.
+     * @param f   Function to be applied to the underlying value
+     * @param watcher Associate a watcher implementation which will be notified for every value change
+     * @param <R> Type of the function's resultant value
+     * @return Mutable instance with the resultant value of functional application
+     */
+    public <R> Mutable<R> change(Function<A, R> f, MutableWatcher<R> watcher) {
+        return new WatchMutable<>(f.apply(value), watcher);
     }
 
     public Mutable<A> copy() {
