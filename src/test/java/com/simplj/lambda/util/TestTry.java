@@ -123,7 +123,7 @@ public class TestTry {
         RuntimeException re = new RuntimeException("needs retry!");
         RetryContext.RetryContextBuilder retryCtxBuilder = RetryContext.times(100, d -> (long) (d * 1.5), 3).logger(l::add);
         Mutable<Integer> m = Mutable.of(0);
-        Either<Exception, Void> r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Util.asSet(IllegalStateException.class, NullPointerException.class), true).build()).result();
+        Either<Exception, Void> r = Try.execute(() -> retry(5, m, ise)).retry(retryCtxBuilder.exceptions(Collections.singleton(IllegalStateException.class), true).build()).result();
         assertTrue(r.isLeft());
         assertTrue(r.left() instanceof IllegalStateException);
         assertEquals("needs retry!", r.left().getMessage());
