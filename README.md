@@ -72,16 +72,6 @@ Check the current release at [Maven Central](https://search.maven.org/search?q=g
 implementation 'com.simplj.lambda:jlx:<version>'
 ```
 
-### Local Snapshot Build
-
-```bash
-git clone https://github.com/simplj/jlx.git
-cd jlx
-mvn install -DskipTests
-```
-
-This installs `com.simplj.lambda:jlx:1.0-SNAPSHOT` into your local Maven repository.
-
 ### No additional configuration required.
 
 The library is a plain JAR with no runtime dependencies.
